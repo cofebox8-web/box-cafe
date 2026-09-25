@@ -1,0 +1,795 @@
+/* ==========================================================================
+   BOX COFFEE — Kitchen Display System (KDS)
+   Luxury Dark Obsidian & Electric Neon Purple Barista Interface (RTL)
+   ========================================================================== */
+
+:root {
+  --bg-obsidian: #08080c;
+  --bg-surface: #111118;
+  --bg-card: #151520;
+  --bg-card-elevated: #1b1b28;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-purple: rgba(139, 92, 246, 0.38);
+
+  --brand-primary: #8b5cf6;
+  --brand-neon: #c084fc;
+  --brand-deep: #6d28d9;
+
+  --status-new: #f59e0b;
+  --status-new-bg: rgba(245, 158, 11, 0.14);
+  --status-new-border: rgba(245, 158, 11, 0.45);
+
+  --status-prep: #a855f7;
+  --status-prep-bg: rgba(168, 85, 247, 0.15);
+  --status-prep-border: rgba(192, 132, 252, 0.5);
+
+  --status-ready: #10b981;
+  --status-ready-bg: rgba(16, 185, 129, 0.15);
+  --status-ready-border: rgba(16, 185, 129, 0.5);
+
+  --text-white: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-obsidian);
+  color: var(--text-white);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.kds-auth-pending { overflow: hidden; }
+.kds-auth-pending > :not(#kds-login-gate) { visibility: hidden; }
+.kds-login-gate {
+  position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center;
+  padding: 20px; background: radial-gradient(ellipse at 50% 15%, rgba(139,92,246,.16), transparent 55%), rgba(8,8,12,.97);
+}
+.kds-login-card {
+  width: min(440px, 100%); display: grid; gap: 12px; padding: clamp(22px, 5vw, 36px);
+  border: 1px solid var(--border-purple); border-radius: 20px; background: var(--bg-surface);
+  box-shadow: 0 24px 80px rgba(0,0,0,.45);
+}
+.kds-login-brand { color: var(--brand-neon); font-weight: 900; letter-spacing: .2em; }
+.kds-login-card h1 { margin: 2px 0 0; font-size: 1.45rem; }
+.kds-login-card p { margin: 0 0 8px; color: var(--text-muted); line-height: 1.7; }
+.kds-login-card label { color: var(--text-secondary); font-size: .9rem; font-weight: 700; }
+.kds-login-card input { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid var(--border-subtle); border-radius: 10px; background: #09090f; color: white; }
+.kds-login-card input:focus { outline: 2px solid var(--brand-primary); outline-offset: 1px; }
+.kds-login-card button, .kds-session-actions button { min-height: 44px; border: 0; border-radius: 10px; background: var(--brand-deep); color: white; font-weight: 800; cursor: pointer; }
+.kds-login-card button:disabled { opacity: .65; cursor: wait; }
+.kds-login-card .kds-login-error { margin: 0; color: #fca5a5; }
+.kds-session-actions { display: flex; align-items: center; gap: 12px; margin-inline-start: auto; color: var(--text-secondary); }
+.kds-session-actions button { min-height: 36px; padding: 0 14px; background: #28202f; border: 1px solid var(--border-purple); }
+.kds-login-gate[hidden] { display: none !important; }
+
+button,
+input {
+  font: inherit;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Top Architectural Header
+   ========================================================================== */
+
+.kds-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(11, 10, 17, 0.94);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.24);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+}
+
+.kds-header::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  inset-inline: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.75), transparent);
+  pointer-events: none;
+}
+
+.kds-header-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0.75rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800;900&display=swap");
+
+.kds-brand-lockup {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+  font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  user-select: none;
+}
+
+.logo-word-box {
+  color: #ffffff;
+}
+
+.logo-word-cofe {
+  color: #c084fc;
+}
+
+/* Header Action Button */
+.kds-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.kds-tool-btn {
+  min-height: 36px;
+  padding: 0 0.85rem;
+  border-radius: 9999px;
+  background: #171723;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btn-sim-order {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border-color: rgba(192, 132, 252, 0.55);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+}
+
+/* ==========================================================================
+   Filter Toolbar
+   ========================================================================== */
+
+.kds-toolbar-section {
+  background: rgba(17, 17, 24, 0.85);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.kds-toolbar-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.kds-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.kds-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.kds-tab {
+  min-height: 38px;
+  padding: 0 0.95rem;
+  border-radius: 9999px;
+  background: #161622;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.kds-tab.active {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border-color: #c084fc;
+  color: #ffffff;
+  box-shadow: 0 0 18px rgba(139, 92, 246, 0.4);
+}
+
+.tab-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.dot-new { background: var(--status-new); }
+.dot-preparing { background: var(--status-prep); }
+.dot-ready { background: var(--status-ready); }
+
+.tab-count {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 7px;
+  border-radius: 9999px;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.kds-search-box {
+  min-width: 240px;
+  flex: 0 1 300px;
+}
+
+.kds-search-box input {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 0.9rem;
+  border-radius: 10px;
+  background: #14141f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 0.82rem;
+}
+
+.kds-search-box input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+}
+
+/* ==========================================================================
+   Orders Grid & Barista Order Cards
+   ========================================================================== */
+
+.kds-main-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.kds-orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1.1rem;
+  align-items: stretch;
+}
+
+.kds-order-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ticket-top-accent {
+  height: 4px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.kds-order-card.status-new,
+.kds-order-card.status-confirmed {
+  border-color: var(--status-new-border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 22px rgba(245, 158, 11, 0.15);
+}
+.kds-order-card.status-new .ticket-top-accent,
+.kds-order-card.status-confirmed .ticket-top-accent {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.kds-order-card.status-preparing {
+  border-color: var(--status-prep-border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 24px rgba(139, 92, 246, 0.22);
+}
+.kds-order-card.status-preparing .ticket-top-accent {
+  background: linear-gradient(90deg, #8b5cf6, #c084fc);
+}
+
+.kds-order-card.status-ready {
+  border-color: var(--status-ready-border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 22px rgba(16, 185, 129, 0.18);
+}
+.kds-order-card.status-ready .ticket-top-accent {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+/* Card Header */
+.ticket-header {
+  padding: 0.85rem 1rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ticket-code-group {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.ticket-order-code {
+  font-size: 1.45rem;
+  font-weight: 950;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.ticket-source-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.66rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.ticket-status-badge {
+  font-size: 0.72rem;
+  font-weight: 850;
+  padding: 3px 9px;
+  border-radius: 9999px;
+}
+
+.badge-new {
+  background: var(--status-new-bg);
+  color: #fbbf24;
+  border: 1px solid var(--status-new-border);
+}
+
+.badge-preparing {
+  background: var(--status-prep-bg);
+  color: #d8b4fe;
+  border: 1px solid var(--status-prep-border);
+}
+
+.badge-ready {
+  background: var(--status-ready-bg);
+  color: #34d399;
+  border: 1px solid var(--status-ready-border);
+}
+
+.badge-delivered {
+  background: rgba(148, 163, 184, 0.14);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.ticket-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ticket-pieces-pill {
+  font-size: 0.72rem;
+  font-weight: 850;
+  color: #e9d5ff;
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(192, 132, 252, 0.32);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.ticket-elapsed-time {
+  font-size: 0.75rem;
+  font-weight: 750;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+/* Vehicle & Lane Banner */
+.ticket-vehicle-banner {
+  padding: 0.65rem 1rem;
+  background: rgba(139, 92, 246, 0.1);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.vehicle-main-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 850;
+  color: #f3e8ff;
+}
+
+.vehicle-lane-pill {
+  font-size: 0.7rem;
+  font-weight: 750;
+  color: #c084fc;
+  background: rgba(15, 13, 24, 0.75);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* Ticket Item Preparation Progress Bar */
+.ticket-progress-bar-wrap {
+  padding: 0.5rem 1rem 0.45rem;
+  background: rgba(0, 0, 0, 0.22);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ticket-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.ticket-progress-meta strong {
+  color: #c084fc;
+  font-weight: 850;
+}
+
+.ticket-progress-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ticket-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #10b981);
+  border-radius: 999px;
+  transition: width 0.22s ease;
+}
+
+/* Items List */
+.ticket-items-list {
+  padding: 0.85rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ticket-item-row {
+  background: #1a1a27;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 0.65rem 0.8rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.ticket-item-row:hover {
+  border-color: rgba(192, 132, 252, 0.35);
+}
+
+.ticket-item-row.item-checked {
+  opacity: 0.6;
+  background: rgba(16, 185, 129, 0.09);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.ticket-item-row.item-checked .item-title-text {
+  text-decoration: line-through;
+}
+
+.item-qty-box {
+  min-width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.item-details-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-title-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.item-title-text {
+  font-size: 0.94rem;
+  font-weight: 850;
+  color: #ffffff;
+  margin: 0;
+}
+
+.item-check-indicator {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5px 6px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.ticket-item-row.item-checked .item-check-indicator {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.18);
+}
+
+.item-options-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.item-opt-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #d8b4fe;
+  background: rgba(139, 92, 246, 0.16);
+  border: 1px solid rgba(192, 132, 252, 0.28);
+  padding: 1.5px 7px;
+  border-radius: 6px;
+}
+
+.item-note-alert {
+  margin-top: 5px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.order-level-note {
+  width: 100%;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.38);
+  color: #fca5a5;
+}
+
+/* Ticket Footer & Primary Action Button */
+.ticket-footer {
+  padding: 0.8rem 1rem;
+  background: #111119;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ticket-price-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.price-caption {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.ticket-total-price {
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #c084fc;
+}
+
+.ticket-actions-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.ticket-undo-btn {
+  width: 40px;
+  height: 42px;
+  border-radius: 11px;
+  background: #1a1a27;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.ticket-undo-btn:hover {
+  border-color: var(--brand-primary);
+  color: #ffffff;
+  background: rgba(139, 92, 246, 0.18);
+}
+
+.ticket-action-btn {
+  flex: 1;
+  min-height: 42px;
+  border-radius: 11px;
+  border: none;
+  font-size: 0.86rem;
+  font-weight: 850;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.btn-start-prep {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+
+.btn-mark-ready {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.45);
+}
+
+.btn-mark-delivered {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.ticket-action-btn:active {
+  transform: scale(0.97);
+}
+
+/* Empty State */
+.kds-empty-state {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  background: var(--bg-card);
+  border: 1px dashed rgba(139, 92, 246, 0.35);
+  border-radius: 20px;
+  max-width: 480px;
+  margin: 2rem auto;
+}
+
+.empty-icon-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.14);
+  border: 1.5px solid rgba(192, 132, 252, 0.4);
+  color: #c084fc;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 1rem;
+}
+
+.empty-icon-ring .icon {
+  width: 28px;
+  height: 28px;
+}
+
+.kds-empty-state h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.1rem;
+}
+
+.kds-empty-state p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Live Incoming Toast */
+.kds-live-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 100;
+  background: linear-gradient(135deg, #1e1b2e, #12101c);
+  border: 1.5px solid #c084fc;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8), 0 0 24px rgba(139, 92, 246, 0.5);
+  color: #ffffff;
+  padding: 0.75rem 1.15rem;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  font-weight: 850;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(140%);
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kds-live-toast.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 12px #10b981;
+}
+
+@media (max-width: 640px) {
+  .kds-header-inner,
+  .kds-toolbar-inner,
+  .kds-main-container {
+    padding-inline: 0.85rem;
+  }
+  .kds-orders-grid {
+    grid-template-columns: 1fr;
+  }
+}

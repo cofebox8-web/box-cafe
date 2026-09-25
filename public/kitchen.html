@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#09090e" />
+    <meta name="description" content="شاشة أدمن المطبخ والباريستا — متابعة وتحضير طلبات السيارات لحظياً." />
+    <title>BOX COFE — المطبخ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/kitchen.css" />
+  </head>
+  <body class="kds-auth-pending">
+    <section id="kds-login-gate" class="kds-login-gate" role="dialog" aria-modal="true" aria-labelledby="kds-login-title">
+      <form id="kds-login-form" class="kds-login-card">
+        <span class="kds-login-brand" dir="ltr">BOX COFE</span>
+        <h1 id="kds-login-title">دخول موظف المطبخ</h1>
+        <p>سجّل الدخول بحساب موظف مفعّل للوصول إلى طلبات الفرع.</p>
+        <label for="kds-login-email">البريد الإلكتروني</label>
+        <input id="kds-login-email" type="email" autocomplete="username" inputmode="email" dir="ltr" required />
+        <label for="kds-login-password">كلمة المرور</label>
+        <input id="kds-login-password" type="password" autocomplete="current-password" dir="ltr" required />
+        <p id="kds-login-error" class="kds-login-error" role="alert" hidden></p>
+        <button id="kds-login-submit" type="submit">دخول</button>
+      </form>
+    </section>
+    <!-- Pure Typographic Brand Header — BOX COFE Only -->
+    <header class="kds-header">
+      <div class="kds-header-inner">
+        <a href="/menu/airport/a0000000-0000-0000-0000-000000000001" class="kds-brand-lockup" title="صفحة المنيو" dir="ltr">
+          <span class="logo-word-box">BOX</span>
+          <span class="logo-word-cofe">COFE</span>
+        </a>
+        <div class="kds-session-actions"><span id="kds-staff-name"></span><button id="kds-signout" type="button">خروج</button></div>
+      </div>
+    </header>
+
+    <!-- Clean Single-Row Status Filter Tabs -->
+    <section class="kds-toolbar-section">
+      <div class="kds-toolbar-inner">
+        <div class="kds-filter-tabs" role="tablist" aria-label="فلترة الطلبات حسب الحالة">
+          <button type="button" class="kds-tab active" data-filter="active">
+            <span>الكل</span>
+            <span class="tab-count" id="tab-count-active">0</span>
+          </button>
+          <button type="button" class="kds-tab" data-filter="new">
+            <span class="tab-dot dot-new"></span>
+            <span>جديد</span>
+            <span class="tab-count" id="tab-count-new">0</span>
+          </button>
+          <button type="button" class="kds-tab" data-filter="preparing">
+            <span class="tab-dot dot-preparing"></span>
+            <span>قيد التحضير</span>
+            <span class="tab-count" id="tab-count-preparing">0</span>
+          </button>
+          <button type="button" class="kds-tab" data-filter="ready">
+            <span class="tab-dot dot-ready"></span>
+            <span>جاهز للتسليم</span>
+            <span class="tab-count" id="tab-count-ready">0</span>
+          </button>
+          <button type="button" class="kds-tab" data-filter="handed_off">
+            <span>المكتملة</span>
+            <span class="tab-count" id="tab-count-delivered">0</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Orders Grid -->
+    <main class="kds-main-container">
+      <div id="kds-orders-grid" class="kds-orders-grid">
+        <!-- Dynamically rendered Barista Order Tickets -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="kds-empty-state" class="kds-empty-state" style="display: none;">
+        <div class="empty-icon-ring">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+        </div>
+        <h3>لا توجد طلبات في هذا القسم حالياً</h3>
+        <p>أي طلب جديد يرسله الزبون عبر QR أو موظف الشارع سيظهر هنا فوراً مع تنبيه صوتي.</p>
+      </div>
+    </main>
+
+    <!-- Toast Notification for Incoming Orders -->
+    <div id="kds-live-toast" class="kds-live-toast" role="status" aria-live="polite">
+      <span class="toast-pulse"></span>
+      <span id="kds-toast-text">وصل طلب جديد!</span>
+    </div>
+
+    <script type="module" src="/js/kitchen-app.js"></script>
+  </body>
+</html>

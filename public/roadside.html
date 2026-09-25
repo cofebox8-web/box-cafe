@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#09090e" />
+    <meta name="description" content="واجهة موظف الشارع لتسجيل طلبات بوكس كافي بسرعة." />
+    <title>BOX COFE — طلب الشارع</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/roadside.css" />
+  </head>
+  <body class="roadside-auth-pending">
+    <section class="rs-login-gate" id="rs-login-gate" role="dialog" aria-modal="true" aria-labelledby="rs-login-title">
+      <form class="rs-login-card" id="rs-login-form">
+        <span class="rs-brand" dir="ltr">BOX COFE</span>
+        <span class="rs-kicker">نظام خدمة السيارات</span>
+        <h1 id="rs-login-title">دخول موظف الشارع</h1>
+        <p>سجّل الدخول بحساب موظف شارع مفعّل لفرعك.</p>
+        <label for="rs-email">البريد الإلكتروني</label>
+        <input id="rs-email" name="email" type="email" autocomplete="username" inputmode="email" dir="ltr" required />
+        <label for="rs-password">كلمة المرور</label>
+        <input id="rs-password" name="password" type="password" autocomplete="current-password" dir="ltr" required />
+        <p class="rs-error" id="rs-login-error" role="alert" hidden></p>
+        <button class="rs-primary" id="rs-login-submit" type="submit">دخول إلى الطلبات <span aria-hidden="true">←</span></button>
+        <small>لا يوجد تسجيل حسابات من هذه الصفحة. يفعّل المدير حسابات الموظفين.</small>
+      </form>
+    </section>
+
+    <div class="rs-app" id="rs-app" hidden>
+      <header class="rs-header">
+        <a class="rs-brand" href="/roadside/order" dir="ltr" aria-label="BOX COFE طلب الشارع">BOX <span>COFE</span></a>
+        <div class="rs-branch"><span class="rs-live-dot"></span><div><small>فرع الخدمة</small><strong id="rs-branch-name">جاري التحميل</strong></div><span class="rs-divider"></span><div><small>نقطة الطلب</small><strong id="rs-point-name">—</strong></div></div>
+        <div class="rs-account"><span id="rs-staff-name"></span><button id="rs-signout" type="button">خروج</button></div>
+      </header>
+      <main class="rs-main">
+        <section class="rs-intro"><div><span class="rs-kicker">لوحة الطلب السريع</span><h1>خذ الطلب. <em>خلّي الباقي علينا.</em></h1><p>اختر الأصناف والإضافات، راجع السلة، ثم أرسلها مباشرة إلى المطبخ.</p></div><div class="rs-quick-stats"><span class="rs-stat-icon" aria-hidden="true">↗</span><div><small>طريقة العمل</small><strong>إدخال سريع · تسعير من النظام</strong></div></div></section>
+        <div class="rs-status" id="rs-status" role="status" aria-live="polite" hidden></div>
+        <section class="rs-workspace">
+          <div class="rs-catalog">
+            <div class="rs-tools"><label class="rs-search"><span aria-hidden="true">⌕</span><input id="rs-search" type="search" placeholder="ابحث عن صنف..." aria-label="ابحث عن صنف" /></label><span class="rs-catalog-count" id="rs-catalog-count"></span></div>
+            <nav class="rs-categories" id="rs-categories" aria-label="فئات المنيو"></nav>
+            <div class="rs-state" id="rs-catalog-state"><span class="rs-state-mark">···</span><h2>تحميل منيو الفرع</h2><p>نتحقق من الأصناف المتاحة والأسعار الحالية.</p></div>
+            <div class="rs-products" id="rs-products"></div>
+          </div>
+          <aside class="rs-cart" aria-label="الطلب الحالي">
+            <div class="rs-cart-head"><div><span class="rs-kicker">تجهيز الطلب</span><h2>السلة <span id="rs-cart-count">٠</span></h2></div><button class="rs-text-button" id="rs-clear-cart" type="button" hidden>تفريغ</button></div>
+            <div class="rs-cart-body" id="rs-cart-body"><div class="rs-cart-empty"><span aria-hidden="true">＋</span><strong>السلة جاهزة</strong><p>أضف الأصناف المطلوبة لتبدأ.</p></div></div>
+            <div class="rs-order-notes"><label for="rs-vehicle-note">وصف السيارة <small>اختياري</small></label><input id="rs-vehicle-note" maxlength="80" placeholder="مثال: سيدان أبيض" /><label for="rs-order-note">ملاحظة للمطبخ <small>اختياري</small></label><input id="rs-order-note" maxlength="200" placeholder="تفاصيل تساعد في التحضير" /></div>
+            <div class="rs-cart-total"><span>المجموع <small>يؤكده النظام عند الإرسال</small></span><strong id="rs-total">٠ د.ع</strong></div>
+            <button class="rs-primary rs-submit" id="rs-submit" type="button" disabled>إرسال إلى المطبخ <span aria-hidden="true">←</span></button>
+            <p class="rs-cart-foot">السعر النهائي يتحقق منه النظام مباشرة من قاعدة البيانات.</p>
+          </aside>
+        </section>
+      </main>
+      <footer class="rs-footer"><span>BOX COFE <i>·</i> خدمة السيارات</span><span id="rs-connection">متصل بالنظام</span></footer>
+    </div>
+
+    <dialog class="rs-dialog" id="rs-product-dialog" aria-labelledby="rs-dialog-title">
+      <form id="rs-product-form" method="dialog">
+        <header class="rs-dialog-head"><div><span class="rs-kicker">تخصيص الطلب</span><h2 id="rs-dialog-title"></h2><p id="rs-dialog-description"></p></div><button class="rs-icon-button" id="rs-dialog-close" type="button" aria-label="إغلاق">×</button></header>
+        <div class="rs-option-groups" id="rs-option-groups"></div>
+        <footer class="rs-dialog-foot"><div class="rs-quantity"><button id="rs-qty-minus" type="button" aria-label="تقليل الكمية">−</button><strong id="rs-qty">١</strong><button id="rs-qty-plus" type="button" aria-label="زيادة الكمية">+</button></div><button class="rs-primary" id="rs-add-product" type="submit">إضافة · <span id="rs-dialog-price"></span></button></footer>
+        <p class="rs-error" id="rs-option-error" role="alert" hidden></p>
+      </form>
+    </dialog>
+    <dialog class="rs-success-dialog" id="rs-success-dialog" aria-labelledby="rs-success-title">
+      <div class="rs-success-mark">✓</div><span class="rs-kicker">تم استلام الطلب</span><h2 id="rs-success-title">وصل إلى المطبخ</h2><p>رقم الطلب</p><strong class="rs-order-code" id="rs-order-code"></strong><button class="rs-primary" id="rs-next-order" type="button">بدء طلب جديد</button>
+    </dialog>
+    <script type="module" src="/js/roadside-app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f2ea" />
+    <meta name="description" content="الأساس التقني لنظام بوكس كافي لخدمة السيارات: منيو QR والطلب السريع والمطبخ والإدارة." />
+    <title>بوكس كافي — تأسيس النظام</title>
+    <link rel="stylesheet" href="/styles/foundation.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="بوكس كافي، الصفحة الرئيسية">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span><strong>BOX</strong><small>COFFEE SYSTEM</small></span>
+      </a>
+      <span class="phase-label"><i aria-hidden="true"></i> مرحلة التأسيس</span>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow">نظام واحد — أربع تجارب مترابطة</p>
+          <h1 id="page-title">كل طلب يبدأ<br /><em>بتجربة مرتّبة.</em></h1>
+          <p class="lead">نؤسس لبوكس كافي كنظام خدمة سيارات متكامل: منيو QR وطلب سريع من السيارة، ثم تحضير ومتابعة تسليم، بواجهة عربية للهاتف والآيباد والكمبيوتر.</p>
+          <div class="intro-meta">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>الأساس التقني جاهز للمراجعة</span>
+            <span class="meta-separator" aria-hidden="true">·</span>
+            <span>بدون خادم Node.js</span>
+          </div>
+        </div>
+        <aside class="architecture-card" aria-label="ملخص البنية">
+          <div class="card-heading"><span>البنية المعتمدة مبدئياً</span><span class="card-index">01 / 04</span></div>
+          <div class="stack-row"><span class="stack-number">01</span><div><strong>واجهة ثابتة</strong><small>HTML · CSS · JavaScript</small></div><span class="stack-check" aria-hidden="true">✓</span></div>
+          <div class="stack-row"><span class="stack-number">02</span><div><strong>الاستضافة</strong><small>Vercel Static Hosting</small></div><span class="stack-check" aria-hidden="true">✓</span></div>
+          <div class="stack-row"><span class="stack-number">03</span><div><strong>البيانات والصلاحيات</strong><small>Supabase · PostgreSQL · RLS</small></div><span class="stack-check" aria-hidden="true">✓</span></div>
+          <div class="card-foot"><span class="lock-icon" aria-hidden="true">⌑</span> المفتاح العام فقط في المتصفح؛ الصلاحيات تحمي البيانات من قاعدة البيانات.</div>
+        </aside>
+      </section>
+
+      <section class="workflows" aria-labelledby="workflows-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">خريطة المنتج</p><h2 id="workflows-title">أربع شاشات، سير عمل واحد</h2></div>
+          <p>تتشارك هذه الشاشات القائمة والأسعار والطلبات نفسها، مع صلاحية مختلفة لكل دور.</p>
+        </div>
+        <div class="workflow-grid">
+          <a class="workflow-card customer" href="/menu.html?branch=airport&token=a0000000-0000-0000-0000-000000000001" style="text-decoration: none; cursor: pointer;"><span class="workflow-no">01</span><span class="workflow-icon" aria-hidden="true">⌗</span><h3>منيو الزبون</h3><p>QR عند مدخل المسار أو نقطة الطلب، تصفح الأصناف، سلة واضحة، وإرسال من السيارة.</p><small>QR MENU · فتح الصفحة ←</small></a>
+          <article class="workflow-card staff"><span class="workflow-no">02</span><span class="workflow-icon" aria-hidden="true">＋</span><h3>موظف الشارع</h3><p>إضافة سريعة للأصناف، تسجيل معلومة تميّز السيارة، وإرسال الطلب للمطبخ.</p><small>ROADSIDE ORDER</small></article>
+          <article class="workflow-card kitchen"><span class="workflow-no">03</span><span class="workflow-icon" aria-hidden="true">▤</span><h3>شاشة المطبخ</h3><p>طلبات السيارات مرتبة حسب الوصول، مع متابعة التحضير والتسليم.</p><small>KITCHEN DISPLAY</small></article>
+          <article class="workflow-card admin"><span class="workflow-no">04</span><span class="workflow-icon" aria-hidden="true">◫</span><h3>لوحة الإدارة</h3><p>إدارة الفروع والمنيو والموظفين ونقاط الخدمة ومراجعة الطلبات.</p><small>ADMIN</small></article>
+        </div>
+      </section>
+
+      <section class="next-step" aria-labelledby="next-title">
+        <div class="next-mark" aria-hidden="true">↗</div>
+        <div><p class="eyebrow">قبل تصميم الشاشات</p><h2 id="next-title">نثبت طريقة التشغيل أولاً</h2><p>تفاصيل مثل نقاط الطلب والاستلام، خيارات الإضافات، وكيفية تمييز السيارة وانتقال الطلب للمطبخ تُحسم في وثيقة المتطلبات قبل بناء تدفقات الاستخدام.</p></div>
+        <span class="next-badge">الخطوة التالية</span>
+      </section>
+    </main>
+
+    <footer class="footer"><span>BOX COFFEE · ORDERING SYSTEM</span><span>أساس مرن للنمو — من فرع واحد إلى عدة فروع</span></footer>
+  </body>
+</html>
