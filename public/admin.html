@@ -8,7 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles/admin.css?v=20260924_v10" />
+  <link rel="stylesheet" href="/styles/admin.css?v=20260926_v12" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 </head>
 <body class="erp-locked-body auth-pending">
 
@@ -90,8 +91,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </span>
           <span class="menu-item-info">
-            <strong class="menu-item-title">حسابات الموظفين والدخول</strong>
-            <small class="menu-item-sub">إدارة صلاحيات حسابات الموظفين</small>
+            <strong class="menu-item-title">نقاط الخدمة والموظفون</strong>
+            <small class="menu-item-sub">QR المنيو ونطاقات حسابات الموظفين</small>
           </span>
         </button>
       </nav>
@@ -99,9 +100,9 @@
       <!-- روابط الشاشات الأخرى -->
       <div class="sidebar-section-heading">شاشات الفرع المرتبطة</div>
       <div class="sidebar-external-grid">
-        <a href="/menu/airport/a0000000-0000-0000-0000-000000000001" target="_blank" class="sidebar-ext-box">
-          <strong>منيو الزبائن QR</strong>
-          <span>فتح الشاشة ↗</span>
+        <a href="/admin#service-points" class="sidebar-ext-box">
+          <strong>إدارة QR والمنيو</strong>
+          <span>إدارة نقاط الخدمة</span>
         </a>
         <a href="/kitchen" target="_blank" class="sidebar-ext-box">
           <strong>شاشة المطبخ KDS</strong>
@@ -290,9 +291,9 @@
                   <span class="module-live-tag">روابط الفرع الحية</span>
                 </div>
                 <h3 class="module-box-title">شاشات الفرع (المنيو والمطبخ)</h3>
-                <p class="module-box-desc">انتقال مباشر لفتح شاشة منيو الزبائن والكابتن (QR Menu) أو شاشة تحضير الطلبات في المطبخ (Kitchen KDS).</p>
+                <p class="module-box-desc">أنشئ واطبع رموز QR لكل نقطة خدمة، أو افتح شاشة تحضير الطلبات في المطبخ.</p>
                 <div class="module-dual-buttons">
-                  <a href="/menu/airport/a0000000-0000-0000-0000-000000000001" target="_blank" class="box-btn-primary">منيو الزبائن ↗</a>
+                  <button type="button" data-goto-tab="staff" class="box-btn-primary">إدارة QR والمنيو</button>
                   <a href="/kitchen" target="_blank" class="box-btn-secondary">شاشة المطبخ ↗</a>
                 </div>
               </div>
@@ -533,6 +534,17 @@
             <div class="structured-box-panel">
               <div class="panel-box-header">
                 <div>
+                  <h2 class="panel-box-title">نقاط الخدمة ورموز QR</h2>
+                  <small class="panel-sub-hint">أنشئ QR لكل مسار أو نقطة استلام. تعطيل النقطة يوقف استقبال الطلبات عليها، وتدوير الرمز يلغي النسخة المطبوعة القديمة.</small>
+                </div>
+                <button type="button" id="btn-add-service-point" class="box-btn-primary">+ نقطة خدمة</button>
+              </div>
+              <div id="service-points-grid" class="service-points-grid" aria-live="polite"></div>
+            </div>
+
+            <div class="structured-box-panel">
+              <div class="panel-box-header">
+                <div>
                   <h2 class="panel-box-title">حسابات الموظفين والصلاحيات</h2>
                   <small class="panel-sub-hint">الحسابات تعتمد على Supabase Auth وربط آمن بين المستخدم والدور الوظيفي.</small>
                 </div>
@@ -740,6 +752,60 @@
     </div>
   </div>
 
+  <div id="modal-service-point" class="erp-modal-backdrop" hidden>
+    <div class="erp-modal-box">
+      <div class="modal-box-top">
+        <h3 id="service-point-modal-title">إضافة نقطة خدمة</h3>
+        <button type="button" class="modal-close-x" data-close-modal="modal-service-point" aria-label="إغلاق">✕</button>
+      </div>
+      <form id="form-service-point" class="structured-form">
+        <input type="hidden" id="service-point-id" />
+        <div class="field-box">
+          <label for="service-point-branch">الفرع</label>
+          <select id="service-point-branch" class="structured-input" required></select>
+        </div>
+        <div class="field-box">
+          <label for="service-point-label">اسم النقطة</label>
+          <input type="text" id="service-point-label" class="structured-input" maxlength="80" required placeholder="مثال: مسار الطلب الأول" />
+        </div>
+        <div class="field-box">
+          <label for="service-point-kind">نوع نقطة الخدمة</label>
+          <select id="service-point-kind" class="structured-input">
+            <option value="order_lane">مسار طلب السيارات</option>
+            <option value="pickup_point">نقطة استلام</option>
+          </select>
+        </div>
+        <label class="service-point-active-toggle"><input type="checkbox" id="service-point-active" checked /> النقطة مفعلة لاستقبال الطلبات</label>
+        <div class="modal-box-actions">
+          <button type="submit" class="box-btn-primary">حفظ نقطة الخدمة</button>
+          <button type="button" data-close-modal="modal-service-point" class="box-btn-secondary">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-qr-preview" class="erp-modal-backdrop" hidden>
+    <div class="erp-modal-box qr-preview-modal">
+      <div class="modal-box-top">
+        <h3>رمز QR للمنيو</h3>
+        <button type="button" class="modal-close-x" data-close-modal="modal-qr-preview" aria-label="إغلاق">✕</button>
+      </div>
+      <div id="qr-printable-card" class="qr-printable-card">
+        <div class="pure-text-logo" dir="ltr"><span class="logo-word-box">BOX</span><span class="logo-word-cofe">COFE</span></div>
+        <h4 id="qr-point-title"></h4>
+        <p id="qr-point-branch"></p>
+        <div id="service-point-qr" class="service-point-qr" aria-label="رمز QR للمنيو"></div>
+        <p class="qr-scan-caption">امسح الرمز لفتح المنيو وطلبك يصلنا مباشرة</p>
+        <a id="qr-menu-link" class="qr-menu-link" href="#" target="_blank" rel="noopener"></a>
+      </div>
+      <div class="modal-box-actions qr-modal-actions">
+        <button type="button" id="btn-print-service-qr" class="box-btn-primary">طباعة بطاقة QR</button>
+        <button type="button" id="btn-copy-service-qr" class="box-btn-secondary">نسخ رابط المنيو</button>
+        <button type="button" data-close-modal="modal-qr-preview" class="box-btn-secondary">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 4. نافذة تسجيل مصروف يومي -->
   <div id="modal-expense" class="erp-modal-backdrop" hidden>
     <div class="erp-modal-box">
@@ -789,6 +855,6 @@
 
   <div id="admin-toast" class="erp-toast" role="status" aria-live="polite" hidden></div>
 
-  <script type="module" src="/js/admin-app.js?v=20260925_v11"></script>
+  <script type="module" src="/js/admin-app.js?v=20260926_v12"></script>
 </body>
 </html>

@@ -34,8 +34,8 @@ const PAGE_METADATA = {
     subtitle: 'تعديل الأسعار الفوري (+250 / -250 د.ع) وإضافة وتعديل وحذف الأصناف'
   },
   staff: {
-    title: 'حسابات الموظفين وتسجيل الدخول',
-    subtitle: 'إدارة صلاحيات حسابات الموظفين ونطاق فروعهم'
+    title: 'نقاط الخدمة وQR والموظفون',
+    subtitle: 'إدارة نقاط الخدمة وروابط المنيو ورموز QR وصلاحيات الموظفين'
   }
 };
 
@@ -46,6 +46,9 @@ let staffAccounts = [];
 let adminProfile = null;
 let adminWorkspaceMounted = false;
 let adminOrdersChannel = null;
+let servicePointBranches = [];
+let servicePoints = [];
+let activeQrPoint = null;
 
 let activeTab = 'hub';
 let selectedPosCategory = 'all';
@@ -103,6 +106,130 @@ async function reloadAdminOrders() {
   liveOrders = Array.isArray(data.orders) ? data.orders : [];
   renderAccountingBoxes();
   renderAllOverviewAndHubBoxes();
+}
+
+async function reloadServicePoints() {
+  if (!supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
+  const { data, error } = await supabase.rpc('admin_get_service_points');
+  if (error) throw error;
+  if (!data?.success) throw new Error('لا تملك صلاحية إدارة نقاط الخدمة.');
+  servicePointBranches = Array.isArray(data.branches) ? data.branches : [];
+  servicePoints = Array.isArray(data.service_points) ? data.service_points : [];
+  renderServicePoints();
+}
+
+function getServicePointMenuUrl(point) {
+  return `${window.location.origin}/menu/${encodeURIComponent(point.branch_slug)}/${encodeURIComponent(point.qr_token)}`;
+}
+
+function renderServicePoints() {
+  const grid = document.getElementById('service-points-grid');
+  if (!grid) return;
+  if (!servicePoints.length) {
+    grid.innerHTML = `<div class="menu-empty-state">لا توجد نقاط خدمة بعد. أضف أول نقطة ثم اطبع QR لعرض المنيو للزبائن.</div>`;
+    return;
+  }
+  grid.innerHTML = servicePoints.map((point) => `
+    <article class="service-point-card">
+      <div class="service-point-card-top">
+        <div><strong>${escapeHtml(point.label)}</strong><small>${escapeHtml(point.branch_name)} · ${point.kind === 'pickup_point' ? 'نقطة استلام' : 'مسار طلب سيارات'}</small></div>
+        <span class="service-point-status ${point.is_active ? 'is-active' : ''}">${point.is_active ? 'مفعلة' : 'متوقفة'}</span>
+      </div>
+      <div class="service-point-card-actions">
+        <button type="button" class="box-btn-primary" data-show-service-qr="${escapeHtml(point.id)}" ${point.is_active ? '' : 'disabled'}>عرض وطباعة QR</button>
+        <button type="button" class="box-btn-secondary" data-edit-service-point="${escapeHtml(point.id)}">تعديل</button>
+        <button type="button" class="box-btn-secondary" data-toggle-service-point="${escapeHtml(point.id)}">${point.is_active ? 'إيقاف' : 'تفعيل'}</button>
+        <button type="button" class="box-btn-danger-sm" data-rotate-service-qr="${escapeHtml(point.id)}">تدوير QR</button>
+      </div>
+    </article>
+  `).join('');
+
+  grid.querySelectorAll('[data-show-service-qr]').forEach((button) => button.addEventListener('click', () => {
+    const point = servicePoints.find((item) => item.id === button.dataset.showServiceQr);
+    if (point) showServicePointQr(point);
+  }));
+  grid.querySelectorAll('[data-edit-service-point]').forEach((button) => button.addEventListener('click', () => {
+    const point = servicePoints.find((item) => item.id === button.dataset.editServicePoint);
+    if (point) openServicePointModal(point);
+  }));
+  grid.querySelectorAll('[data-toggle-service-point]').forEach((button) => button.addEventListener('click', () => {
+    const point = servicePoints.find((item) => item.id === button.dataset.toggleServicePoint);
+    if (point) saveServicePoint({ ...point, is_active: !point.is_active });
+  }));
+  grid.querySelectorAll('[data-rotate-service-qr]').forEach((button) => button.addEventListener('click', async () => {
+    const point = servicePoints.find((item) => item.id === button.dataset.rotateServiceQr);
+    if (!point || !window.confirm(`تدوير رمز QR لـ «${point.label}»؟ الرمز القديم سيتوقف فوراً.`)) return;
+    try {
+      const { data, error } = await supabase.rpc('admin_rotate_service_point_qr', { p_service_point_id: point.id });
+      if (error) throw error;
+      if (!data?.success) throw new Error('تعذر تدوير رمز QR.');
+      await reloadServicePoints();
+      showToast('تم تدوير الرمز. اطبع QR الجديد واستبدل النسخة السابقة.');
+    } catch (error) {
+      showToast(error.message || 'تعذر تدوير رمز QR.');
+    }
+  }));
+}
+
+function openServicePointModal(point = null) {
+  const modal = document.getElementById('modal-service-point');
+  const branchSelect = document.getElementById('service-point-branch');
+  if (!servicePointBranches.length) {
+    showToast('لا يوجد فرع متاح لهذا الحساب. تحقق من تفعيل الفرع وصلاحية الحساب.');
+    return;
+  }
+  branchSelect.innerHTML = servicePointBranches.map((branch) => `<option value="${escapeHtml(branch.id)}">${escapeHtml(branch.name)}</option>`).join('');
+  document.getElementById('service-point-modal-title').textContent = point ? 'تعديل نقطة الخدمة' : 'إضافة نقطة خدمة';
+  document.getElementById('service-point-id').value = point?.id || '';
+  branchSelect.value = point?.branch_id || servicePointBranches[0].id;
+  branchSelect.disabled = Boolean(point);
+  upgradeSelectToCustomDropdown(branchSelect);
+  const branchTrigger = branchSelect.closest('.custom-select-wrapper')?.querySelector('.custom-select-trigger');
+  if (branchTrigger) branchTrigger.disabled = Boolean(point);
+  document.getElementById('service-point-label').value = point?.label || '';
+  document.getElementById('service-point-kind').value = point?.kind || 'order_lane';
+  document.getElementById('service-point-active').checked = point ? Boolean(point.is_active) : true;
+  modal.hidden = false;
+}
+
+async function saveServicePoint(point) {
+  try {
+    const { data, error } = await supabase.rpc('admin_save_service_point', {
+      p_service_point_id: point.id || null,
+      p_branch_id: point.branch_id,
+      p_label: point.label,
+      p_kind: point.kind,
+      p_is_active: Boolean(point.is_active)
+    });
+    if (error) throw error;
+    if (!data?.success) {
+      const messages = { DUPLICATE_LABEL: 'يوجد اسم مطابق في هذا الفرع.', INVALID_LABEL: 'أدخل اسماً صحيحاً من 1 إلى 80 حرفاً.', BRANCH_NOT_ALLOWED: 'لا تملك صلاحية هذا الفرع.' };
+      throw new Error(messages[data.error] || 'تعذر حفظ نقطة الخدمة.');
+    }
+    await reloadServicePoints();
+    showToast('تم حفظ نقطة الخدمة.');
+    return true;
+  } catch (error) {
+    showToast(error.message || 'تعذر حفظ نقطة الخدمة.');
+    return false;
+  }
+}
+
+function showServicePointQr(point) {
+  if (typeof window.QRCode !== 'function') {
+    showToast('تعذر تحميل مكتبة إنشاء QR. أعد تحميل الصفحة وحاول مجدداً.');
+    return;
+  }
+  activeQrPoint = point;
+  const url = getServicePointMenuUrl(point);
+  document.getElementById('qr-point-title').textContent = point.label;
+  document.getElementById('qr-point-branch').textContent = point.branch_name;
+  document.getElementById('qr-menu-link').href = url;
+  document.getElementById('qr-menu-link').textContent = url;
+  const qr = document.getElementById('service-point-qr');
+  qr.replaceChildren();
+  new window.QRCode(qr, { text: url, width: 240, height: 240, colorDark: '#17131e', colorLight: '#ffffff', correctLevel: window.QRCode.CorrectLevel.H });
+  document.getElementById('modal-qr-preview').hidden = false;
 }
 
 function subscribeAdminOrders() {
@@ -1061,6 +1188,7 @@ function mountAdminWorkspace() {
   subscribeAdminOrders();
   reloadAdminOrders().catch((error) => showToast(error.message || 'تعذر تحميل سجل الطلبات.'));
   reloadAdminMenu().catch((error) => showToast(error.message || 'تعذر تحميل منيو المطعم.'));
+  reloadServicePoints().catch((error) => showToast(error.message || 'تعذر تحميل نقاط الخدمة.'));
 }
 
 async function restoreAdminSession() {
@@ -1186,7 +1314,45 @@ async function initAdminERP() {
     btn.addEventListener('click', () => {
       const modal = document.getElementById(btn.dataset.closeModal);
       if (modal) modal.hidden = true;
+      if (btn.dataset.closeModal === 'modal-qr-preview') document.body.classList.remove('printing-qr');
     });
+  });
+
+  document.getElementById('btn-add-service-point')?.addEventListener('click', () => openServicePointModal());
+  document.getElementById('form-service-point')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submit = event.currentTarget.querySelector('[type="submit"]');
+    if (submit) submit.disabled = true;
+    try {
+      const saved = await saveServicePoint({
+        id: document.getElementById('service-point-id').value || null,
+        branch_id: document.getElementById('service-point-branch').value,
+        label: document.getElementById('service-point-label').value.trim(),
+        kind: document.getElementById('service-point-kind').value,
+        is_active: document.getElementById('service-point-active').checked
+      });
+      if (saved) {
+        document.getElementById('modal-service-point').hidden = true;
+        event.currentTarget.reset();
+      }
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  });
+  document.getElementById('btn-print-service-qr')?.addEventListener('click', () => {
+    if (!activeQrPoint) return;
+    document.body.classList.add('printing-qr');
+    window.print();
+    window.setTimeout(() => document.body.classList.remove('printing-qr'), 500);
+  });
+  document.getElementById('btn-copy-service-qr')?.addEventListener('click', async () => {
+    if (!activeQrPoint) return;
+    try {
+      await navigator.clipboard.writeText(getServicePointMenuUrl(activeQrPoint));
+      showToast('تم نسخ رابط المنيو.');
+    } catch {
+      showToast('تعذر النسخ تلقائياً. افتح رابط المنيو وانسخه يدوياً.');
+    }
   });
 
   const logoutFromAdmin = async () => {
@@ -1327,6 +1493,7 @@ async function initAdminERP() {
   });
 
   await restoreAdminSession();
+  if (window.location.hash === '#service-points' && adminProfile) switchFixedPage('staff');
 }
 
 document.addEventListener('DOMContentLoaded', initAdminERP);

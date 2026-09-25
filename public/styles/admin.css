@@ -1467,6 +1467,62 @@ button, a, input, select {
   color: #FCA5A5;
 }
 
+.service-points-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.service-point-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border-box);
+  border-radius: 12px;
+  background: var(--bg-box);
+}
+
+.service-point-card-top,
+.service-point-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.service-point-card-top strong,
+.service-point-card-top small { display: block; }
+.service-point-card-top strong { font-size: .92rem; }
+.service-point-card-top small { margin-top: 4px; color: var(--text-dim); font-size: .74rem; }
+.service-point-status { flex: 0 0 auto; padding: 4px 8px; border-radius: 99px; color: #fecaca; background: rgba(239,68,68,.12); font-size: .72rem; }
+.service-point-status.is-active { color: #bbf7d0; background: rgba(34,197,94,.12); }
+.service-point-card-actions { flex-wrap: wrap; justify-content: flex-start; }
+.service-point-card-actions button:disabled { opacity: .45; cursor: not-allowed; }
+.service-point-active-toggle { display: flex; align-items: center; gap: 8px; color: var(--text-white); }
+.qr-preview-modal { width: min(460px, 100%); align-items: stretch; }
+.qr-printable-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px; border: 1px solid var(--border-box); border-radius: 12px; background: #fff; color: #17131e; text-align: center; }
+.qr-printable-card .pure-text-logo { color: #17131e; }
+.qr-printable-card h4 { margin: 4px 0 0; font-size: 1.15rem; }
+.qr-printable-card p { margin: 0; }
+.service-point-qr { display: grid; place-items: center; width: 256px; height: 256px; padding: 8px; background: #fff; }
+.service-point-qr img { display: block; width: 240px; height: 240px; }
+.qr-scan-caption { font-weight: 700; }
+.qr-menu-link { max-width: 100%; overflow-wrap: anywhere; color: #5b21b6; font-size: .68rem; }
+.qr-modal-actions { flex-wrap: wrap; }
+
+@media print {
+  body.printing-qr * { visibility: hidden !important; }
+  body.printing-qr #modal-qr-preview,
+  body.printing-qr #modal-qr-preview * { visibility: visible !important; }
+  body.printing-qr #modal-qr-preview { position: fixed; inset: 0; display: flex !important; padding: 0; background: #fff; }
+  body.printing-qr #modal-qr-preview .erp-modal-box { width: 100%; max-height: none; overflow: visible; padding: 0; border: 0; box-shadow: none; background: #fff; }
+  body.printing-qr #modal-qr-preview .modal-box-top,
+  body.printing-qr #modal-qr-preview .qr-modal-actions { display: none !important; }
+  body.printing-qr #qr-printable-card { width: 90mm; min-height: 120mm; margin: 12mm auto; border: 0; border-radius: 0; justify-content: center; }
+}
+
 /* =========================================================
    شريط التنقل السفلي الاحترافي الثابت بأيقونات SVG (Bottom Dock)
    ========================================================= */
