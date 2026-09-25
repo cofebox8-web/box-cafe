@@ -11,7 +11,7 @@
 
 ## النشر
 
-استورد هذا المستودع في Vercel. إعداد `vercel.json` يحدد أن المشروع ثابت، ويستخدم مجلد `public` كمجلد النشر، ويضبط مسارات الصفحات. لا تضف أمر build أو install.
+الموقع منشور على [box-cofe-web.vercel.app](https://box-cofe-web.vercel.app)، ومستودع GitHub الخاص هو `mustafambusiness-maker/box-cofe-web`. إعداد `vercel.json` يحدد أن المشروع ثابت، ويستخدم مجلد `public` كمجلد النشر، ويضبط مسارات الصفحات. النشر يتجدد تلقائياً مع تحديثات `main`. لا تضف أمر build أو install.
 
 إعداد Supabase العام موجود في `public/js/config.js` ويستخدم مفتاح `publishable` فقط. لا تضع مفاتيح `service_role` أو أسراراً في ملفات المتصفح. تُحفظ تغييرات قاعدة البيانات بترحيلات مرتبة في `supabase/migrations/`.
 
