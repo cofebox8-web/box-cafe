@@ -109,6 +109,39 @@
             <span class="btn-spinner" id="login-btn-spinner" aria-hidden="true" hidden></span>
             <span id="login-submit-label">تسجيل الدخول</span>
           </button>
+          <button type="button" id="open-reset-btn" class="inline-link-btn">نسيت كلمة المرور؟</button>
+        </form>
+      </div>
+
+      <!-- 2) كارد استعادة كلمة المرور -->
+      <div id="reset-view" class="auth-view" hidden>
+        <h2 class="card-title">استعادة كلمة المرور</h2>
+
+        <form id="reset-form" class="auth-form" novalidate>
+          <div class="field-group" id="reset-email-group">
+            <label for="reset-email" class="field-label">البريد الإلكتروني</label>
+            <div class="input-shell">
+              <input
+                id="reset-email"
+                name="reset_email"
+                type="email"
+                class="field-input"
+                dir="ltr"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="name@example.com"
+                aria-describedby="reset-email-error"
+                required
+              />
+            </div>
+            <p id="reset-email-error" class="field-error" role="alert" hidden></p>
+          </div>
+
+          <button type="submit" id="reset-submit-btn" class="primary-submit-btn">
+            <span class="btn-spinner" id="reset-btn-spinner" aria-hidden="true" hidden></span>
+            <span id="reset-submit-label">إرسال رابط الاستعادة</span>
+          </button>
+          <button type="button" id="back-to-signin-btn" class="secondary-ghost-btn">العودة إلى تسجيل الدخول</button>
         </form>
       </div>
 

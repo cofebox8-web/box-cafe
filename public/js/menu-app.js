@@ -99,8 +99,9 @@ function parseRouteContext() {
   if (!branch) branch = urlParams.get("branch") || "";
   if (!token) token = urlParams.get("token") || "";
 
-  // If no branch or token is provided (direct visit to /menu), open in preview mode so the menu is always viewable
-  if (explicitDemo === "1" || (!branch && !token)) {
+  // Preview data is opt-in only. A production visit without a QR context must
+  // never expose local demo products or accept simulated orders.
+  if (explicitDemo === "1") {
     state.isDemo = true;
     branch = branch || "airport";
     token = token || "a0000000-0000-0000-0000-000000000001";
