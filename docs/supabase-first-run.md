@@ -15,6 +15,10 @@
 7. `202609260007_admin_menu_authoring.sql`
 8. `202609260008_admin_live_order_feed.sql`
 9. `202609260009_roadside_order_entry.sql`
+10. `202609260010_admin_service_point_qr.sql`
+11. `202609260011_bootstrap_initial_owner.sql`
+12. `202609260012_admin_staff_management.sql`
+13. `202609260013_menu_realtime_publication.sql`
 
 لا تعِد تنفيذ هذه القائمة عشوائياً إذا كانت بعض الترحيلات مطبقة مسبقاً؛ راجع سجل الترحيلات أولاً.
 
