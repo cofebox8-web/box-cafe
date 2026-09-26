@@ -1287,7 +1287,6 @@ function openMenuItemModal(itemId = null) {
   const fileInput = document.getElementById('item-image-file');
   if (fileInput) fileInput.value = '';
 
-  const previewWrap = document.getElementById('item-image-preview-wrap');
   if (item?.image_url) {
     if (previewImg) previewImg.src = item.image_url;
     if (previewWrap) previewWrap.style.display = 'block';
