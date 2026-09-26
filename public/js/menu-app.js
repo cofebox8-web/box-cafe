@@ -1279,7 +1279,12 @@ async function submitOrder() {
 
     // Close mobile cart drawer if open
     const mobileDrawer = document.getElementById("mobile-cart-drawer");
-    if (mobileDrawer && mobileDrawer.open) mobileDrawer.close();
+    if (mobileDrawer && mobileDrawer.open) {
+      if (document.activeElement && typeof document.activeElement.blur === "function") {
+        document.activeElement.blur();
+      }
+      mobileDrawer.close();
+    }
 
     showOrderConfirmation(result);
     if (!state.isDemo && state.trackingToken) startCustomerOrderStatusPolling();
@@ -1310,7 +1315,31 @@ function showOrderConfirmation(order) {
   if (!confEl) return;
 
   confEl.classList.add("visible");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // Prevent browser focus-restore from jumping to the middle of the page
+  if (document.activeElement && typeof document.activeElement.blur === "function") {
+    document.activeElement.blur();
+  }
+
+  // Force instant scroll to top
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
+  requestAnimationFrame(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    if (confEl.scrollIntoView) {
+      confEl.scrollIntoView({ block: "start", behavior: "instant" });
+    }
+  });
+
+  setTimeout(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, 40);
 
   document.getElementById("confirmed-order-code").textContent = order.order_code || "—";
   document.getElementById("confirmed-service-point").textContent = order.service_point_label || "مسار السيارات";

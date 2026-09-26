@@ -1957,11 +1957,12 @@ dialog.confirm-dialog p {
   background: var(--bg-card);
   border: 1px solid var(--brand-primary-border);
   border-radius: var(--radius-xl);
-  padding: var(--space-6) var(--space-5);
+  padding: clamp(16px, 4vw, 28px) clamp(14px, 4vw, 24px);
   text-align: center;
-  max-width: 580px;
-  margin: var(--space-6) auto;
+  max-width: 520px;
+  margin: 10px auto 20px;
   box-shadow: var(--shadow-elevated);
+  scroll-margin-top: 10px;
 }
 
 .order-confirmation-overlay.visible {
@@ -1969,69 +1970,76 @@ dialog.confirm-dialog p {
 }
 
 .confirmation-badge-circle {
-  width: 72px;
-  height: 72px;
+  width: clamp(52px, 12vw, 64px);
+  height: clamp(52px, 12vw, 64px);
   border-radius: 50%;
   background: var(--brand-primary-light);
   border: 2px solid var(--brand-primary);
   color: var(--brand-electric-neon);
-  box-shadow: 0 0 28px rgba(139, 92, 246, 0.45);
+  box-shadow: 0 0 22px rgba(139, 92, 246, 0.4);
   display: grid;
   place-items: center;
-  margin: 0 auto var(--space-4);
+  margin: 0 auto 8px;
+}
+
+.confirmation-badge-circle svg {
+  width: clamp(24px, 6vw, 30px);
+  height: clamp(24px, 6vw, 30px);
 }
 
 .confirmation-title {
-  margin: 0 0 var(--space-2);
-  font-size: var(--font-2xl);
+  margin: 0 0 4px;
+  font-size: clamp(1.2rem, 4.5vw, 1.65rem);
   font-weight: 850;
   color: #ffffff;
 }
 
 .confirmation-subtitle {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 12px;
   color: var(--text-secondary);
-  font-size: var(--font-base);
+  font-size: clamp(0.76rem, 2.5vw, 0.86rem);
+  line-height: 1.4;
 }
 
 .order-code-display-card {
   background: var(--bg-surface);
   border: 1px dashed var(--brand-primary-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.12);
+  padding: 10px 14px;
+  margin-bottom: 9px;
+  box-shadow: 0 0 18px rgba(139, 92, 246, 0.12);
 }
 
 .code-label {
   display: block;
-  font-size: var(--font-xs);
+  font-size: 0.72rem;
   color: var(--text-secondary);
   font-weight: 700;
-  margin-bottom: var(--space-1);
+  margin-bottom: 1px;
 }
 
 .code-highlight {
   font-family: var(--font-sans);
-  font-size: 3.25rem;
+  font-size: clamp(2.3rem, 8vw, 3rem);
   font-weight: 900;
   color: var(--brand-electric-neon);
   text-shadow: 0 0 20px rgba(192, 132, 252, 0.5);
   letter-spacing: 2px;
   display: block;
-  margin: var(--space-1) 0;
+  margin: 1px 0 5px;
+  line-height: 1.1;
 }
 
 .confirmation-point-pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 5px;
   background: var(--brand-primary-light);
   border: 1px solid var(--brand-primary-border);
   color: var(--brand-electric-neon);
-  font-size: var(--font-xs);
-  font-weight: 700;
-  padding: 0.25rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 750;
+  padding: 0.2rem 0.65rem;
   border-radius: var(--radius-full);
 }
 
@@ -2042,15 +2050,15 @@ dialog.confirm-dialog p {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-4);
+  padding: 9px 12px;
+  margin-bottom: 9px;
 }
 
 .status-indicator-tag {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--font-sm);
+  font-size: 0.82rem;
   font-weight: 750;
   color: #ffffff;
 }
@@ -2059,14 +2067,15 @@ dialog.confirm-dialog p {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: var(--font-xs);
+  font-size: 0.72rem;
   background: var(--brand-primary-light);
   border: 1px solid var(--brand-primary-border);
   color: var(--brand-electric-neon);
-  padding: 0.3rem 0.65rem;
+  padding: 0.25rem 0.6rem;
   border-radius: var(--radius-md);
   font-weight: 700;
   transition: all 0.15s ease;
+  cursor: pointer;
 }
 
 .status-refresh-btn:hover {
@@ -2082,32 +2091,43 @@ dialog.confirm-dialog p {
 .confirmation-details-box {
   background: var(--bg-surface);
   border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-4);
+  padding: 9px 12px;
+  margin-bottom: 9px;
 }
 
 .confirmation-details-box .totals-row {
-  padding-block: var(--space-1);
+  padding-block: 2px;
+  font-size: 0.82rem;
+}
+
+.confirmation-details-box .totals-row.final-total {
+  font-size: 0.92rem;
+}
+
+.confirmation-details-box .total-amount {
+  font-size: 1.15rem;
 }
 
 .confirmation-instructions {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
   background: var(--bg-surface);
   border: 1px solid rgba(139, 92, 246, 0.2);
   border-radius: var(--radius-md);
-  padding: var(--space-3);
-  font-size: var(--font-xs);
+  padding: 9px 12px;
+  font-size: 0.72rem;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.45;
   text-align: right;
-  margin-bottom: var(--space-5);
+  margin-bottom: 12px;
 }
 
 .confirmation-instructions svg {
   color: var(--brand-primary);
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
 }
 
 .new-order-reset-btn {
@@ -2116,14 +2136,15 @@ dialog.confirm-dialog p {
   justify-content: center;
   gap: var(--space-2);
   width: 100%;
-  min-height: 48px;
+  min-height: 46px;
   background: var(--brand-primary);
   color: #ffffff;
-  font-size: var(--font-base);
+  font-size: 0.92rem;
   font-weight: 800;
   border-radius: var(--radius-md);
   box-shadow: 0 0 16px rgba(139, 92, 246, 0.4);
   transition: background 0.15s ease;
+  cursor: pointer;
 }
 
 .new-order-reset-btn:hover {
