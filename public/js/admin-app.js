@@ -336,8 +336,6 @@ async function saveAdminMenuProduct(product) {
     id: product.id || `prod-${Date.now()}`,
     category_id: product.category_id,
     name: product.name,
-    type: product.type || 'cold',
-    badge: product.badge || '',
     description: product.description || '',
     price: Number(product.price) || 0,
     image_url: product.image_url || '',
@@ -531,10 +529,23 @@ function upgradeSelectToCustomDropdown(selectEl) {
 
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (selectEl.disabled) return;
       const wasOpen = wrapper.classList.contains('open');
       document.querySelectorAll('.custom-select-wrapper.open').forEach((w) => w.classList.remove('open'));
       if (!wasOpen) wrapper.classList.add('open');
     });
+  }
+
+  const trigger = wrapper.querySelector('.custom-select-trigger');
+  if (trigger) {
+    trigger.disabled = selectEl.disabled;
+    if (selectEl.disabled) {
+      trigger.style.opacity = '0.55';
+      trigger.style.cursor = 'not-allowed';
+    } else {
+      trigger.style.opacity = '';
+      trigger.style.cursor = '';
+    }
   }
 
   const triggerText = wrapper.querySelector('.custom-select-trigger-text');
@@ -549,8 +560,9 @@ function upgradeSelectToCustomDropdown(selectEl) {
   if (menu) {
     menu.innerHTML = options.map((opt) => {
       const isSelected = opt.value === selectEl.value;
+      const isDisabled = opt.disabled;
       return `
-        <button type="button" class="custom-select-option ${isSelected ? 'selected' : ''}" data-opt-val="${opt.value}">
+        <button type="button" class="custom-select-option ${isSelected ? 'selected' : ''}" data-opt-val="${opt.value}" ${isDisabled ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
           <span>${opt.textContent}</span>
           <span class="custom-option-check">✓</span>
         </button>
@@ -560,6 +572,7 @@ function upgradeSelectToCustomDropdown(selectEl) {
     menu.querySelectorAll('.custom-select-option').forEach((optBtn) => {
       optBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (optBtn.disabled) return;
         selectEl.value = optBtn.dataset.optVal;
         selectEl.dispatchEvent(new Event('change', { bubbles: true }));
         wrapper.classList.remove('open');
@@ -1111,20 +1124,12 @@ function renderMenuControlBoxes() {
     return matchCat && matchSearch;
   });
 
-  const typeLabels = {
-    cold: '🧊 بارد',
-    hot: '☕ ساخن',
-    bakery: '🥐 مخبوزات',
-    other: '✨ خاص'
-  };
-
   gridWrap.innerHTML = filteredItems.length ? filteredItems.map((item) => {
     const cat = categories.find((c) => c.id === item.category_id);
     const isAvail = item.is_available !== false;
     const media = item.image_url
       ? `<img src="${item.image_url}" alt="${item.name}" class="menu-item-thumb" loading="lazy" />`
       : '<div class="menu-item-thumb menu-item-thumb-empty" aria-hidden="true">☕</div>';
-    const typeLabel = typeLabels[item.type] || '';
 
     return `
       <div class="menu-control-box">
@@ -1132,11 +1137,8 @@ function renderMenuControlBoxes() {
           <div class="menu-thumb-info">
             ${media}
             <div>
-              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <strong class="menu-box-name">${escapeHtml(item.name)}</strong>
-                ${item.badge ? `<span class="menu-item-badge-pill">${escapeHtml(item.badge)}</span>` : ''}
-              </div>
-              <div class="menu-box-cat">${escapeHtml(cat ? cat.name : 'المنيو')} ${typeLabel ? `• ${typeLabel}` : ''}</div>
+              <strong class="menu-box-name">${escapeHtml(item.name)}</strong>
+              <div class="menu-box-cat">${escapeHtml(cat ? cat.name : 'المنيو')}</div>
             </div>
           </div>
           <span class="menu-price-display">${formatIQD(item.price)}</span>
@@ -1270,13 +1272,13 @@ function openMenuItemModal(itemId = null) {
     catSelect.value = categories[0].id;
   }
 
-  const typeSelect = document.getElementById('item-type-select');
-  if (typeSelect) typeSelect.value = item?.type || 'cold';
+  const errBanner = document.getElementById('menu-item-modal-error');
+  if (errBanner) {
+    errBanner.hidden = true;
+    errBanner.textContent = '';
+  }
 
   document.getElementById('item-price-input').value = item ? item.price : '';
-
-  const badgeSelect = document.getElementById('item-badge-select');
-  if (badgeSelect) badgeSelect.value = item?.badge || '';
 
   const availSelect = document.getElementById('item-available-select');
   if (availSelect) availSelect.value = item && item.is_available === false ? 'false' : 'true';
@@ -1286,6 +1288,20 @@ function openMenuItemModal(itemId = null) {
 
   const fileInput = document.getElementById('item-image-file');
   if (fileInput) fileInput.value = '';
+
+  const removeImgBtn = document.getElementById('btn-remove-item-image');
+  if (removeImgBtn) {
+    removeImgBtn.style.display = item?.image_url ? 'inline-block' : 'none';
+    removeImgBtn.onclick = () => {
+      if (imageInput) imageInput.value = '';
+      if (fileInput) fileInput.value = '';
+      if (previewImg) previewImg.src = '';
+      if (previewWrap) previewWrap.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'flex';
+      if (statusEl) statusEl.textContent = 'تم إزالة الصورة (سيتم حفظ المنتج بدون صورة)';
+      removeImgBtn.style.display = 'none';
+    };
+  }
 
   if (item?.image_url) {
     if (previewImg) previewImg.src = item.image_url;
@@ -1301,8 +1317,6 @@ function openMenuItemModal(itemId = null) {
   renderOptionGroupsEditor(item?.option_groups || []);
 
   upgradeSelectToCustomDropdown(catSelect);
-  if (typeSelect) upgradeSelectToCustomDropdown(typeSelect);
-  if (badgeSelect) upgradeSelectToCustomDropdown(badgeSelect);
   if (availSelect) upgradeSelectToCustomDropdown(availSelect);
 
   modal.hidden = false;
@@ -1359,13 +1373,19 @@ async function invokeStaffFunction(body) {
   return data;
 }
 
+let staffAccountsLoaded = false;
+
 async function reloadStaffAccounts() {
   if (!isSupabaseConfigured || !supabase) return;
-  const { data, error } = await supabase.rpc('admin_get_staff');
-  if (error) throw error;
-  if (!data?.success) throw new Error(staffErrorMessage(data?.error));
-  staffAccounts = Array.isArray(data.staff) ? data.staff : [];
-  renderStaffAccountsBoxes();
+  try {
+    const { data, error } = await supabase.rpc('admin_get_staff');
+    if (error) throw error;
+    if (!data?.success) throw new Error(staffErrorMessage(data?.error));
+    staffAccounts = Array.isArray(data.staff) ? data.staff : [];
+  } finally {
+    staffAccountsLoaded = true;
+    renderStaffAccountsBoxes();
+  }
 }
 
 function renderStaffAccountsBoxes() {
@@ -1373,7 +1393,10 @@ function renderStaffAccountsBoxes() {
   if (!grid) return;
 
   if (!staffAccounts.length) {
-    grid.innerHTML = `<div class="menu-empty-state" style="grid-column: 1 / -1; padding: 22px;">جارٍ تحميل حسابات الموظفين…</div>`;
+    const emptyMsg = staffAccountsLoaded
+      ? 'لا يوجد موظفون مسجلون حالياً. اضغط «＋ إضافة موظف» لإضافة حسابات الكاشير والمطبخ.'
+      : 'جارٍ تحميل حسابات الموظفين…';
+    grid.innerHTML = `<div class="menu-empty-state" style="grid-column: 1 / -1; padding: 22px;">${emptyMsg}</div>`;
     return;
   }
 
@@ -1435,11 +1458,17 @@ function openStaffModal(staff = null) {
   const idInput = document.getElementById('staff-account-id');
   const nameInput = document.getElementById('staff-name-input');
   const emailInput = document.getElementById('staff-email-input');
+  const emailHint = document.getElementById('staff-email-hint');
   const passwordInput = document.getElementById('staff-password-input');
+  const passwordLabel = document.getElementById('staff-password-label');
+  const passwordHint = document.getElementById('staff-password-hint');
+  const togglePassBtn = document.getElementById('toggle-staff-password-btn');
   const roleSelect = document.getElementById('staff-role-select');
   const branchSelect = document.getElementById('staff-branch-select');
+  const branchHint = document.getElementById('staff-branch-hint');
   const activeSelect = document.getElementById('staff-active-select');
   const errorEl = document.getElementById('staff-modal-error');
+  const saveBtn = document.getElementById('staff-save-btn');
 
   if (errorEl) {
     errorEl.textContent = '';
@@ -1451,7 +1480,32 @@ function openStaffModal(staff = null) {
   ];
   branchSelect.innerHTML = branches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join('');
 
-  const passwordHint = document.querySelector('#staff-password-field-box .field-hint');
+  if (togglePassBtn && passwordInput) {
+    passwordInput.type = 'password';
+    togglePassBtn.textContent = '👁️';
+    togglePassBtn.onclick = () => {
+      const isPass = passwordInput.type === 'password';
+      passwordInput.type = isPass ? 'text' : 'password';
+      togglePassBtn.textContent = isPass ? '🙈' : '👁️';
+    };
+  }
+
+  const isOwner = adminProfile?.role === 'owner';
+  const adminOption = roleSelect.querySelector('option[value="admin"]');
+  if (adminOption) {
+    adminOption.disabled = !isOwner;
+    adminOption.textContent = isOwner
+      ? 'مدير نظام مساعد (Admin) 🛡️'
+      : 'مدير نظام مساعد (Admin) 🛡️ — مقتصر على المالك';
+  }
+
+  const updateBranchUI = () => {
+    const isRoleAdmin = roleSelect.value === 'admin';
+    branchSelect.disabled = isRoleAdmin;
+    if (branchHint) branchHint.style.display = isRoleAdmin ? 'block' : 'none';
+    upgradeSelectToCustomDropdown(branchSelect);
+  };
+  roleSelect.onchange = updateBranchUI;
 
   if (staff) {
     title.textContent = `تعديل حساب الموظف: ${staff.full_name}`;
@@ -1459,34 +1513,48 @@ function openStaffModal(staff = null) {
     nameInput.value = staff.full_name;
     emailInput.value = staff.email || '';
     emailInput.disabled = true;
+    if (emailHint) emailHint.style.display = 'block';
+    if (passwordLabel) {
+      passwordLabel.innerHTML = 'تغيير كلمة المرور <span style="color:var(--text-dim);font-weight:normal;">(اختياري)</span>';
+    }
     if (passwordInput) {
       passwordInput.value = '';
       passwordInput.required = false;
       passwordInput.placeholder = 'اتركها فارغة إن لم ترغب بتغييرها';
     }
-    if (passwordHint) passwordHint.textContent = 'أدخل كلمة مرور جديدة فقط إذا رغبت بتغييرها، وإلا اتركها فارغة.';
+    if (passwordHint) {
+      passwordHint.textContent = 'أدخل كلمة مرور جديدة فقط إذا رغبت بتغييرها، وإلا اترك الحقل فارغاً دون تعديل.';
+    }
     roleSelect.value = staff.role || 'roadside';
     branchSelect.value = staff.branch_id || branches[0].id;
     activeSelect.value = staff.is_active !== false ? 'true' : 'false';
+    if (saveBtn) saveBtn.textContent = 'حفظ التعديلات';
   } else {
     title.textContent = 'إضافة موظف جديد وتحديد الصلاحية';
     idInput.value = '';
     nameInput.value = '';
     emailInput.value = '';
     emailInput.disabled = false;
+    if (emailHint) emailHint.style.display = 'none';
+    if (passwordLabel) {
+      passwordLabel.innerHTML = 'كلمة المرور للدخول <span style="color:#F43F5E;">*</span>';
+    }
     if (passwordInput) {
       passwordInput.value = '';
       passwordInput.required = true;
-      passwordInput.placeholder = '8 أحرف على الأقل';
+      passwordInput.placeholder = '6 أحرف على الأقل';
     }
-    if (passwordHint) passwordHint.textContent = 'يستخدمها الموظف لتسجيل الدخول إلى شاشة عمله من صفحة الدخول الموحدة.';
+    if (passwordHint) {
+      passwordHint.textContent = 'يستخدمها الموظف لتسجيل الدخول إلى شاشة عمله من صفحة الدخول الموحدة (/login).';
+    }
     roleSelect.value = 'roadside';
     branchSelect.value = branches[0].id;
     activeSelect.value = 'true';
+    if (saveBtn) saveBtn.textContent = 'حفظ وتفعيل الحساب';
   }
 
+  updateBranchUI();
   upgradeSelectToCustomDropdown(roleSelect);
-  upgradeSelectToCustomDropdown(branchSelect);
   upgradeSelectToCustomDropdown(activeSelect);
 
   modal.hidden = false;
@@ -1749,8 +1817,8 @@ async function initAdminERP() {
 
     try {
       const body = id
-        ? { action: 'update', staff_id: id, full_name: name, role, branch_id: branchId, is_active: isActive, password: password || undefined }
-        : { action: 'create', full_name: name, email, password, role, branch_id: branchId, is_active: isActive };
+        ? { action: 'update', staff_id: id, full_name: name, role, branch_id: role === 'admin' ? null : branchId, is_active: isActive, password: password || undefined }
+        : { action: 'create', full_name: name, email, password, role, branch_id: role === 'admin' ? null : branchId, is_active: isActive };
 
       await invokeStaffFunction(body);
 
@@ -1766,7 +1834,7 @@ async function initAdminERP() {
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'حفظ وتفعيل الحساب';
+        submitBtn.textContent = id ? 'حفظ التعديلات' : 'حفظ وتفعيل الحساب';
       }
     }
   });
@@ -1878,13 +1946,16 @@ async function initAdminERP() {
 
   fileInputEl?.addEventListener('change', (event) => {
     const file = event.target.files?.[0];
+    const removeBtn = document.getElementById('btn-remove-item-image');
     if (file) {
       const url = URL.createObjectURL(file);
       updateImageLivePreview(url, `تم اختيار الصورة: ${file.name} (${Math.round(file.size / 1024)} ك.ب)`);
+      if (removeBtn) removeBtn.style.display = 'inline-block';
     } else {
       const existingUrl = document.getElementById('item-image-input')?.value.trim();
       if (!existingUrl) {
         updateImageLivePreview('', 'يفتح معرض الصور والألبوم مباشرة (JPG, PNG, WebP)');
+        if (removeBtn) removeBtn.style.display = 'none';
       }
     }
   });
@@ -1898,15 +1969,29 @@ async function initAdminERP() {
   document.getElementById('btn-open-add-category')?.addEventListener('click', () => {
     const input = document.getElementById('category-name-input');
     if (input) input.value = '';
+    const errBanner = document.getElementById('category-modal-error');
+    if (errBanner) {
+      errBanner.hidden = true;
+      errBanner.textContent = '';
+    }
     document.getElementById('modal-add-category').hidden = false;
   });
 
   document.getElementById('form-add-category')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = (document.getElementById('category-name-input')?.value || '').trim();
+    const errBanner = document.getElementById('category-modal-error');
+    if (errBanner) {
+      errBanner.hidden = true;
+      errBanner.textContent = '';
+    }
     if (!name) return;
-    const submit = e.currentTarget.querySelector('[type="submit"]');
-    if (submit) submit.disabled = true;
+    const submit = document.getElementById('category-save-btn') || e.currentTarget.querySelector('[type="submit"]');
+    const origText = submit ? submit.textContent : '';
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = 'جارٍ الإضافة…';
+    }
     try {
       await saveAdminMenuCategory(name);
       document.getElementById('modal-add-category').hidden = true;
@@ -1924,19 +2009,35 @@ async function initAdminERP() {
         upgradeSelectToCustomDropdown(catSelect);
       }
     } catch (error) {
+      if (errBanner) {
+        errBanner.textContent = error.message || 'تعذرت إضافة القسم إلى قاعدة البيانات.';
+        errBanner.hidden = false;
+      }
       showToast(error.message || 'تعذرت إضافة القسم إلى قاعدة البيانات.');
     } finally {
-      if (submit) submit.disabled = false;
+      if (submit) {
+        submit.disabled = false;
+        submit.textContent = origText || 'إضافة القسم فوراً';
+      }
     }
   });
 
   document.getElementById('form-menu-item')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const errBanner = document.getElementById('menu-item-modal-error');
+    if (errBanner) {
+      errBanner.hidden = true;
+      errBanner.textContent = '';
+    }
     const id = document.getElementById('item-id-input').value;
     const name = document.getElementById('item-name-input').value.trim();
     const fileInput = document.getElementById('item-image-file');
-    const submit = e.currentTarget.querySelector('[type="submit"]');
-    if (submit) submit.disabled = true;
+    const submit = document.getElementById('menu-item-save-btn') || e.currentTarget.querySelector('[type="submit"]');
+    const origText = submit ? submit.textContent : '';
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = 'جارٍ الحفظ…';
+    }
     try {
       const categoryId = document.getElementById('item-category-select').value;
       if (!categoryId) {
@@ -1954,8 +2055,6 @@ async function initAdminERP() {
         id: id || null,
         name,
         category_id: categoryId,
-        type: document.getElementById('item-type-select')?.value || 'cold',
-        badge: document.getElementById('item-badge-select')?.value || '',
         price: Number(document.getElementById('item-price-input').value),
         description: document.getElementById('item-description-input').value.trim(),
         is_available: document.getElementById('item-available-select').value === 'true',
@@ -1965,9 +2064,16 @@ async function initAdminERP() {
       document.getElementById('modal-menu-item').hidden = true;
       showToast(`تم حفظ المنتج "${name}" بنجاح في المنيو`);
     } catch (error) {
+      if (errBanner) {
+        errBanner.textContent = error.message || 'تعذر حفظ المنتج في قاعدة البيانات.';
+        errBanner.hidden = false;
+      }
       showToast(error.message || 'تعذر حفظ المنتج في قاعدة البيانات.');
     } finally {
-      if (submit) submit.disabled = false;
+      if (submit) {
+        submit.disabled = false;
+        submit.textContent = origText || 'حفظ وتثبيت المنتج بالمنيو';
+      }
     }
   });
 

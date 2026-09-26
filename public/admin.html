@@ -620,64 +620,78 @@
     <div class="erp-modal-box">
       <div class="modal-box-top">
         <h3 id="modal-staff-title">إضافة موظف جديد وتحديد الصلاحية</h3>
-        <button type="button" class="modal-close-x" data-close-modal="modal-staff-account">✕</button>
+        <button type="button" class="modal-close-x" data-close-modal="modal-staff-account" aria-label="إغلاق">✕</button>
       </div>
       <form id="form-staff-account" class="structured-form">
         <input type="hidden" id="staff-account-id" />
+
+        <!-- القسم 1: بيانات الموظف والدخول -->
         <div class="field-box">
-          <label for="staff-name-input">اسم الموظف الكامل</label>
+          <label for="staff-name-input">اسم الموظف الكامل <span style="color:#F43F5E;">*</span></label>
           <input type="text" id="staff-name-input" class="structured-input" placeholder="مثال: أحمد علي" required />
         </div>
+
         <div class="field-box">
-          <label for="staff-email-input">البريد الإلكتروني المهني</label>
+          <label for="staff-email-input">البريد الإلكتروني المهني للدخول <span style="color:#F43F5E;">*</span></label>
           <input type="email" id="staff-email-input" class="structured-input" placeholder="staff@boxcofe.iq" dir="ltr" required />
+          <small id="staff-email-hint" class="field-hint" style="display:none;color:var(--text-dim);">البريد الإلكتروني مقترن بالمصادقة السحابية؛ لا يمكن تغييره بعد إنشاء الحساب.</small>
         </div>
+
         <div class="field-box" id="staff-password-field-box">
-          <label for="staff-password-input">كلمة المرور للدخول</label>
-          <input type="password" id="staff-password-input" class="structured-input" placeholder="8 أحرف على الأقل" dir="ltr" required />
-          <small class="field-hint">يستخدمها الموظف لتسجيل الدخول إلى شاشة عمله من صفحة الدخول الموحدة.</small>
+          <label for="staff-password-input" id="staff-password-label">كلمة المرور للدخول <span style="color:#F43F5E;">*</span></label>
+          <div style="position:relative;display:flex;align-items:center;">
+            <input type="password" id="staff-password-input" class="structured-input" placeholder="6 أحرف على الأقل" dir="ltr" style="padding-left:42px;" required />
+            <button type="button" id="toggle-staff-password-btn" class="input-inline-btn" title="إظهار / إخفاء كلمة المرور" style="position:absolute;left:8px;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:4px;font-size:1.05rem;line-height:1;">👁️</button>
+          </div>
+          <small class="field-hint" id="staff-password-hint">يستخدمها الموظف لتسجيل الدخول إلى شاشة عمله من صفحة الدخول الموحدة (/login).</small>
         </div>
+
+        <!-- القسم 2: الدور والفرع وحالة الحساب -->
         <div class="form-two-boxes">
           <div class="field-box">
-            <label for="staff-role-select">الدور والصلاحية (الوصول)</label>
+            <label for="staff-role-select">الدور والصلاحية (شاشة العمل) <span style="color:#F43F5E;">*</span></label>
             <select id="staff-role-select" class="structured-input" required>
-              <option value="roadside">موظف الشارع والكاشير (Roadside)</option>
-              <option value="kitchen">طاقم المطبخ وشاشة الطلبات (Kitchen)</option>
-              <option value="admin">مدير نظام مساعد (Admin)</option>
+              <option value="roadside">موظف الشارع والطلبات السريعة (Roadside) 🚗</option>
+              <option value="kitchen">طاقم المطبخ وشاشة الطلبات (Kitchen) 👨‍🍳</option>
+              <option value="admin">مدير نظام مساعد (Admin) 🛡️</option>
             </select>
           </div>
-          <div class="field-box">
-            <label for="staff-branch-select">الفرع المخصص</label>
+          <div class="field-box" id="staff-branch-field-box">
+            <label for="staff-branch-select">الفرع المخصص <span style="color:#F43F5E;">*</span></label>
             <select id="staff-branch-select" class="structured-input" required></select>
+            <small id="staff-branch-hint" class="field-hint" style="display:none;color:var(--text-dim);">مدير النظام يمتلك صلاحية شاملة لكل الفروع تلقائياً.</small>
           </div>
         </div>
+
         <div class="field-box">
-          <label for="staff-active-select">حالة الحساب</label>
+          <label for="staff-active-select">حالة تفعيل الحساب</label>
           <select id="staff-active-select" class="structured-input">
-            <option value="true">نشط ومفعل (يمكنه الدخول)</option>
+            <option value="true">نشط ومفعل (يمكنه الدخول ومباشرة العمل)</option>
             <option value="false">معطل مؤقتاً (ممنوع من الدخول)</option>
           </select>
         </div>
+
         <div id="staff-modal-error" class="erp-error-banner" role="alert" hidden></div>
+
         <div class="modal-box-actions">
-          <button type="submit" id="staff-save-btn" class="box-btn-primary">حفظ وتفعيل الحساب</button>
+          <button type="submit" id="staff-save-btn" class="box-btn-primary" style="flex:1;">حفظ وتفعيل الحساب</button>
           <button type="button" class="box-btn-secondary" data-close-modal="modal-staff-account">إلغاء</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 2. نافذة إضافة / تعديل منتج في المنيو (شاملة التفاصيل والصورة والمعاينة) -->
+  <!-- 2. نافذة إضافة / تعديل منتج في المنيو -->
   <div id="modal-menu-item" class="erp-modal-backdrop" hidden>
     <div class="erp-modal-box modal-lg">
       <div class="modal-box-top">
         <h3 id="modal-item-title">إضافة منتج جديد للمنيو</h3>
-        <button type="button" class="modal-close-x" data-close-modal="modal-menu-item">✕</button>
+        <button type="button" class="modal-close-x" data-close-modal="modal-menu-item" aria-label="إغلاق">✕</button>
       </div>
       <form id="form-menu-item" class="structured-form">
         <input type="hidden" id="item-id-input" />
 
-        <!-- صف 1: اسم المنتج + القسم (مع خيار إضافة قسم فوري) -->
+        <!-- القسم 1: بيانات الصنف الأساسية -->
         <div class="form-two-boxes">
           <div class="field-box">
             <label for="item-name-input">اسم المنتج <span style="color:#F43F5E;">*</span></label>
@@ -692,34 +706,11 @@
           </div>
         </div>
 
-        <!-- صف 2: نوع وتصنيف المنتج + السعر بالدينار -->
+        <!-- القسم 2: التسعير وحالة التوفر بالمنيو -->
         <div class="form-two-boxes">
-          <div class="field-box">
-            <label for="item-type-select">نوع وتصنيف المنتج</label>
-            <select id="item-type-select" class="structured-input">
-              <option value="cold">مشروب بارد 🧊</option>
-              <option value="hot">مشروب ساخن ☕</option>
-              <option value="bakery">حلويات ومخبوزات 🥐</option>
-              <option value="other">صنف خاص / أخرى ✨</option>
-            </select>
-          </div>
           <div class="field-box">
             <label for="item-price-input">السعر بالدينار العراقي (د.ع) <span style="color:#F43F5E;">*</span></label>
-            <input type="number" id="item-price-input" class="structured-input" placeholder="مثلاً: 5000" min="0" step="250" required />
-          </div>
-        </div>
-
-        <!-- صف 3: الشارة الترويجية + حالة التوفر بالمنيو -->
-        <div class="form-two-boxes">
-          <div class="field-box">
-            <label for="item-badge-select">شارة تمييز المنتج (اختياري)</label>
-            <select id="item-badge-select" class="structured-input">
-              <option value="">بدون شارة</option>
-              <option value="الأكثر طلباً 🔥">الأكثر طلباً 🔥</option>
-              <option value="جديد ✨">جديد ✨</option>
-              <option value="توقيع بوكس 👑">توقيع بوكس 👑</option>
-              <option value="عرض خاص 🏷️">عرض خاص 🏷️</option>
-            </select>
+            <input type="number" id="item-price-input" class="structured-input" placeholder="مثال: 4500" min="0" step="250" required />
           </div>
           <div class="field-box">
             <label for="item-available-select">حالة التوفر بالمنيو</label>
@@ -730,15 +721,18 @@
           </div>
         </div>
 
-        <!-- صف 4: وصف المنتج ومكوناته -->
+        <!-- القسم 3: وصف وتفاصيل الصنف -->
         <div class="field-box">
-          <label for="item-description-input">وصف وتفاصيل المنتج</label>
-          <textarea id="item-description-input" class="structured-input" rows="2" maxlength="500" placeholder="مكونات المشروب، التحضير، أو أي ملاحظات توضيحية للزبون..."></textarea>
+          <label for="item-description-input">وصف المنتج ومكوناته <span style="color:var(--text-dim);font-weight:normal;">(اختياري)</span></label>
+          <textarea id="item-description-input" class="structured-input" rows="2" maxlength="500" placeholder="مكونات المشروب، الحجم القياسي، أو أي ملاحظة تظهر للزبون..."></textarea>
         </div>
 
-        <!-- صف 5: صورة المنتج واختيارها من الهاتف مباشرة -->
+        <!-- القسم 4: صورة المنتج واختيارها من الهاتف مباشرة -->
         <div class="field-box">
-          <label>صورة المنتج</label>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <label>صورة المنتج</label>
+            <button type="button" id="btn-remove-item-image" class="box-btn-danger-sm" style="display:none;padding:2px 8px;font-size:0.72rem;">🗑️ إزالة الصورة</button>
+          </div>
           <input type="file" id="item-image-file" accept="image/*" style="display:none;" />
           <input type="hidden" id="item-image-input" />
 
@@ -757,7 +751,7 @@
           </div>
         </div>
 
-        <!-- صف 6: الإضافات والخيارات (Option Groups) -->
+        <!-- القسم 5: الإضافات والخيارات (الأحجام، الحليب، النكهات) -->
         <section class="option-authoring" aria-labelledby="option-groups-title">
           <div class="option-authoring-heading">
             <div>
@@ -769,29 +763,33 @@
           <div id="item-option-groups" class="option-groups-list"></div>
         </section>
 
-        <!-- أزرار الحفظ -->
+        <div id="menu-item-modal-error" class="erp-error-banner" role="alert" hidden></div>
+
+        <!-- أزرار الإجراءات -->
         <div class="modal-box-actions">
-          <button type="submit" class="box-btn-primary" style="flex:1;">حفظ وتثبيت المنتج بالمنيو</button>
+          <button type="submit" id="menu-item-save-btn" class="box-btn-primary" style="flex:1;">حفظ وتثبيت المنتج بالمنيو</button>
           <button type="button" data-close-modal="modal-menu-item" class="box-btn-secondary">إلغاء</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 3. نافذة إضافة قسم جديد للمنيو (بدل الـ prompt الأبيض القديم!) -->
+  <!-- 3. نافذة إضافة قسم جديد للمنيو -->
   <div id="modal-add-category" class="erp-modal-backdrop" hidden>
     <div class="erp-modal-box">
       <div class="modal-box-top">
         <h3>إضافة قسم جديد في المنيو</h3>
-        <button type="button" class="modal-close-x" data-close-modal="modal-add-category">✕</button>
+        <button type="button" class="modal-close-x" data-close-modal="modal-add-category" aria-label="إغلاق">✕</button>
       </div>
       <form id="form-add-category" class="structured-form">
         <div class="field-box">
-          <label>اسم القسم الجديد (يظهر في المنيو والكاشير)</label>
-          <input type="text" id="category-name-input" class="structured-input" placeholder="مثال: مشروبات الطاقة والموهيتو" required />
+          <label for="category-name-input">اسم القسم الجديد <span style="color:#F43F5E;">*</span></label>
+          <input type="text" id="category-name-input" class="structured-input" placeholder="مثال: مشروبات ساخنة، قهوة باردة، حلويات" required />
+          <small class="field-hint">يظهر القسم كتبويب رئيسي لتصنيف المنتجات في منيو الزبائن وشاشة الكاشير.</small>
         </div>
+        <div id="category-modal-error" class="erp-error-banner" role="alert" hidden></div>
         <div class="modal-box-actions">
-          <button type="submit" class="box-btn-primary">إضافة القسم فوراً</button>
+          <button type="submit" id="category-save-btn" class="box-btn-primary">إضافة القسم فوراً</button>
           <button type="button" data-close-modal="modal-add-category" class="box-btn-secondary">إلغاء</button>
         </div>
       </form>
