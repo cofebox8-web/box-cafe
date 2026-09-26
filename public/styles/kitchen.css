@@ -66,11 +66,9 @@ body {
 .kds-login-card label { color: var(--text-secondary); font-size: .9rem; font-weight: 700; }
 .kds-login-card input { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid var(--border-subtle); border-radius: 10px; background: #09090f; color: white; }
 .kds-login-card input:focus { outline: 2px solid var(--brand-primary); outline-offset: 1px; }
-.kds-login-card button, .kds-session-actions button { min-height: 44px; border: 0; border-radius: 10px; background: var(--brand-deep); color: white; font-weight: 800; cursor: pointer; }
+.kds-login-card button { min-height: 44px; border: 0; border-radius: 10px; background: var(--brand-deep); color: white; font-weight: 800; cursor: pointer; }
 .kds-login-card button:disabled { opacity: .65; cursor: wait; }
 .kds-login-card .kds-login-error { margin: 0; color: #fca5a5; }
-.kds-session-actions { display: flex; align-items: center; gap: 12px; margin-inline-start: auto; color: var(--text-secondary); }
-.kds-session-actions button { min-height: 36px; padding: 0 14px; background: #28202f; border: 1px solid var(--border-purple); }
 .kds-login-gate[hidden] { display: none !important; }
 
 button,
@@ -97,30 +95,36 @@ input {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(11, 10, 17, 0.94);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  border-bottom: 1px solid rgba(139, 92, 246, 0.24);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+  background: rgba(14, 13, 22, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.22);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
 }
 
 .kds-header::after {
   content: "";
   position: absolute;
   bottom: -1px;
-  inset-inline: 8%;
+  inset-inline: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.75), transparent);
+  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.5), transparent);
   pointer-events: none;
 }
 
 .kds-header-inner {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 0.75rem 1.15rem;
+  padding: 0.65rem 1.15rem;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+}
+
+.kds-header-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800;900&display=swap");
@@ -128,15 +132,20 @@ input {
 .kds-brand-lockup {
   display: inline-flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
   flex-shrink: 0;
   font-family: "Montserrat", system-ui, -apple-system, sans-serif;
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   line-height: 1;
   user-select: none;
+  transition: opacity 0.15s ease;
+}
+
+.kds-brand-lockup:hover {
+  opacity: 0.9;
 }
 
 .logo-word-box {
@@ -145,6 +154,86 @@ input {
 
 .logo-word-cofe {
   color: #c084fc;
+  text-shadow: 0 0 16px rgba(192, 132, 252, 0.45);
+}
+
+/* Sleek KDS Live Status Pill */
+.kds-live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.kds-live-indicator .pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+}
+
+/* Header Session Actions & Signout Button */
+.kds-session-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kds-signout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 5px 13px;
+  border-radius: 9999px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  user-select: none;
+}
+
+.kds-signout-btn:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 12px rgba(239, 68, 68, 0.25);
+}
+
+.kds-signout-btn:active {
+  transform: scale(0.96);
+}
+
+.kds-signout-btn .signout-icon {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  stroke-width: 2.2;
 }
 
 /* Header Action Button */

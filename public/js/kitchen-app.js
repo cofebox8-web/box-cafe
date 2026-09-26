@@ -179,7 +179,10 @@ function acceptKitchenSession(context) {
   if (!profile || !["owner", "admin", "kitchen"].includes(profile.role)) {
     throw new Error("هذا الحساب لا يملك صلاحية شاشة المطبخ.");
   }
-  document.getElementById("kds-staff-name").textContent = `${profile.full_name || context.user.email} • ${roleLabel(profile.role)}`;
+  const staffNameEl = document.getElementById("kds-staff-name");
+  if (staffNameEl) {
+    staffNameEl.textContent = "";
+  }
   document.getElementById("kds-login-gate").hidden = true;
   document.body.classList.remove("kds-auth-pending");
 }

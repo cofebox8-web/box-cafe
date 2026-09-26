@@ -23,7 +23,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles/kitchen.css" />
+    <link rel="stylesheet" href="/styles/kitchen.css?v=20260927_kds_v2" />
   </head>
   <body class="kds-auth-pending">
     <section id="kds-login-gate" class="kds-login-gate" role="dialog" aria-modal="true" aria-labelledby="kds-login-title">
@@ -39,14 +39,29 @@
         <button id="kds-login-submit" type="submit">دخول</button>
       </form>
     </section>
-    <!-- Pure Typographic Brand Header — BOX COFE Only -->
+    <!-- Pure Typographic Brand Header — BOX COFE Kitchen -->
     <header class="kds-header">
       <div class="kds-header-inner">
-        <a href="/admin" class="kds-brand-lockup" title="لوحة الإدارة" dir="ltr">
-          <span class="logo-word-box">BOX</span>
-          <span class="logo-word-cofe">COFE</span>
-        </a>
-        <div class="kds-session-actions"><span id="kds-staff-name"></span><button id="kds-signout" type="button">خروج</button></div>
+        <div class="kds-header-brand-group">
+          <a href="/admin" class="kds-brand-lockup" title="لوحة الإدارة" dir="ltr">
+            <span class="logo-word-box">BOX</span>
+            <span class="logo-word-cofe">COFE</span>
+          </a>
+          <span class="kds-live-indicator">
+            <span class="pulse-dot"></span>
+            <span>شاشة الطلبات</span>
+          </span>
+        </div>
+        <div class="kds-session-actions">
+          <button id="kds-signout" type="button" class="kds-signout-btn" title="تسجيل الخروج">
+            <svg class="signout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>خروج</span>
+          </button>
+        </div>
       </div>
     </header>
 
