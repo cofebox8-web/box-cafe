@@ -7,18 +7,14 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/menu/:branch/:token", "destination": "/menu.html" },
-    { "source": "/menu/:branch", "destination": "/menu.html" },
-    { "source": "/menu", "destination": "/menu.html" },
-    { "source": "/kitchen/:branch", "destination": "/kitchen.html" },
-    { "source": "/kitchen", "destination": "/kitchen.html" },
-    { "source": "/roadside/order", "destination": "/roadside.html" },
-    { "source": "/roadside", "destination": "/roadside.html" },
-    { "source": "/admin/:section", "destination": "/admin.html" },
-    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/menu/:branch/:token", "destination": "/menu" },
+    { "source": "/menu/:branch", "destination": "/menu" },
+    { "source": "/kitchen/:branch", "destination": "/kitchen" },
+    { "source": "/roadside/order", "destination": "/roadside" },
+    { "source": "/admin/:section", "destination": "/admin" },
     {
       "source": "/login",
-      "destination": "/login.html"
+      "destination": "/login"
     }
   ]
 }
