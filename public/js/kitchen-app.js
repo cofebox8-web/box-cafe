@@ -122,25 +122,35 @@ async function loadKitchenOrders() {
 
     kdsState.orders = data.orders;
     renderKDS();
+    if (kitchenRetryTimer) {
+      clearTimeout(kitchenRetryTimer);
+      kitchenRetryTimer = null;
+    }
     return true;
   } catch (error) {
-    console.debug("Kitchen remote order load fallback:", error);
-    kdsState.orders = getDemoKitchenOrders();
-    renderKDS();
-    return true;
+    console.error("Kitchen remote order load failed:", error);
+    showLiveToast(error.message || "تعذر تحميل طلبات المطبخ من الخادم.");
+    if (!kitchenRetryTimer) {
+      kitchenRetryTimer = setTimeout(() => {
+        kitchenRetryTimer = null;
+        loadKitchenOrders();
+      }, 5000);
+    }
+    return false;
   }
 }
 
 let kitchenRealtimeChannel = null;
 let kdsEventsInitialized = false;
+let kitchenRetryTimer = null;
 function subscribeToKitchenOrders() {
   if (!isSupabaseConfigured || !supabase || kitchenRealtimeChannel) return;
   kitchenRealtimeChannel = supabase
     .channel(`kitchen-orders-${kdsState.branchSlug}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, async (payload) => {
       const isInsert = payload.eventType === "INSERT";
-      await loadKitchenOrders();
-      if (isInsert) {
+      const ok = await loadKitchenOrders();
+      if (ok && isInsert) {
         playBaristaOrderBell();
         showLiveToast("وصل طلب جديد إلى المطبخ.");
       }
@@ -148,6 +158,10 @@ function subscribeToKitchenOrders() {
     .subscribe((status) => {
       if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
         showLiveToast("انقطع التحديث اللحظي مؤقتاً؛ ستبقى إعادة التحميل متاحة.");
+      } else if (status === "SUBSCRIBED") {
+        // يغطي أول اشتراك وأيضاً إعادة الاتصال التلقائية بعد انقطاع صامت؛
+        // إعادة الجلب هنا تلتقط أي طلب وصل أثناء فجوة غير مُكتشَفة بحدث خطأ صريح.
+        loadKitchenOrders();
       }
     });
 }
@@ -458,6 +472,15 @@ function renderKDS() {
 function initKDSEvents() {
   if (kdsEventsInitialized) return;
   kdsEventsInitialized = true;
+
+  // Refetch when the tab regains visibility (device woke up / user switched back),
+  // as a safety net alongside the realtime channel.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && isSupabaseConfigured) {
+      loadKitchenOrders();
+    }
+  });
+
   // Filter Tabs
   document.querySelectorAll(".kds-tab").forEach(tab => {
     tab.addEventListener("click", () => {
@@ -530,7 +553,12 @@ function initKDSEvents() {
     bc.onmessage = e => {
       if (e.data && e.data.type === "new_order") {
         if (isSupabaseConfigured) {
-          loadKitchenOrders().then(() => { playBaristaOrderBell(); showLiveToast("وصل طلب جديد الآن."); });
+          loadKitchenOrders().then((ok) => {
+            if (ok) {
+              playBaristaOrderBell();
+              showLiveToast("وصل طلب جديد الآن.");
+            }
+          });
         } else {
           kdsState.orders = getDemoKitchenOrders();
           renderKDS();
@@ -547,8 +575,15 @@ function initKDSEvents() {
   // Also listen via localStorage storage event across tabs
   window.addEventListener("storage", e => {
     if (e.key === "box_coffee_live_orders_v4") {
-      if (isSupabaseConfigured) loadKitchenOrders().then(playBaristaOrderBell);
-      else { kdsState.orders = getDemoKitchenOrders(); renderKDS(); playBaristaOrderBell(); }
+      if (isSupabaseConfigured) {
+        loadKitchenOrders().then((ok) => {
+          if (ok) playBaristaOrderBell();
+        });
+      } else {
+        kdsState.orders = getDemoKitchenOrders();
+        renderKDS();
+        playBaristaOrderBell();
+      }
     }
   });
 

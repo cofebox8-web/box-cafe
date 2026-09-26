@@ -261,27 +261,24 @@ async function loadMenuData() {
       return;
     }
 
-    // Call Supabase RPC with local fallback
-    let data = null;
-    if (supabase) {
-      try {
-        const res = await supabase.rpc("get_customer_menu", {
-          p_branch_slug: state.branchSlug,
-          p_qr_token: state.qrToken
-        });
-        if (!res.error && res.data?.success === true) {
-          data = res.data;
-        }
-      } catch (e) {
-        console.debug("Customer menu RPC fallback:", e);
-      }
+    if (!isSupabaseConfigured || !supabase) {
+      showErrorScreen("نظام الطلب غير متصل", "تعذر بدء منيو بوكس كافي لأن إعداد اتصال Supabase غير متوفر.");
+      return;
     }
 
-    if (!data) {
-      data = getLiveMenuData();
+    const res = await supabase.rpc("get_customer_menu", {
+      p_branch_slug: state.branchSlug,
+      p_qr_token: state.qrToken
+    });
+
+    if (res.error) {
+      throw new Error(res.error.message || "تعذر جلب المنيو من الخادم.");
+    }
+    if (!res.data || res.data.success !== true) {
+      throw new Error(res.data?.message || res.data?.error || "تعذر جلب بيانات المنيو لهذا الفرع أو نقطة الخدمة.");
     }
 
-    state.menuData = data;
+    state.menuData = res.data;
     renderApp();
   } catch (err) {
     console.error("Network or execution exception:", err);
@@ -1181,34 +1178,29 @@ async function submitOrder() {
         idempotency_key: idempotencyKey
       });
     } else {
-      if (supabase) {
-        try {
-          const { data, error } = await supabase.rpc("place_customer_order", {
-            p_branch_slug: state.branchSlug,
-            p_qr_token: state.qrToken,
-            p_items: itemsPayload,
-            p_idempotency_key: idempotencyKey,
-            p_customer_name: customerName || null,
-            p_vehicle_note: vehicleNote || null,
-            p_order_note: orderNote || null
-          });
-          if (!error && data?.success === true) {
-            result = data;
-          }
-        } catch (e) {
-          console.debug("Customer order RPC fallback:", e);
-        }
+      if (!isSupabaseConfigured || !supabase) {
+        throw new Error("تعذر إرسال الطلب. خدمة الاتصال بقاعدة البيانات غير متوفرة حالياً.");
       }
 
-      if (!result) {
-        result = simulateDemoOrder({
-          items: itemsPayload,
-          customer_name: customerName,
-          vehicle_note: vehicleNote,
-          order_note: orderNote,
-          idempotency_key: idempotencyKey
-        });
+      const { data, error } = await supabase.rpc("place_customer_order", {
+        p_branch_slug: state.branchSlug,
+        p_qr_token: state.qrToken,
+        p_items: itemsPayload,
+        p_idempotency_key: idempotencyKey,
+        p_customer_name: customerName || null,
+        p_vehicle_note: vehicleNote || null,
+        p_order_note: orderNote || null
+      });
+
+      if (error) {
+        throw new Error(error.message || "تعذر إرسال الطلب إلى الخادم. يرجى إعادة المحاولة.");
       }
+
+      if (!data || data.success !== true) {
+        throw new Error(data?.message || data?.error || "تعذر تأكيد الطلب من الخادم. يرجى إعادة المحاولة.");
+      }
+
+      result = data;
     }
 
     // Success! Clear cart and show confirmation screen
