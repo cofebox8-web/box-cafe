@@ -2,7 +2,7 @@ import { supabase, isSupabaseConfigured } from "./supabase-client.js";
 import { getStaffSession, signInStaff, signOutStaff } from "./staff-auth.js";
 
 const $ = (id) => document.getElementById(id);
-const state = { profile: null, menu: null, items: [], category: "all", search: "", product: null, picks: {}, quantity: 1, idempotencyKey: null, busy: false };
+const state = { profile: null, menu: null, items: [], category: "all", search: "", product: null, picks: {}, quantity: 1, idempotencyKey: null, busy: false, menuChannel: null, menuRefreshTimer: null, menuRefreshInFlight: false, menuRefreshQueued: false };
 const digits = new Intl.NumberFormat("ar-IQ", { maximumFractionDigits: 0 });
 const money = (value) => `${digits.format(Math.round(Number(value) || 0))} د.ع`;
 const text = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -32,10 +32,12 @@ async function enterWithProfile(profile) {
   document.body.classList.remove("roadside-auth-pending");
   $("rs-staff-name").textContent = profile.full_name || "موظف الشارع";
   await loadMenu();
+  setupRoadsideMenuRealtime();
 }
 
-async function loadMenu() {
-  setState("تحميل منيو الفرع", "نتحقق من الأصناف المتاحة والأسعار الحالية.");
+async function loadMenu({ silent = false } = {}) {
+  const previousMenu = state.menu;
+  if (!silent) setState("تحميل منيو الفرع", "نتحقق من الأصناف المتاحة والأسعار الحالية.");
   $("rs-connection").textContent = "جاري الاتصال…";
   try {
     const { data: points, error: pointError } = await supabase.from("car_service_points")
@@ -56,11 +58,58 @@ async function loadMenu() {
     $("rs-connection").textContent = "متصل بالنظام";
     renderCatalog();
   } catch (error) {
+    if (silent && previousMenu) {
+      state.menu = previousMenu;
+      $("rs-connection").textContent = "متصل — آخر تحديث محفوظ";
+      console.warn("Live roadside menu refresh failed; keeping the last confirmed menu.", error);
+      return;
+    }
     state.menu = null;
     $("rs-connection").textContent = "غير متصل بالنظام";
     setState("تعذر تحميل منيو الفرع", "لم نعرض بيانات محلية حتى لا يتم إنشاء طلب خارج قاعدة البيانات. تحقق من الاتصال أو راجع مدير النظام.", "!");
     notify(error.message || "تعذر تحميل منيو الفرع من قاعدة البيانات.", "error");
   }
+}
+
+function scheduleRoadsideMenuRefresh() {
+  window.clearTimeout(state.menuRefreshTimer);
+  state.menuRefreshTimer = window.setTimeout(async () => {
+    if (state.menuRefreshInFlight) {
+      state.menuRefreshQueued = true;
+      return;
+    }
+    state.menuRefreshInFlight = true;
+    try {
+      await loadMenu({ silent: true });
+    } finally {
+      state.menuRefreshInFlight = false;
+      if (state.menuRefreshQueued) {
+        state.menuRefreshQueued = false;
+        scheduleRoadsideMenuRefresh();
+      }
+    }
+  }, 250);
+}
+
+function setupRoadsideMenuRealtime() {
+  if (!isSupabaseConfigured || !supabase || state.menuChannel) return;
+  state.menuChannel = supabase.channel(`box-coffee-roadside-menu-${state.profile.branch_id}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "menu_categories" }, scheduleRoadsideMenuRefresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "menu_products" }, scheduleRoadsideMenuRefresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "product_option_groups" }, scheduleRoadsideMenuRefresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "product_option_items" }, scheduleRoadsideMenuRefresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "car_service_points" }, scheduleRoadsideMenuRefresh)
+    .subscribe((status) => {
+      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        console.warn("Roadside menu realtime is unavailable; resume and interval refresh remain active.");
+      }
+    });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") scheduleRoadsideMenuRefresh();
+  });
+  window.setInterval(() => {
+    if (document.visibilityState === "visible") scheduleRoadsideMenuRefresh();
+  }, 60000);
 }
 
 function renderCatalog() {

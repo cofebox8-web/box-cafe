@@ -42,6 +42,8 @@ let staffAccounts = [];
 let adminProfile = null;
 let adminWorkspaceMounted = false;
 let adminOrdersChannel = null;
+let adminMenuChannel = null;
+let adminMenuRefreshTimer = null;
 let servicePointBranches = [];
 let servicePoints = [];
 let activeQrPoint = null;
@@ -280,6 +282,27 @@ function subscribeAdminOrders() {
     .subscribe((status) => {
       if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
         showToast('انقطع تحديث الطلبات المباشر. حدّث الصفحة إذا لم تعد المزامنة.');
+      }
+    });
+}
+
+function scheduleAdminMenuRefresh() {
+  window.clearTimeout(adminMenuRefreshTimer);
+  adminMenuRefreshTimer = window.setTimeout(() => {
+    reloadAdminMenu().catch((error) => showToast(error.message || 'تعذر تحديث المنيو لحظياً.'));
+  }, 250);
+}
+
+function subscribeAdminMenu() {
+  if (!supabase || adminMenuChannel) return;
+  adminMenuChannel = supabase.channel('box-coffee-admin-menu')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_categories' }, scheduleAdminMenuRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_products' }, scheduleAdminMenuRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'product_option_groups' }, scheduleAdminMenuRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'product_option_items' }, scheduleAdminMenuRefresh)
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        showToast('تعذر تشغيل التحديث اللحظي للمنيو. ستتم المزامنة عند إعادة الفتح.');
       }
     });
 }
@@ -1512,6 +1535,7 @@ function mountAdminWorkspace() {
     renderStaffAccountsBoxes();
     upgradeAllSelects();
     subscribeAdminOrders();
+    subscribeAdminMenu();
     reloadAdminOrders().catch((error) => showToast(error.message || 'تعذر تحميل سجل الطلبات.'));
     reloadAdminMenu().catch((error) => showToast(error.message || 'تعذر تحميل منيو المطعم.'));
     reloadServicePoints().catch((error) => showToast(error.message || 'تعذر تحميل نقاط الخدمة.'));
@@ -1542,6 +1566,10 @@ async function initAdminERP() {
       if (adminOrdersChannel) {
         supabase.removeChannel(adminOrdersChannel);
         adminOrdersChannel = null;
+      }
+      if (adminMenuChannel) {
+        supabase.removeChannel(adminMenuChannel);
+        adminMenuChannel = null;
       }
       window.location.replace('/login?signed_out=1&next=/admin');
     }
@@ -1640,7 +1668,8 @@ async function initAdminERP() {
   document.getElementById('btn-add-service-point')?.addEventListener('click', () => openServicePointModal());
   document.getElementById('form-service-point')?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const submit = event.currentTarget.querySelector('[type="submit"]');
+    const form = event.currentTarget;
+    const submit = form.querySelector('[type="submit"]');
     if (submit) submit.disabled = true;
     try {
       const saved = await saveServicePoint({
@@ -1652,7 +1681,7 @@ async function initAdminERP() {
       });
       if (saved) {
         document.getElementById('modal-service-point').hidden = true;
-        event.currentTarget.reset();
+        form.reset();
       }
     } finally {
       if (submit) submit.disabled = false;
@@ -1690,6 +1719,7 @@ async function initAdminERP() {
 
   document.getElementById('form-staff-account')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const form = e.currentTarget;
     const submitBtn = document.getElementById('staff-save-btn');
     const errorEl = document.getElementById('staff-modal-error');
     if (errorEl) { errorEl.textContent = ''; errorEl.hidden = true; }
@@ -1734,7 +1764,7 @@ async function initAdminERP() {
       document.getElementById('modal-staff-account').hidden = true;
       await reloadStaffAccounts();
       showToast(`تم حفظ حساب الموظف «${name}» (${roleLabel(role)}) بنجاح.`);
-      e.currentTarget.reset();
+      form.reset();
     } catch (err) {
       if (errorEl) {
         errorEl.textContent = err.message || 'تعذر حفظ حساب الموظف.';
@@ -1888,6 +1918,7 @@ async function initAdminERP() {
 
   document.getElementById('form-add-category')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const form = e.currentTarget;
     const name = (document.getElementById('category-name-input')?.value || '').trim();
     const errBanner = document.getElementById('category-modal-error');
     if (errBanner) {
@@ -1895,7 +1926,7 @@ async function initAdminERP() {
       errBanner.textContent = '';
     }
     if (!name) return;
-    const submit = document.getElementById('category-save-btn') || e.currentTarget.querySelector('[type="submit"]');
+    const submit = document.getElementById('category-save-btn') || form.querySelector('[type="submit"]');
     const origText = submit ? submit.textContent : '';
     if (submit) {
       submit.disabled = true;
@@ -1905,7 +1936,7 @@ async function initAdminERP() {
       await saveAdminMenuCategory(name);
       document.getElementById('modal-add-category').hidden = true;
       showToast(`تمت إضافة القسم "${name}" بنجاح`);
-      e.currentTarget.reset();
+      form.reset();
 
       // تحديث قائمة الأقسام في نافذة المنتج تلقائياً
       const catSelect = document.getElementById('item-category-select');
@@ -1933,6 +1964,7 @@ async function initAdminERP() {
 
   document.getElementById('form-menu-item')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const form = e.currentTarget;
     const errBanner = document.getElementById('menu-item-modal-error');
     if (errBanner) {
       errBanner.hidden = true;
@@ -1941,7 +1973,7 @@ async function initAdminERP() {
     const id = document.getElementById('item-id-input').value;
     const name = document.getElementById('item-name-input').value.trim();
     const fileInput = document.getElementById('item-image-file');
-    const submit = document.getElementById('menu-item-save-btn') || e.currentTarget.querySelector('[type="submit"]');
+    const submit = document.getElementById('menu-item-save-btn') || form.querySelector('[type="submit"]');
     const origText = submit ? submit.textContent : '';
     if (submit) {
       submit.disabled = true;

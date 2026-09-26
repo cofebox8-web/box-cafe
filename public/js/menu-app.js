@@ -20,7 +20,12 @@ const state = {
   isSubmitting: false,
   confirmedOrder: null,
   trackingToken: null,
-  statusPollingTimer: null
+  statusPollingTimer: null,
+  menuRealtimeChannel: null,
+  menuRefreshTimer: null,
+  menuRefreshInFlight: false,
+  menuRefreshQueued: false,
+  menuPollTimer: null
 };
 
 // SVG Icons Dictionary (Clean, Scalable, No Emojis)
@@ -216,6 +221,7 @@ async function initApp() {
   }
 
   await loadMenuData();
+  setupCustomerMenuRealtime();
   if (state.menuData && !state.isDemo) {
     try {
       const savedOrder = JSON.parse(sessionStorage.getItem(`box_cofe_confirmed_${state.branchSlug}_${state.qrToken}`) || "null");
@@ -230,9 +236,9 @@ async function initApp() {
 }
 
 // Fetch Menu Data from Supabase RPC or Demo Mock
-async function loadMenuData() {
-  showSkeletonLoading(true);
-  hideErrorScreen();
+async function loadMenuData({ silent = false } = {}) {
+  if (!silent) showSkeletonLoading(true);
+  if (!silent) hideErrorScreen();
 
   const urlParams = new URLSearchParams(window.location.search);
   const demoState = urlParams.get("demo_state");
@@ -282,10 +288,55 @@ async function loadMenuData() {
     renderApp();
   } catch (err) {
     console.error("Network or execution exception:", err);
-    showErrorScreen("خطأ في الاتصال", "تعذر جلب المنيو من الخادم. يرجى التحقق من اتصالك بالإنترنت وإعادة المحاولة.");
+    if (!silent) {
+      showErrorScreen("خطأ في الاتصال", "تعذر جلب المنيو من الخادم. يرجى التحقق من اتصالك بالإنترنت وإعادة المحاولة.");
+    } else {
+      console.warn("Live menu refresh failed; keeping the last confirmed menu.", err);
+    }
   } finally {
-    showSkeletonLoading(false);
+    if (!silent) showSkeletonLoading(false);
   }
+}
+
+function scheduleCustomerMenuRefresh() {
+  window.clearTimeout(state.menuRefreshTimer);
+  state.menuRefreshTimer = window.setTimeout(async () => {
+    if (state.menuRefreshInFlight) {
+      state.menuRefreshQueued = true;
+      return;
+    }
+    state.menuRefreshInFlight = true;
+    try {
+      await loadMenuData({ silent: true });
+    } finally {
+      state.menuRefreshInFlight = false;
+      if (state.menuRefreshQueued) {
+        state.menuRefreshQueued = false;
+        scheduleCustomerMenuRefresh();
+      }
+    }
+  }, 250);
+}
+
+function setupCustomerMenuRealtime() {
+  if (state.isDemo || !isSupabaseConfigured || !supabase || state.menuRealtimeChannel) return;
+  state.menuRealtimeChannel = supabase.channel(`box-coffee-menu-${state.branchSlug}-${state.qrToken}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "menu_categories" }, scheduleCustomerMenuRefresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "menu_products" }, scheduleCustomerMenuRefresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "product_option_groups" }, scheduleCustomerMenuRefresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "product_option_items" }, scheduleCustomerMenuRefresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "car_service_points" }, scheduleCustomerMenuRefresh)
+    .subscribe((status) => {
+      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        console.warn("Customer menu realtime is unavailable; visibility refresh remains active.");
+      }
+    });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") scheduleCustomerMenuRefresh();
+  });
+  state.menuPollTimer = window.setInterval(() => {
+    if (document.visibilityState === "visible") scheduleCustomerMenuRefresh();
+  }, 60000);
 }
 
 // Render Header, Categories, Products, and Cart
