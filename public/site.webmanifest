@@ -1,15 +1,16 @@
 {
   "name": "BOX COFE",
   "short_name": "BOX COFE",
-  "description": "منيو وطلبات بوكس كافي لخدمة السيارات",
-  "lang": "ar",
-  "dir": "rtl",
-  "start_url": "/",
-  "scope": "/",
+  "description": "نظام بوكس كافي لخدمة السيارات والمنيو السريع",
+  "start_url": "/menu",
   "display": "standalone",
-  "background_color": "#0b0b0f",
-  "theme_color": "#0b0b0f",
+  "background_color": "#F6F3ED",
+  "theme_color": "#26231F",
   "icons": [
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
   ]
 }

@@ -1,50 +1,50 @@
 /* ==========================================================================
    Box Coffee - Customer Menu & QR Ordering Stylesheet
    Dark Luxury Identity: أسود داكن طافي فخم + بنفسجي كهربائي نيون/رويال احترافي
-   Matte Black (#0B0B0F, #13131A) & Electric Violet (#8B5CF6, #A855F7, #C084FC)
+   Off-White Canvas (#F6F3ED, #FFFFFF) & Matte Espresso (#26231F)
    Mobile Horizontal Cards, In-Card Steppers, Responsive Cart Sidebar & Drawer
    ========================================================================== */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Matte Black Dark Palette Tokens (أسود داكن طافي فخم بدون لمعان مزعج) */
-  --bg-page: #0b0b0f;           /* الخلفية الأساسية: أسود طافي عميق جداً */
-  --bg-card: #13131a;           /* أسطح الكاردات: أسود رمادي داكن مطفي */
-  --bg-surface: #1a1a24;        /* عناصر الإدخال، الأزرار الثانوية، الكبسولات */
-  --bg-subtle: #222230;         /* حالات التحويم والتباين */
-  --bg-muted: #2a2a3c;          /* الفواصل والحالات الخاملة */
+  /* Warm Off-White / Natural Linen Luxury Tokens (نفس ستايل الصورة: أوف وايت دافئ وراقي) */
+  --bg-page: #F6F3ED;           /* خلفية الصفحة الأساسية: أوف وايت طبيعي دافئ وناعم */
+  --bg-card: #FFFFFF;           /* أسطح الكاردات: أبيض نقي معزول بحواف ناعمة */
+  --bg-surface: #EDE7DE;        /* خلفيات الصور والكبسولات ومربعات الخيارات */
+  --bg-subtle: #E5DFD4;         /* حالات التحويم والتباين الهادئ */
+  --bg-muted: #D9D2C5;          /* الفواصل والحالات الخاملة */
 
-  /* High-Contrast Typography (نصوص ناصعة ومقروءة بوضوح تام على الخلفية الداكنة) */
-  --text-primary: #f8fafc;      /* أبيض ناصع للعناوين وأسماء المنتجات */
-  --text-secondary: #94a3b8;    /* رمادي فضي هادئ للأوصاف والبيانات التوضيحية */
-  --text-muted: #64748b;        /* رمادي داكن للملاحظات الثانوية */
-  --text-inverse: #ffffff;
+  /* High-Contrast Luxury Typography */
+  --text-primary: #1F1D1A;      /* بني إسبريسو غامق جداً وفخم للعناوين والأسعار */
+  --text-secondary: #6B655C;    /* رمادي بني دافئ للأوصاف والملاحظات */
+  --text-muted: #8C867C;        /* رمادي داكن ناعم للبيانات الثانوية */
+  --text-inverse: #FFFFFF;      /* أبيض ناصع للنصوص داخل الأزرار الداكنة */
 
-  /* Electric Purple Brand Identity (بنفسجي كهرباء / نيون ملكي احترافي) */
-  --brand-primary: #8b5cf6;          /* البنفسجي الكهربائي الأساسي */
-  --brand-primary-hover: #7c3aed;    /* بنفسجي ملكي غني عند التحويم */
-  --brand-primary-light: rgba(139, 92, 246, 0.15); /* هالة بنفسجية شفافة */
-  --brand-primary-border: rgba(139, 92, 246, 0.35); /* حدود بنفسجية متوهجة خفيفة */
-  --brand-electric: #a855f7;         /* بنفسجي كهربائي متوهج */
-  --brand-electric-neon: #c084fc;    /* نيون ليلكي خفيف للإبراز والأسعار */
+  /* Matte Professional Coffee Buttons & Accents (لون قهوة طافي احترافي) */
+  --brand-primary: #26231F;          /* لون القهوة الداكن المطفي الأساسي */
+  --brand-primary-hover: #38342E;    /* قهوة محمصة أفتح قليلاً عند التحويم */
+  --brand-primary-light: #EDE7DE;    /* هالة قهوة ناعمة وشفافة */
+  --brand-primary-border: rgba(38, 35, 31, 0.16); /* حدود ناعمة بلون القهوة */
+  --brand-electric: #38342E;         /* لون القهوة المتوسط */
+  --brand-electric-neon: #7D6853;    /* لون قهوة محمص للتمييز والتفاصيل */
 
   /* Price & Highlight */
-  --brand-price: #c084fc;            /* لون السعر: بنفسجي نيون مميز وواضح */
-  --brand-price-glow: 0 0 10px rgba(192, 132, 252, 0.25);
+  --brand-price: #1F1D1A;            /* لون السعر: إسبريسو داكن بارز وأصيل */
+  --brand-price-glow: none;
 
   /* Borders & Dividers */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(139, 92, 246, 0.3);
-  --border-focus: #8b5cf6;
+  --border-subtle: #E8E2D8;
+  --border-strong: rgba(38, 35, 31, 0.18);
+  --border-focus: #26231F;
 
   /* Functional Status Colors */
-  --status-success: #10b981;
-  --status-success-bg: rgba(16, 185, 129, 0.14);
-  --status-error: #ef4444;
-  --status-error-bg: rgba(239, 68, 68, 0.14);
-  --status-warning: #f59e0b;
-  --status-warning-bg: rgba(245, 158, 11, 0.14);
+  --status-success: #15803d;
+  --status-success-bg: #dcfce7;
+  --status-error: #b91c1c;
+  --status-error-bg: #fee2e2;
+  --status-warning: #b45309;
+  --status-warning-bg: #fef3c7;
 
   /* Typography Scale */
   --font-sans: system-ui, -apple-system, "Segoe UI", "Tajawal", "Noto Sans Arabic", "Cairo", Arial, sans-serif;
@@ -69,18 +69,18 @@
   --space-10: 2.5rem;
 
   /* Radii Tokens */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-full: 9999px;
 
-  /* Shadows (Dark Matte with Electric Purple Glows) */
-  --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.08);
-  --shadow-elevated: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 24px rgba(139, 92, 246, 0.2);
-  --shadow-floating-bar: 0 -4px 24px rgba(0, 0, 0, 0.75), 0 -2px 14px rgba(139, 92, 246, 0.35);
-  --shadow-electric-glow: 0 0 16px rgba(139, 92, 246, 0.45);
+  /* Organic Soft Shadows (ظلال ناعمة طبيعية بدون لمعان مزعج) */
+  --shadow-subtle: 0 2px 6px rgba(40, 36, 32, 0.04);
+  --shadow-card: 0 4px 18px rgba(40, 36, 32, 0.05), 0 1px 2px rgba(40, 36, 32, 0.03);
+  --shadow-elevated: 0 20px 45px rgba(40, 36, 32, 0.12);
+  --shadow-floating-bar: 0 -4px 20px rgba(40, 36, 32, 0.1);
+  --shadow-electric-glow: 0 4px 14px rgba(38, 35, 31, 0.18);
 
   /* Layout Width */
   --container-max: 1200px;
@@ -173,14 +173,14 @@ a {
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800;900&display=swap");
 
 .menu-header {
-  background: rgba(11, 10, 17, 0.94);
+  background: rgba(246, 243, 237, 0.94);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
-  border-bottom: 1px solid rgba(139, 92, 246, 0.24);
+  border-bottom: 1px solid rgba(38, 35, 31, 0.08);
   position: sticky;
   top: 0;
   z-index: 40;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 2px 10px rgba(40, 36, 32, 0.04);
 }
 
 .menu-header::after {
@@ -189,7 +189,7 @@ a {
   bottom: -1px;
   inset-inline: 8%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.75), transparent);
+  background: linear-gradient(90deg, transparent, rgba(125, 104, 83, 0.35), transparent);
   pointer-events: none;
 }
 
@@ -217,11 +217,11 @@ a {
 }
 
 .logo-word-box {
-  color: #ffffff;
+  color: #1F1D1A;
 }
 
 .logo-word-cofe {
-  color: #c084fc;
+  color: #7D6853;
 }
 
 .brand-monogram-box {
@@ -229,8 +229,8 @@ a {
   height: 44px;
   border-radius: 13px;
   background: linear-gradient(145deg, #1a162b 0%, #0e0c18 100%);
-  border: 1.5px solid rgba(192, 132, 252, 0.5);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 18px rgba(139, 92, 246, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  border: 1.5px solid rgba(38, 35, 31, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 18px rgba(38, 35, 31, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -239,7 +239,7 @@ a {
 .brand-monogram-svg {
   width: 30px;
   height: 30px;
-  filter: drop-shadow(0 2px 6px rgba(139, 92, 246, 0.45));
+  filter: drop-shadow(0 2px 6px rgba(38, 35, 31, 0.15));
 }
 
 .brand-wordmark {
@@ -257,8 +257,8 @@ a {
 }
 
 .brand-title-accent {
-  color: #c084fc;
-  text-shadow: 0 0 16px rgba(192, 132, 252, 0.45);
+  color: #1F1D1A;
+  text-shadow: 0 0 16px rgba(38, 35, 31, 0.2);
 }
 
 #modal-product-desc,
@@ -273,8 +273,8 @@ a {
   gap: 5px;
   padding: 5px 10px;
   border-radius: 9999px;
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(192, 132, 252, 0.3);
+  background: rgba(38, 35, 31, 0.15);
+  border: 1px solid rgba(38, 35, 31, 0.2);
   color: #e9d5ff;
   font-size: 0.6rem;
   font-weight: 800;
@@ -283,7 +283,7 @@ a {
 }
 
 .edition-spark {
-  color: #c084fc;
+  color: #1F1D1A;
   font-size: 0.68rem;
 }
 
@@ -343,7 +343,7 @@ a {
 
 .search-input:focus {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25), 0 0 12px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 0 3px rgba(38, 35, 31, 0.1);
   outline: none;
 }
 
@@ -418,16 +418,16 @@ a {
 }
 
 .category-tab:hover {
-  background: var(--bg-surface);
-  color: #ffffff;
-  border-color: rgba(139, 92, 246, 0.3);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border-color: rgba(38, 35, 31, 0.25);
 }
 
 .category-tab.active {
   background: var(--brand-primary);
   border-color: var(--brand-primary);
   color: #ffffff;
-  box-shadow: 0 0 14px rgba(139, 92, 246, 0.45);
+  box-shadow: 0 4px 12px rgba(38, 35, 31, 0.2);
 }
 
 /* Main Layout: Products vs Desktop Cart Sidebar */
@@ -462,7 +462,7 @@ a {
   margin: 0 0 4px;
   font-size: var(--font-xl);
   font-weight: 850;
-  color: #ffffff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -474,8 +474,8 @@ a {
   width: 4px;
   height: 20px;
   border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--brand-electric-neon), var(--brand-primary));
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+  background: var(--brand-primary);
+  box-shadow: none;
 }
 
 .category-desc {
@@ -533,7 +533,7 @@ a {
 
 .product-card:hover {
   border-color: var(--brand-primary-border);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65), 0 0 18px rgba(139, 92, 246, 0.22);
+  box-shadow: 0 8px 24px rgba(40, 36, 32, 0.08);
   transform: translateY(-4px);
 }
 
@@ -556,11 +556,7 @@ a {
 }
 
 .product-card-media::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(19, 19, 26, 0.8) 0%, transparent 40%);
-  pointer-events: none;
+  display: none;
 }
 
 .product-card-img {
@@ -582,16 +578,16 @@ a {
   top: 8px;
   right: 8px;
   z-index: 3;
-  background: rgba(11, 11, 15, 0.88);
+  background: rgba(246, 243, 237, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(192, 132, 252, 0.5);
-  color: #f3e8ff;
+  border: 1px solid #D5CEBF;
+  color: #1F1D1A;
   font-size: 0.68rem;
   font-weight: 800;
   padding: 2.5px 8px;
   border-radius: var(--radius-full);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px rgba(40, 36, 32, 0.06);
   white-space: nowrap;
 }
 
@@ -627,7 +623,7 @@ a {
   margin: 0 0 4px;
   font-size: var(--font-base);
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary);
   line-height: 1.35;
 }
 
@@ -648,7 +644,7 @@ a {
   gap: 8px;
   margin-top: auto;
   padding-top: var(--space-2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid #EFEAE2;
   width: 100%;
 }
 
@@ -678,28 +674,29 @@ a {
 /* Unified Luxury Add Button across ALL Cards (Full Width at Bottom / جوه) */
 .add-product-btn {
   width: 100%;
-  min-height: 38px;
-  padding: 0 10px;
-  border-radius: 11px;
-  font-size: 0.8rem;
-  font-weight: 850;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  background: var(--brand-primary);
   color: #ffffff;
-  border: 1px solid rgba(192, 132, 252, 0.45);
-  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--brand-primary);
+  box-shadow: 0 2px 8px rgba(38, 35, 31, 0.15);
   transition: all 0.16s ease;
   white-space: nowrap;
   cursor: pointer;
 }
 
 .add-product-btn:hover {
-  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
-  box-shadow: 0 4px 18px rgba(139, 92, 246, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  background: var(--brand-primary-hover);
+  border-color: var(--brand-primary-hover);
   transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(38, 35, 31, 0.22);
 }
 
 .add-product-btn:active {
@@ -711,10 +708,10 @@ a {
   display: inline-flex;
   align-items: center;
   background: var(--bg-surface);
-  border: 1px solid var(--brand-primary-border);
-  border-radius: var(--radius-md);
+  border: 1px solid #D5CEBF;
+  border-radius: var(--radius-full);
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 2px 6px rgba(40, 36, 32, 0.05);
 }
 
 .card-inline-stepper button {
@@ -722,7 +719,7 @@ a {
   height: 32px;
   display: grid;
   place-items: center;
-  color: var(--brand-electric-neon);
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 800;
   transition: background 0.15s ease;
@@ -738,7 +735,7 @@ a {
   text-align: center;
   font-weight: 850;
   font-size: 0.85rem;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* In-Card Options Badge Group */
@@ -792,7 +789,7 @@ dialog.customization-modal {
   width: calc(100% - 24px);
   border-radius: 22px;
   overflow: visible;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 32px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 32px rgba(38, 35, 31, 0.15);
   position: fixed;
   inset: 0;
   margin: auto;
@@ -805,16 +802,17 @@ dialog.customization-modal {
 dialog.customization-modal::backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(5, 5, 8, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(38, 35, 31, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   touch-action: none;
   overscroll-behavior: none;
 }
 
 .modal-content-shell {
-  background: #111118;
-  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: #FFFFFF;
+  border: 1px solid #E8E2D8;
+  box-shadow: 0 24px 60px rgba(40, 36, 32, 0.18);
   border-radius: 22px;
   display: flex;
   flex-direction: column;
@@ -833,9 +831,9 @@ dialog.customization-modal::backdrop {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #1a1a26;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
+  background: #F6F3ED;
+  border: 1px solid #DDD6CA;
+  color: #5A554D;
   display: grid;
   place-items: center;
   transition: all 0.15s ease;
@@ -851,8 +849,8 @@ dialog.customization-modal::backdrop {
 /* Side-by-Side Hero Header: Authentic 1:1 Natural Thumbnail + Info */
 .modal-hero-header {
   padding: 16px 18px 14px;
-  background: linear-gradient(180deg, #181824 0%, #111118 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: #FAF8F5;
+  border-bottom: 1px solid #EDE7DE;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -869,9 +867,9 @@ dialog.customization-modal::backdrop {
   min-width: 78px;
   border-radius: 14px;
   overflow: hidden;
-  background: #1a1a28;
-  border: 1.5px solid rgba(139, 92, 246, 0.35);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px rgba(139, 92, 246, 0.2);
+  background: #EDE7DE;
+  border: 1px solid #DDD6CA;
+  box-shadow: 0 2px 8px rgba(40, 36, 32, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -898,7 +896,7 @@ dialog.customization-modal::backdrop {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 850;
-  color: #ffffff;
+  color: var(--text-primary);
   line-height: 1.3;
 }
 
@@ -919,11 +917,11 @@ dialog.customization-modal::backdrop {
   margin-top: 3px;
   font-size: 0.78rem;
   font-weight: 800;
-  color: #c084fc;
-  background: rgba(139, 92, 246, 0.14);
-  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: #1F1D1A;
+  background: #EDE7DE;
+  border: 1px solid #D5CEBF;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-full);
 }
 
 /* Modal Body & Custom Scrollbar */
@@ -945,7 +943,7 @@ dialog.customization-modal::backdrop {
 .option-group-section {
   margin-bottom: 16px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid #EDE7DE;
 }
 
 .option-group-section:last-child {
@@ -976,13 +974,13 @@ dialog.customization-modal::backdrop {
 }
 
 .group-requirement-pill.required {
-  background: rgba(139, 92, 246, 0.18);
-  color: #c084fc;
-  border: 1px solid rgba(139, 92, 246, 0.4);
+  background: rgba(38, 35, 31, 0.15);
+  color: #1F1D1A;
+  border: 1px solid rgba(38, 35, 31, 0.15);
 }
 
 .group-requirement-pill.optional {
-  background: #1a1a26;
+  background: #F6F3ED;
   color: #94a3b8;
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -1066,14 +1064,14 @@ dialog.customization-modal::backdrop {
 
 .option-tile:hover {
   background: #1c1c2b;
-  border-color: rgba(139, 92, 246, 0.35);
+  border-color: rgba(38, 35, 31, 0.15);
   transform: translateY(-1px);
 }
 
 .option-tile.active {
-  background: rgba(139, 92, 246, 0.16);
-  border-color: #8b5cf6;
-  box-shadow: 0 0 14px rgba(139, 92, 246, 0.3), inset 0 0 0 1px #8b5cf6;
+  background: rgba(38, 35, 31, 0.15);
+  border-color: #26231F;
+  box-shadow: 0 0 14px rgba(38, 35, 31, 0.15), inset 0 0 0 1px #26231F;
 }
 
 .tile-main-info {
@@ -1101,8 +1099,8 @@ dialog.customization-modal::backdrop {
 }
 
 .option-tile.active .tile-icon-bubble {
-  background: rgba(139, 92, 246, 0.28);
-  color: #c084fc;
+  background: rgba(38, 35, 31, 0.15);
+  color: #1F1D1A;
 }
 
 .tile-name {
@@ -1160,11 +1158,11 @@ dialog.customization-modal::backdrop {
 }
 
 .option-tile.active .tile-check-bubble {
-  background: #8b5cf6;
-  border-color: #8b5cf6;
+  background: #26231F;
+  border-color: #26231F;
   color: #ffffff;
   opacity: 1;
-  box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 8px rgba(38, 35, 31, 0.15);
 }
 
 /* Quick Barista Notes & Suggestions */
@@ -1188,8 +1186,8 @@ dialog.customization-modal::backdrop {
 }
 
 .quick-chip-btn {
-  background: #181824;
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  background: #F6F3ED;
+  border: 1px solid rgba(38, 35, 31, 0.15);
   color: #cbd5e1;
   font-size: 0.72rem;
   font-weight: 700;
@@ -1200,8 +1198,8 @@ dialog.customization-modal::backdrop {
 }
 
 .quick-chip-btn:hover {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: #8b5cf6;
+  background: rgba(38, 35, 31, 0.15);
+  border-color: #26231F;
   color: #ffffff;
 }
 
@@ -1212,7 +1210,7 @@ dialog.customization-modal::backdrop {
 .modal-note-input {
   width: 100%;
   padding: 9px 12px;
-  background: #151520;
+  background: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   font-size: 0.8rem;
@@ -1222,14 +1220,14 @@ dialog.customization-modal::backdrop {
 
 .modal-note-input:focus {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 0 0 3px rgba(38, 35, 31, 0.15);
   outline: none;
 }
 
 /* Modal Sticky Footer */
 .modal-footer {
   padding: 12px 18px;
-  background: #13131c;
+  background: #FAF8F5;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
@@ -1241,11 +1239,11 @@ dialog.customization-modal::backdrop {
 .quantity-stepper {
   display: flex;
   align-items: center;
-  background: #181824;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: #F6F3ED;
+  border: 1px solid rgba(38, 35, 31, 0.15);
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 10px rgba(38, 35, 31, 0.15);
 }
 
 .stepper-btn {
@@ -1253,8 +1251,8 @@ dialog.customization-modal::backdrop {
   height: 38px;
   display: grid;
   place-items: center;
-  background: #181824;
-  color: var(--brand-electric-neon);
+  background: #F6F3ED;
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 800;
   transition: background 0.15s ease;
@@ -1270,13 +1268,13 @@ dialog.customization-modal::backdrop {
   text-align: center;
   font-weight: 850;
   font-size: 0.9rem;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .confirm-add-cart-btn {
   flex: 1;
-  min-height: 42px;
-  border-radius: 10px;
+  min-height: 44px;
+  border-radius: var(--radius-full);
   background: var(--brand-primary);
   color: #ffffff;
   font-size: 0.88rem;
@@ -1284,14 +1282,14 @@ dialog.customization-modal::backdrop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-inline: 16px;
-  box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+  padding-inline: 18px;
+  box-shadow: 0 4px 14px rgba(38, 35, 31, 0.2);
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .confirm-add-cart-btn:hover {
   background: var(--brand-primary-hover);
-  box-shadow: 0 0 24px rgba(139, 92, 246, 0.55);
+  box-shadow: 0 6px 18px rgba(38, 35, 31, 0.28);
 }
 
 .confirm-add-cart-btn:disabled {
@@ -1391,7 +1389,7 @@ dialog.customization-modal::backdrop {
   display: grid;
   place-items: center;
   color: var(--brand-electric-neon);
-  box-shadow: 0 0 16px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 16px rgba(38, 35, 31, 0.15);
 }
 
 .cart-empty-icon-ring svg {
@@ -1430,7 +1428,7 @@ dialog.customization-modal::backdrop {
 .return-to-menu-link:hover {
   background: var(--brand-primary);
   color: #ffffff;
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 0 12px rgba(38, 35, 31, 0.15);
 }
 
 /* ==========================================================================
@@ -1443,8 +1441,8 @@ dialog.customization-modal::backdrop {
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: #111118;
+  border-bottom: 1px solid #EDE7DE;
+  background: #FAF8F5;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -1454,7 +1452,7 @@ dialog.customization-modal::backdrop {
   margin: 0;
   font-size: 1.18rem;
   font-weight: 850;
-  color: #ffffff;
+  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
@@ -1471,9 +1469,9 @@ dialog.customization-modal::backdrop {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  background: #F6F3ED;
+  border: 1px solid #DDD6CA;
+  color: #5A554D;
   cursor: pointer;
   transition: all 0.15s ease;
   padding: 0;
@@ -1519,8 +1517,8 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(109, 40, 217, 0.05) 100%);
-  border: 1px solid rgba(192, 132, 252, 0.25);
+  background: #F6F3ED;
+  border: 1px solid #E2DCD4;
   border-radius: 14px;
   margin-bottom: 14px;
 }
@@ -1529,11 +1527,11 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(139, 92, 246, 0.2);
-  border: 1px solid rgba(192, 132, 252, 0.35);
+  background: #EDE7DE;
+  border: 1px solid #DDD6CA;
   display: grid;
   place-items: center;
-  color: #c084fc;
+  color: var(--brand-primary);
   flex-shrink: 0;
 }
 
@@ -1546,13 +1544,13 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   display: block;
   font-size: 0.88rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .concierge-text small {
   display: block;
   font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 
@@ -1569,18 +1567,19 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
 }
 
 .cart-item-row {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(139, 92, 246, 0.14);
+  background: #FFFFFF;
+  border: 1px solid #ECE7DE;
   border-radius: 14px;
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: 0 2px 8px rgba(40, 36, 32, 0.04);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .cart-item-row:hover {
-  border-color: rgba(192, 132, 252, 0.3);
+  border-color: rgba(38, 35, 31, 0.2);
   background: rgba(255, 255, 255, 0.045);
 }
 
@@ -1595,7 +1594,7 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   display: block;
   font-size: 0.96rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary);
   line-height: 1.3;
 }
 
@@ -1608,15 +1607,14 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
 
 .cart-item-note-text {
   font-size: 0.72rem;
-  color: var(--brand-electric-neon);
+  color: #7D6853;
   margin-top: 3px;
 }
 
 .cart-item-price-sum {
   font-size: 1.05rem;
   font-weight: 900;
-  color: var(--brand-price);
-  text-shadow: 0 0 12px rgba(192, 132, 252, 0.35);
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
@@ -1625,7 +1623,7 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   align-items: center;
   justify-content: space-between;
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid #EFEAE2;
 }
 
 .item-delete-btn {
@@ -1651,9 +1649,9 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
 .mini-stepper {
   display: flex;
   align-items: center;
-  background: #171520;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  border-radius: 9px;
+  background: #F6F3ED;
+  border: 1px solid #DDD6CA;
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
@@ -1662,7 +1660,7 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   height: 30px;
   display: grid;
   place-items: center;
-  color: #c084fc;
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 850;
   background: transparent;
@@ -1672,8 +1670,8 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
 }
 
 .mini-stepper button:hover {
-  background: rgba(139, 92, 246, 0.25);
-  color: #ffffff;
+  background: #EDE7DE;
+  color: var(--text-primary);
 }
 
 .mini-stepper span {
@@ -1681,7 +1679,7 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   text-align: center;
   font-size: 0.88rem;
   font-weight: 850;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* Extra Notes Inputs in Cart (High-end Luxury Input Styling) */
@@ -1702,32 +1700,32 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   display: block;
   font-size: 0.8rem;
   font-weight: 750;
-  color: rgba(255, 255, 255, 0.75);
+  color: #4A463F;
 }
 
 .text-input-field {
   width: 100%;
   height: 46px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #FFFFFF;
+  border: 1px solid #DDD6CA;
   border-radius: 12px;
   padding: 0 14px;
   font-family: inherit;
   font-size: 0.86rem;
-  color: #ffffff;
+  color: var(--text-primary);
   outline: none;
   transition: all 0.18s ease;
   box-sizing: border-box;
 }
 
 .text-input-field:focus {
-  border-color: #a855f7;
-  background: rgba(168, 85, 247, 0.08);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+  border-color: var(--brand-primary);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(38, 35, 31, 0.12);
 }
 
 .text-input-field::placeholder {
-  color: rgba(255, 255, 255, 0.32);
+  color: #A09A90;
   font-size: 0.82rem;
 }
 
@@ -1744,21 +1742,20 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   align-items: center;
   font-size: 1.05rem;
   font-weight: 850;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .totals-row .total-amount {
-  color: var(--brand-price);
+  color: var(--text-primary);
   font-size: 1.35rem;
   font-weight: 900;
-  text-shadow: 0 0 16px rgba(192, 132, 252, 0.5);
 }
 
 /* Drawer Footer & Submit Button */
 #mobile-cart-footer {
   padding: 14px 20px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: #111118;
+  border-top: 1px solid #EDE7DE;
+  background: #FAF8F5;
   position: sticky;
   bottom: 0;
   z-index: 10;
@@ -1767,24 +1764,25 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
 .submit-order-btn {
   width: 100%;
   min-height: 52px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 50%, #6d28d9 100%);
+  border-radius: var(--radius-full);
+  background: var(--brand-primary);
   color: #ffffff;
-  border: 1px solid rgba(216, 180, 254, 0.35);
+  border: 1px solid var(--brand-primary);
   font-size: 1rem;
   font-weight: 850;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 16px rgba(38, 35, 31, 0.22);
   transition: all 0.18s ease;
   cursor: pointer;
 }
 
 .submit-order-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 50%, #7c3aed 100%);
-  box-shadow: 0 8px 26px rgba(139, 92, 246, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: var(--brand-primary-hover);
+  border-color: var(--brand-primary-hover);
+  box-shadow: 0 6px 20px rgba(38, 35, 31, 0.3);
   transform: translateY(-2px);
 }
 
@@ -1819,12 +1817,12 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   position: fixed;
   bottom: 0;
   inset-inline: 0;
-  background: rgba(19, 19, 26, 0.95);
+  background: rgba(246, 243, 237, 0.95);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   padding: var(--space-3) var(--space-4);
   box-shadow: var(--shadow-floating-bar);
-  border-top: 1px solid rgba(139, 92, 246, 0.25);
+  border-top: 1px solid #E8E2D8;
   z-index: 50;
 }
 
@@ -1837,7 +1835,7 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
 .mobile-cart-trigger-btn {
   width: 100%;
   min-height: 50px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   background: var(--brand-primary);
   color: #ffffff;
   display: flex;
@@ -1845,7 +1843,7 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
   justify-content: space-between;
   padding-inline: var(--space-4);
   font-weight: 750;
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.45);
+  box-shadow: 0 4px 18px rgba(38, 35, 31, 0.25);
 }
 
 .mobile-cart-badge-combo {
@@ -1856,7 +1854,7 @@ dialog.mobile-cart-drawer .modal-scrollable-body {
 
 .mobile-cart-count-pill {
   background: #ffffff;
-  color: #7c3aed;
+  color: #38342E;
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-full);
   font-size: var(--font-xs);
@@ -1955,13 +1953,13 @@ dialog.confirm-dialog p {
 .order-confirmation-overlay {
   display: none;
   background: var(--bg-card);
-  border: 1px solid var(--brand-primary-border);
+  border: 1px solid #E8E2D8;
   border-radius: var(--radius-xl);
   padding: clamp(16px, 4vw, 28px) clamp(14px, 4vw, 24px);
   text-align: center;
   max-width: 520px;
   margin: 10px auto 20px;
-  box-shadow: var(--shadow-elevated);
+  box-shadow: 0 12px 35px rgba(40, 36, 32, 0.08);
   scroll-margin-top: 10px;
 }
 
@@ -1973,10 +1971,10 @@ dialog.confirm-dialog p {
   width: clamp(52px, 12vw, 64px);
   height: clamp(52px, 12vw, 64px);
   border-radius: 50%;
-  background: var(--brand-primary-light);
+  background: #EDE7DE;
   border: 2px solid var(--brand-primary);
-  color: var(--brand-electric-neon);
-  box-shadow: 0 0 22px rgba(139, 92, 246, 0.4);
+  color: var(--brand-primary);
+  box-shadow: 0 4px 14px rgba(38, 35, 31, 0.12);
   display: grid;
   place-items: center;
   margin: 0 auto 8px;
@@ -1991,7 +1989,7 @@ dialog.confirm-dialog p {
   margin: 0 0 4px;
   font-size: clamp(1.2rem, 4.5vw, 1.65rem);
   font-weight: 850;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .confirmation-subtitle {
@@ -2002,12 +2000,12 @@ dialog.confirm-dialog p {
 }
 
 .order-code-display-card {
-  background: var(--bg-surface);
-  border: 1px dashed var(--brand-primary-border);
+  background: #F6F3ED;
+  border: 1px dashed #D5CEBF;
   border-radius: var(--radius-lg);
   padding: 10px 14px;
   margin-bottom: 9px;
-  box-shadow: 0 0 18px rgba(139, 92, 246, 0.12);
+  box-shadow: none;
 }
 
 .code-label {
@@ -2022,8 +2020,7 @@ dialog.confirm-dialog p {
   font-family: var(--font-sans);
   font-size: clamp(2.3rem, 8vw, 3rem);
   font-weight: 900;
-  color: var(--brand-electric-neon);
-  text-shadow: 0 0 20px rgba(192, 132, 252, 0.5);
+  color: var(--text-primary);
   letter-spacing: 2px;
   display: block;
   margin: 1px 0 5px;
@@ -2034,9 +2031,9 @@ dialog.confirm-dialog p {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: var(--brand-primary-light);
-  border: 1px solid var(--brand-primary-border);
-  color: var(--brand-electric-neon);
+  background: #EDE7DE;
+  border: 1px solid #DDD6CA;
+  color: var(--text-primary);
   font-size: 0.72rem;
   font-weight: 750;
   padding: 0.2rem 0.65rem;
@@ -2047,8 +2044,8 @@ dialog.confirm-dialog p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background: #F6F3ED;
+  border: 1px solid #E8E2D8;
   border-radius: var(--radius-md);
   padding: 9px 12px;
   margin-bottom: 9px;
@@ -2060,7 +2057,7 @@ dialog.confirm-dialog p {
   gap: var(--space-2);
   font-size: 0.82rem;
   font-weight: 750;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .status-refresh-btn {
@@ -2068,9 +2065,9 @@ dialog.confirm-dialog p {
   align-items: center;
   gap: 4px;
   font-size: 0.72rem;
-  background: var(--brand-primary-light);
-  border: 1px solid var(--brand-primary-border);
-  color: var(--brand-electric-neon);
+  background: #EDE7DE;
+  border: 1px solid #DDD6CA;
+  color: var(--text-primary);
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius-md);
   font-weight: 700;
@@ -2089,7 +2086,7 @@ dialog.confirm-dialog p {
 }
 
 .confirmation-details-box {
-  background: var(--bg-surface);
+  background: #F6F3ED;
   border-radius: var(--radius-md);
   padding: 9px 12px;
   margin-bottom: 9px;
@@ -2101,93 +2098,12 @@ dialog.confirm-dialog p {
 }
 
 .confirmation-details-box .totals-row.final-total {
-  font-size: 0.92rem;
-}
-
-.confirmation-details-box .total-amount {
-  font-size: 1.15rem;
-}
-
-.confirmation-instructions {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  background: var(--bg-surface);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: var(--radius-md);
-  padding: 9px 12px;
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  line-height: 1.45;
-  text-align: right;
-  margin-bottom: 12px;
-}
-
-.confirmation-instructions svg {
-  color: var(--brand-primary);
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-}
-
-.new-order-reset-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  width: 100%;
-  min-height: 46px;
-  background: var(--brand-primary);
-  color: #ffffff;
-  font-size: 0.92rem;
-  font-weight: 800;
-  border-radius: var(--radius-md);
-  box-shadow: 0 0 16px rgba(139, 92, 246, 0.4);
-  transition: background 0.15s ease;
-  cursor: pointer;
-}
-
-.new-order-reset-btn:hover {
-  background: var(--brand-primary-hover);
-  box-shadow: 0 0 24px rgba(139, 92, 246, 0.6);
-}
-
-/* ==========================================================================
-   Error Screen View
-   ========================================================================== */
-
-.error-screen-view {
-  display: none;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
-  padding: var(--space-8) var(--space-5);
-  text-align: center;
-  max-width: 480px;
-  margin: var(--space-8) auto;
-  box-shadow: var(--shadow-card);
-}
-
-.error-screen-view.visible {
-  display: block;
-}
-
-.error-icon-circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--status-error-bg);
-  border: 2px solid var(--status-error);
-  color: var(--status-error);
-  display: grid;
-  place-items: center;
-  margin: 0 auto var(--space-3);
-}
-
-.error-screen-view h2 {
-  margin: 0 0 var(--space-2);
-  font-size: var(--font-xl);
-  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 850;
+  color: var(--text-primary);
 }
 
 .error-screen-view p {
@@ -2206,7 +2122,7 @@ dialog.confirm-dialog p {
   border-radius: var(--radius-md);
   font-size: var(--font-sm);
   font-weight: 750;
-  box-shadow: 0 0 14px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 0 14px rgba(38, 35, 31, 0.15);
 }
 
 /* ==========================================================================
@@ -2226,7 +2142,7 @@ dialog.confirm-dialog p {
 }
 
 .skeleton-box {
-  background: linear-gradient(90deg, #13131a 25%, #1a1a24 50%, #13131a 75%);
+  background: linear-gradient(90deg, #EDE7DE 25%, #F6F3ED 50%, #EDE7DE 75%);
   background-size: 200% 100%;
   animation: skeletonShimmer 1.5s infinite;
   border-radius: var(--radius-md);
