@@ -526,7 +526,7 @@ function renderProducts() {
           <div class="product-card-body">
             <div class="product-card-header">
               <h3 class="product-name">${escapeHtml(p.name)}</h3>
-              ${p.description ? `<p class="product-desc">${escapeHtml(p.description)}</p>` : `<p class="product-desc product-desc-empty">اختيار يومي محضّر بعناية من بوكس كافي.</p>`}
+              ${p.description ? `<p class="product-desc">${escapeHtml(p.description)}</p>` : ""}
             </div>
             <div class="product-card-bottom">
               <div class="price-container">

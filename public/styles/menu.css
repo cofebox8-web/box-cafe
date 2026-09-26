@@ -755,10 +755,6 @@ a {
   text-overflow: ellipsis;
 }
 
-.product-desc-empty {
-  opacity: 0.72;
-}
-
 .in-cart-count-pill {
   background: var(--brand-primary-light);
   color: var(--brand-electric-neon);
