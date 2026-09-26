@@ -644,9 +644,10 @@ a {
 
 .product-card-bottom {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
+  justify-content: flex-end;
+  gap: 9px;
   margin-top: auto;
   padding-top: var(--space-2);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -656,6 +657,7 @@ a {
   display: flex;
   align-items: baseline;
   gap: 3px;
+  align-self: flex-start;
 }
 
 .price-value {
@@ -669,9 +671,10 @@ a {
 .card-action-slot {
   display: flex;
   align-items: center;
-  flex: 1;
+  flex: 0 0 auto;
+  width: 100%;
   min-width: 0;
-  justify-content: flex-start;
+  justify-content: stretch;
 }
 
 /* Unified Luxury Add Button across ALL Cards */
@@ -744,10 +747,15 @@ a {
 /* In-Card Options Badge Group */
 .card-options-in-cart-group {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 4px;
   width: 100%;
   min-width: 0;
+}
+
+.card-options-in-cart-group .in-cart-count-pill {
+  align-self: flex-start;
 }
 
 .card-options-in-cart-group .add-product-btn span {
