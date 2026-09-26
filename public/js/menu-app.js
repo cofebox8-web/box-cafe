@@ -383,6 +383,15 @@ function renderCategoriesTabs(categories) {
   const navContainer = document.getElementById("categories-list");
   if (!navContainer) return;
 
+  // لا نكرر اسم القسم للزبون إذا كانت هناك سجلات قديمة بنفس الاسم في قاعدة البيانات.
+  const seenCategoryNames = new Set();
+  const uniqueCategories = categories.filter((cat) => {
+    const key = String(cat.name || "").trim().toLocaleLowerCase("ar");
+    if (!key || seenCategoryNames.has(key)) return false;
+    seenCategoryNames.add(key);
+    return true;
+  });
+
   let html = `
     <li>
       <button type="button" class="category-tab ${state.activeCategoryId === 'all' ? 'active' : ''}" data-cat-id="all">
@@ -391,7 +400,7 @@ function renderCategoriesTabs(categories) {
     </li>
   `;
 
-  for (const cat of categories) {
+  for (const cat of uniqueCategories) {
     const isActive = state.activeCategoryId === cat.id ? "active" : "";
     html += `
       <li>
@@ -490,11 +499,12 @@ function renderProducts() {
           .filter(item => item.product_id === p.id)
           .reduce((sum, item) => sum + item.quantity, 0);
 
+        const actionLabel = hasOptions ? "اختيار وإضافة" : "إضافة للسلة";
         actionControlHtml = `
           <div class="card-options-in-cart-group">
             ${inCartQty > 0 ? `<span class="in-cart-count-pill">${inCartQty} في السلة</span>` : ""}
             <button type="button" class="add-product-btn" data-action="choose-product" data-product-id="${p.id}" aria-label="إضافة ${escapeHtml(p.name)}">
-              ${ICONS.plus} <span>إضافة</span>
+              ${ICONS.plus} <span>${actionLabel}</span>
             </button>
           </div>
         `;
@@ -516,6 +526,7 @@ function renderProducts() {
           <div class="product-card-body">
             <div class="product-card-header">
               <h3 class="product-name">${escapeHtml(p.name)}</h3>
+              ${p.description ? `<p class="product-desc">${escapeHtml(p.description)}</p>` : `<p class="product-desc product-desc-empty">اختيار يومي محضّر بعناية من بوكس كافي.</p>`}
             </div>
             <div class="product-card-bottom">
               <div class="price-container">
