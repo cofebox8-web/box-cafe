@@ -1,6 +1,5 @@
 import { supabase, isSupabaseConfigured } from "./supabase-client.js";
 import { getStaffSession, signInStaff, signOutStaff } from "./staff-auth.js";
-import { getLiveMenuData, getDemoKitchenOrders, saveDemoKitchenOrders } from "./demo-data.js";
 
 const $ = (id) => document.getElementById(id);
 const state = { profile: null, menu: null, items: [], category: "all", search: "", product: null, picks: {}, quantity: 1, idempotencyKey: null, busy: false };
@@ -57,13 +56,10 @@ async function loadMenu() {
     $("rs-connection").textContent = "متصل بالنظام";
     renderCatalog();
   } catch (error) {
-    console.debug("Roadside menu fallback:", error?.message);
-    const localMenu = getLiveMenuData();
-    state.menu = localMenu;
-    $("rs-branch-name").textContent = state.profile?.branch_name || "فرع طريق المطار";
-    $("rs-point-name").textContent = "المسار 1 — خدمة السيارات";
-    $("rs-connection").textContent = "متصل بالنظام";
-    renderCatalog();
+    state.menu = null;
+    $("rs-connection").textContent = "غير متصل بالنظام";
+    setState("تعذر تحميل منيو الفرع", "لم نعرض بيانات محلية حتى لا يتم إنشاء طلب خارج قاعدة البيانات. تحقق من الاتصال أو راجع مدير النظام.", "!");
+    notify(error.message || "تعذر تحميل منيو الفرع من قاعدة البيانات.", "error");
   }
 }
 
@@ -187,56 +183,17 @@ async function submitOrder() {
   if (!state.idempotencyKey) state.idempotencyKey = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const items = state.items.map((item) => ({ product_id: item.product.id, quantity: item.quantity, selected_option_ids: item.selectedOptionIds, note: "" }));
   try {
-    let orderCode = null;
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.rpc("place_roadside_order", {
-          p_items: items,
-          p_vehicle_note: $("rs-vehicle-note").value.trim() || null,
-          p_order_note: $("rs-order-note").value.trim() || null,
-          p_idempotency_key: state.idempotencyKey
-        });
-        if (!error && data?.success === true) {
-          orderCode = data.order_code;
-        }
-      } catch (e) {
-        console.debug("Remote roadside order submit fallback:", e);
-      }
+    if (!supabase) throw new Error("خدمة الطلب غير متاحة حالياً.");
+    const { data, error } = await supabase.rpc("place_roadside_order", {
+      p_items: items,
+      p_vehicle_note: $("rs-vehicle-note").value.trim() || null,
+      p_order_note: $("rs-order-note").value.trim() || null,
+      p_idempotency_key: state.idempotencyKey
+    });
+    if (error || !data?.success || !data.order_code) {
+      throw new Error(data?.message || data?.error || error?.message || "تعذر حفظ الطلب في قاعدة البيانات.");
     }
-
-    if (!orderCode) {
-      const existing = getDemoKitchenOrders();
-      const maxNum = existing.reduce((max, o) => {
-        const num = parseInt(String(o.order_code || "").replace(/[^0-9]/g, ""), 10);
-        return !isNaN(num) && num > max ? num : max;
-      }, 100);
-      orderCode = `B-${maxNum + 1}`;
-      const newOrder = {
-        id: `ord-rs-${Date.now()}`,
-        order_code: orderCode,
-        status: "new",
-        total: state.items.reduce((s, i) => s + (i.product.price * i.quantity), 0),
-        currency_code: "IQD",
-        vehicle_note: $("rs-vehicle-note").value.trim() || "موظف الشارع",
-        order_note: $("rs-order-note").value.trim() || "",
-        service_point_label: "موظف الشارع والكاشير",
-        branch_name: state.profile?.branch_name || "فرع طريق المطار",
-        tracking_token: `track-${Date.now()}`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        source: "roadside",
-        items: state.items.map((it, idx) => ({
-          id: `item-${Date.now()}-${idx}`,
-          name: it.product.name,
-          quantity: it.quantity,
-          unit_price: it.product.price,
-          note: "",
-          options: ["تحضير قياسي"]
-        }))
-      };
-      existing.unshift(newOrder);
-      saveDemoKitchenOrders(existing, "new_order", { order: newOrder });
-    }
+    const orderCode = data.order_code;
 
     $("rs-order-code").textContent = orderCode || "—";
     $("rs-success-dialog").showModal();

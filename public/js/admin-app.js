@@ -1,11 +1,4 @@
 import {
-  getLiveMenuData,
-  getDemoKitchenOrders,
-  saveDemoKitchenOrders,
-  saveLiveMenuData,
-  addDailyExpense,
-} from './demo-data.js';
-import {
   roleLabel,
   getStaffSession,
   signInStaff,
@@ -40,7 +33,9 @@ const PAGE_METADATA = {
   }
 };
 
-let menuData = getLiveMenuData();
+// Production admin state comes from Supabase only. Local demo storage must not
+// become a second source of truth for the catalog shown to staff or customers.
+let menuData = { restaurant: { name: 'بوكس كافي', currency_code: 'IQD' }, categories: [], products: [] };
 let liveOrders = [];
 let liveExpenses = [];
 let staffAccounts = [];
@@ -80,45 +75,32 @@ function showToast(message) {
 }
 
 async function reloadAdminMenu() {
-  try {
-    if (supabase) {
-      const { data, error } = await supabase.rpc('admin_get_menu');
-      if (!error && data?.success) {
-        menuData = {
-          restaurant: { name: 'بوكس كافي', currency_code: 'IQD' },
-          restaurant_id: data.restaurant_id,
-          categories: Array.isArray(data.categories) ? data.categories : [],
-          products: Array.isArray(data.products) ? data.products : []
-        };
-      }
-    }
-  } catch (err) {
-    console.debug('Menu RPC fallback:', err);
+  if (!isSupabaseConfigured || !supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
+  const { data, error } = await supabase.rpc('admin_get_menu');
+  if (error || !data?.success) {
+    throw new Error(data?.message || data?.error || error?.message || 'تعذر تحميل المنيو من قاعدة البيانات.');
   }
+  menuData = {
+    restaurant: { name: 'بوكس كافي', currency_code: 'IQD' },
+    restaurant_id: data.restaurant_id,
+    categories: Array.isArray(data.categories) ? data.categories : [],
+    products: Array.isArray(data.products) ? data.products : []
+  };
   renderMenuControlBoxes();
   renderPosTerminal();
   renderAllOverviewAndHubBoxes();
 }
 
 async function reloadAdminOrders() {
-  try {
-    if (supabase) {
-      const { data, error } = await supabase.rpc('admin_get_recent_orders', {
-        p_hours: 24,
-        p_limit: 150
-      });
-      if (!error && data?.success) {
-        liveOrders = Array.isArray(data.orders) ? data.orders : [];
-      } else if (!liveOrders.length) {
-        liveOrders = getDemoKitchenOrders();
-      }
-    } else if (!liveOrders.length) {
-      liveOrders = getDemoKitchenOrders();
-    }
-  } catch (err) {
-    console.debug('Orders RPC fallback:', err);
-    if (!liveOrders.length) liveOrders = getDemoKitchenOrders();
+  if (!isSupabaseConfigured || !supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
+  const { data, error } = await supabase.rpc('admin_get_recent_orders', {
+    p_hours: 24,
+    p_limit: 150
+  });
+  if (error || !data?.success) {
+    throw new Error(data?.message || data?.error || error?.message || 'تعذر تحميل سجل الطلبات من قاعدة البيانات.');
   }
+  liveOrders = Array.isArray(data.orders) ? data.orders : [];
   renderAccountingBoxes();
   renderAllOverviewAndHubBoxes();
 }
@@ -305,73 +287,34 @@ function subscribeAdminOrders() {
 async function saveAdminMenuCategory(name) {
   const cleanName = String(name || '').trim();
   if (!cleanName) return;
-
-  const newCat = {
-    id: `cat-${Date.now()}`,
-    name: cleanName,
-    description: '',
-    sort_order: (menuData.categories?.length || 0) + 1
-  };
-  menuData.categories = Array.isArray(menuData.categories) ? menuData.categories : [];
-  menuData.categories.push(newCat);
-  saveLiveMenuData(menuData);
-  renderMenuControlBoxes();
-  renderPosTerminal();
-
-  if (supabase) {
-    try {
-      await supabase.rpc('admin_save_category', {
-        p_category_id: null,
-        p_name: cleanName,
-        p_description: null
-      });
-    } catch (e) {
-      console.debug('Background category sync:', e?.message);
-    }
+  if (!isSupabaseConfigured || !supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
+  const { data, error } = await supabase.rpc('admin_save_category', {
+    p_category_id: null,
+    p_name: cleanName,
+    p_description: null
+  });
+  if (error || !data?.success) {
+    throw new Error(data?.message || data?.error || error?.message || 'تعذرت إضافة القسم إلى قاعدة البيانات.');
   }
+  await reloadAdminMenu();
 }
 
 async function saveAdminMenuProduct(product) {
-  menuData.products = Array.isArray(menuData.products) ? menuData.products : [];
-  const existingIdx = menuData.products.findIndex((p) => p.id === product.id);
-  const entry = {
-    id: product.id || `prod-${Date.now()}`,
-    category_id: product.category_id,
-    name: product.name,
-    description: product.description || '',
-    price: Number(product.price) || 0,
-    image_url: product.image_url || '',
-    is_available: product.is_available !== false,
-    option_groups: product.option_groups || []
-  };
-
-  if (existingIdx >= 0) {
-    menuData.products[existingIdx] = { ...menuData.products[existingIdx], ...entry };
-  } else {
-    menuData.products.unshift(entry);
+  if (!isSupabaseConfigured || !supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
+  const { data, error } = await supabase.rpc('admin_save_menu_product', {
+    p_product_id: product.id || null,
+    p_category_id: product.category_id,
+    p_name: product.name,
+    p_description: product.description || null,
+    p_price: product.price,
+    p_image_url: product.image_url || null,
+    p_is_available: product.is_available,
+    p_option_groups: product.option_groups || []
+  });
+  if (error || !data?.success) {
+    throw new Error(data?.message || data?.error || error?.message || 'تعذر حفظ المنتج في قاعدة البيانات.');
   }
-
-  saveLiveMenuData(menuData);
-  renderMenuControlBoxes();
-  renderPosTerminal();
-  renderAllOverviewAndHubBoxes();
-
-  if (supabase) {
-    try {
-      await supabase.rpc('admin_save_menu_product', {
-        p_product_id: product.id || null,
-        p_category_id: product.category_id,
-        p_name: product.name,
-        p_description: product.description || null,
-        p_price: product.price,
-        p_image_url: product.image_url || null,
-        p_is_available: product.is_available,
-        p_option_groups: product.option_groups || []
-      });
-    } catch (e) {
-      console.debug('Background product sync:', e?.message);
-    }
-  }
+  await reloadAdminMenu();
 }
 
 function renderOptionGroupsEditor(groups = []) {
@@ -963,55 +906,7 @@ function submitPosOrder() {
     showToast('يرجى اختيار صنف واحد على الأقل لإصدار الفاتورة');
     return;
   }
-
-  const { subtotal, discount, netTotal, received, change } = getPosTotals();
-  const carInfo = (document.getElementById('pos-car-info')?.value || '').trim() || 'كاشير مباشر';
-  const existing = getDemoKitchenOrders();
-  const maxNum = existing.reduce((max, o) => {
-    const num = parseInt(String(o.order_code || '').replace(/[^0-9]/g, ''), 10);
-    return !isNaN(num) && num > max ? num : max;
-  }, 108);
-  const orderNum = `B-${maxNum + 1}`;
-
-  const newOrder = {
-    id: `ord-pos-${Date.now()}`,
-    order_code: orderNum,
-    status: 'new',
-    total: netTotal,
-    subtotal_iqd: subtotal,
-    discount_iqd: discount,
-    payment_method: posPaymentMethod,
-    currency_code: 'IQD',
-    vehicle_note: carInfo,
-    order_note: '',
-    service_point_label: 'نقطة البيع والكاشير POS',
-    branch_name: 'فرع طريق المطار',
-    tracking_token: `track-${Date.now()}`,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    items: posCart.map((c, i) => ({
-      id: `pos-item-${Date.now()}-${i}`,
-      name: c.name,
-      quantity: c.qty,
-      unit_price: c.price,
-      note: '',
-      options: ['تحضير قياسي']
-    }))
-  };
-
-  existing.unshift(newOrder);
-  saveDemoKitchenOrders(existing, 'new_order', { order: newOrder });
-  showThermalReceiptModal(newOrder, received, change);
-
-  posCart = [];
-  if (document.getElementById('pos-car-info')) document.getElementById('pos-car-info').value = '';
-  if (document.getElementById('pos-discount-input')) document.getElementById('pos-discount-input').value = '0';
-  if (document.getElementById('pos-received-input')) document.getElementById('pos-received-input').value = '';
-
-  renderPosTerminal();
-  renderAllOverviewAndHubBoxes();
-  renderAccountingBoxes();
-  showToast(`تم إصدار الفاتورة ${orderNum} وإرسالها لشاشة المطبخ`);
+  showToast('إصدار فواتير الكاشير غير متاح حتى يتم ربطه بدالة الطلبات في Supabase. لم يتم تسجيل أي طلب.');
 }
 
 /* =========================================================
@@ -1096,10 +991,7 @@ function renderAccountingBoxes() {
 
     expensesWrap.querySelectorAll('[data-del-expense]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        deleteDailyExpense(btn.dataset.delExpense);
-        renderAccountingBoxes();
-        renderAllOverviewAndHubBoxes();
-        showToast('تم حذف المصروف وتحديث صافي الربح');
+        showToast('إدارة المصروفات غير متاحة حتى يتم ربطها بجداول Supabase. لم يتغير أي سجل.');
       });
     });
   }
@@ -1178,47 +1070,54 @@ function renderMenuControlBoxes() {
   }).join('') : '<div class="menu-empty-state" role="status">لا توجد منتجات في هذا القسم</div>';
 
   gridWrap.querySelectorAll('[data-price-step]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const target = (menuData.products || []).find((i) => i.id === btn.dataset.itemId);
       if (!target) return;
       const step = Number(btn.dataset.priceStep);
       const updatedPrice = Math.max(0, (Number(target.price) || 0) + step);
-      target.price = updatedPrice;
-      saveLiveMenuData(menuData);
-      renderMenuControlBoxes();
-      renderPosTerminal();
-      showToast(`تم تعديل سعر "${target.name}" إلى ${formatIQD(updatedPrice)}`);
-
-      if (supabase) {
-        supabase.rpc('admin_save_menu_product', {
+      btn.disabled = true;
+      try {
+        if (!isSupabaseConfigured || !supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
+        const { data, error } = await supabase.rpc('admin_save_menu_product', {
           p_product_id: target.id,
           p_category_id: target.category_id,
           p_name: target.name,
           p_description: target.description || null,
           p_price: updatedPrice,
           p_image_url: target.image_url || null,
-          p_is_available: target.is_available,
+          p_is_available: target.is_available !== false,
           p_option_groups: target.option_groups || []
-        }).catch((e) => console.debug('Price sync:', e?.message));
+        });
+        if (error || !data?.success) throw new Error(data?.message || data?.error || error?.message || 'تعذر حفظ السعر.');
+        await reloadAdminMenu();
+        showToast(`تم تعديل سعر "${target.name}" إلى ${formatIQD(updatedPrice)}`);
+      } catch (error) {
+        showToast(error?.message || 'تعذر حفظ السعر.');
+      } finally {
+        btn.disabled = false;
       }
     });
   });
 
   gridWrap.querySelectorAll('[data-toggle-avail]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const target = menuData.products.find((item) => item.id === btn.dataset.toggleAvail);
       if (!target) return;
-      target.is_available = target.is_available === false;
-      saveLiveMenuData(menuData);
-      renderMenuControlBoxes();
-      renderPosTerminal();
-      showToast(`تم تحديث حالة "${target.name}" إلى ${target.is_available ? 'متوفر' : 'متوقف'}`);
-
-      if (supabase) {
-        supabase.rpc('admin_toggle_product_availability', {
+      const nextAvailable = target.is_available === false;
+      btn.disabled = true;
+      try {
+        if (!isSupabaseConfigured || !supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
+        const { data, error } = await supabase.rpc('admin_toggle_product_availability', {
           p_product_id: target.id,
-          p_is_available: target.is_available
-        }).catch((e) => console.debug('Toggle avail sync:', e?.message));
+          p_is_available: nextAvailable
+        });
+        if (error || !data?.success) throw new Error(data?.message || data?.error || error?.message || 'تعذر تحديث حالة المنتج.');
+        await reloadAdminMenu();
+        showToast(`تم تحديث حالة "${target.name}" إلى ${nextAvailable ? 'متوفر' : 'متوقف'}`);
+      } catch (error) {
+        showToast(error?.message || 'تعذر تحديث حالة المنتج.');
+      } finally {
+        btn.disabled = false;
       }
     });
   });
@@ -1230,20 +1129,21 @@ function renderMenuControlBoxes() {
   });
 
   gridWrap.querySelectorAll('[data-delete-item]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const target = (menuData.products || []).find((i) => i.id === btn.dataset.deleteItem);
       if (!target) return;
       if (!window.confirm(`تحذف "${target.name}" من المنيو؟`)) return;
-      menuData.products = (menuData.products || []).filter((i) => i.id !== target.id);
-      saveLiveMenuData(menuData);
-      renderMenuControlBoxes();
-      renderPosTerminal();
-      renderAllOverviewAndHubBoxes();
-      showToast(`تم حذف "${target.name}"`);
-
-      if (supabase) {
-        supabase.rpc('admin_delete_product', { p_product_id: target.id })
-          .catch((e) => console.debug('Delete product sync:', e?.message));
+      btn.disabled = true;
+      try {
+        if (!isSupabaseConfigured || !supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
+        const { data, error } = await supabase.rpc('admin_delete_product', { p_product_id: target.id });
+        if (error || !data?.success) throw new Error(data?.message || data?.error || error?.message || 'تعذر حذف المنتج.');
+        await reloadAdminMenu();
+        showToast(`تم حذف "${target.name}"`);
+      } catch (error) {
+        showToast(error?.message || 'تعذر حذف المنتج.');
+      } finally {
+        btn.disabled = false;
       }
     });
   });
@@ -2088,16 +1988,7 @@ async function initAdminERP() {
 
   document.getElementById('form-expense')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const title = document.getElementById('expense-title-input').value.trim();
-    const amount = Number(document.getElementById('expense-amount-input').value) || 0;
-    const category = document.getElementById('expense-category-select').value;
-
-    addDailyExpense({ title, amount, category });
-    document.getElementById('form-expense').reset();
-    document.getElementById('modal-expense').hidden = true;
-    renderAccountingBoxes();
-    renderAllOverviewAndHubBoxes();
-    showToast(`تم تسجيل المصروف وخصم ${formatIQD(amount)} من صافي الربح`);
+    showToast('تسجيل المصروفات غير متاح حتى يتم ربطه بجداول Supabase. لم يتم تسجيل أي مصروف.');
   });
 
   await restoreAdminSession();
