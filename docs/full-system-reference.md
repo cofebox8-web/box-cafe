@@ -103,6 +103,7 @@ vercel.json              إعداد الاستضافة وإعادة كتابة �
 | 12 | `202609260012_admin_staff_management.sql` | قراءة/تفعيل قائمة الموظفين من لوحة الإدارة |
 | 13 | `202609260013_menu_realtime_publication.sql` | نشر تغييرات المنيو ونقاط الخدمة إلى Supabase Realtime |
 | 14 | `202609270014_kitchen_allow_handed_off.sql` | السماح للمطبخ بتسجيل تسليم الطلب للسيارة وإرجاعه إلى جاهز |
+| 15 | `202609270015_harden_owner_status.sql` | منع تعطيل حسابات المالك عبر إجراء حالة الموظف |
 
 خطوات التطبيق اليدوي والتحقق موثقة بالتفصيل في [`docs/supabase-first-run.md`](supabase-first-run.md).
 
