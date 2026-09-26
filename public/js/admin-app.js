@@ -26,10 +26,6 @@ const PAGE_METADATA = {
     title: 'الإحصائيات وجرد كم انباع',
     subtitle: 'تقارير المبيعات التفصيلية وعدد الأكواب والقطع المباعة من كل مشروب'
   },
-  pos: {
-    title: 'الكاشير (POS)',
-    subtitle: 'إصدار فواتير مباشرة وإرسال فوري للمطبخ'
-  },
   accounting: {
     title: 'الحسابات والمصروفات',
     subtitle: 'سجل الفواتير وصندوق المصروفات اليومية'
@@ -39,8 +35,8 @@ const PAGE_METADATA = {
     subtitle: 'إدارة المنتجات، الأسعار، الصور، والخيارات الإضافية'
   },
   staff: {
-    title: 'نقاط الخدمة وQR والموظفون',
-    subtitle: 'إدارة نقاط الخدمة وروابط المنيو ورموز QR وصلاحيات الموظفين'
+    title: 'الموظفون',
+    subtitle: 'إدارة حسابات طاقم العمل والصلاحيات'
   }
 };
 
@@ -127,32 +123,34 @@ async function reloadAdminOrders() {
   renderAllOverviewAndHubBoxes();
 }
 
+function servicePointErrorMessage(code) {
+  return {
+    NOT_AUTHORIZED: 'لا تملك صلاحية إدارة نقاط الخدمة.',
+    BRANCH_NOT_ALLOWED: 'لا تملك صلاحية على هذا الفرع.',
+    INVALID_LABEL: 'اسم نقطة الخدمة غير صالح (بين 1 و80 حرفاً).',
+    INVALID_KIND: 'نوع نقطة الخدمة غير صالح.',
+    BRANCH_NOT_FOUND: 'الفرع المحدد غير موجود أو غير مفعّل.',
+    SERVICE_POINT_NOT_FOUND: 'تعذر إيجاد نقطة الخدمة.',
+    DUPLICATE_LABEL: 'يوجد بالفعل نقطة خدمة بنفس الاسم في هذا الفرع.'
+  }[code] || 'تعذر تنفيذ العملية. حاول مرة أخرى.';
+}
+
+let servicePointsLoaded = false;
+
+// مصدر الحقيقة الوحيد هو قاعدة البيانات؛ لا تخزين محلي ولا رموز QR وهمية،
+// لأن أي رمز لا يطابق ما في car_service_points فعلياً سيفشل عند أي زبون يمسحه.
 async function reloadServicePoints() {
-  try {
-    if (supabase) {
-      const { data, error } = await supabase.rpc('admin_get_service_points');
-      if (!error && data?.success) {
-        servicePointBranches = Array.isArray(data.branches) ? data.branches : [];
-        servicePoints = Array.isArray(data.service_points) ? data.service_points : [];
-      }
-    }
-  } catch (err) {
-    console.debug('Service points RPC fallback:', err);
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error('تعذر الاتصال بقاعدة البيانات.');
   }
-  if (!servicePointBranches.length) {
-    servicePointBranches = [{ id: '564b34a7-ddbf-454b-a4eb-c4629f3f3173', name: 'فرع طريق المطار', slug: 'airport' }];
+  const { data, error } = await supabase.rpc('admin_get_service_points');
+  if (error) throw error;
+  if (!data?.success) {
+    throw new Error(servicePointErrorMessage(data?.error));
   }
-  if (!servicePoints.length) {
-    try {
-      const stored = localStorage.getItem('box_cofe_service_points');
-      if (stored) servicePoints = JSON.parse(stored);
-    } catch {}
-  }
-  if (!servicePoints.length) {
-    servicePoints = [
-      { id: 'sp-1', branch_id: '564b34a7-ddbf-454b-a4eb-c4629f3f3173', branch_name: 'فرع طريق المطار', branch_slug: 'airport', label: 'المسار 1 — خدمة السيارات', kind: 'order_lane', is_active: true, qr_token: 'lane-1' }
-    ];
-  }
+  servicePointBranches = Array.isArray(data.branches) ? data.branches : [];
+  servicePoints = Array.isArray(data.service_points) ? data.service_points : [];
+  servicePointsLoaded = true;
   renderServicePoints();
 }
 
@@ -164,7 +162,10 @@ function renderServicePoints() {
   const grid = document.getElementById('service-points-grid');
   if (!grid) return;
   if (!servicePoints.length) {
-    grid.innerHTML = `<div class="menu-empty-state">لا توجد نقاط خدمة بعد. أضف أول نقطة ثم اطبع QR لعرض المنيو للزبائن.</div>`;
+    const emptyMsg = servicePointsLoaded
+      ? 'لا توجد نقاط خدمة بعد. أضف أول نقطة ثم اطبع QR لعرض المنيو للزبائن.'
+      : 'جارٍ تحميل نقاط الخدمة…';
+    grid.innerHTML = `<div class="menu-empty-state">${emptyMsg}</div>`;
     return;
   }
   grid.innerHTML = servicePoints.map((point) => `
@@ -190,9 +191,15 @@ function renderServicePoints() {
     const point = servicePoints.find((item) => item.id === button.dataset.editServicePoint);
     if (point) openServicePointModal(point);
   }));
-  grid.querySelectorAll('[data-toggle-service-point]').forEach((button) => button.addEventListener('click', () => {
+  grid.querySelectorAll('[data-toggle-service-point]').forEach((button) => button.addEventListener('click', async () => {
     const point = servicePoints.find((item) => item.id === button.dataset.toggleServicePoint);
-    if (point) saveServicePoint({ ...point, is_active: !point.is_active });
+    if (!point) return;
+    button.disabled = true;
+    try {
+      await saveServicePoint({ ...point, is_active: !point.is_active });
+    } finally {
+      button.disabled = false;
+    }
   }));
   grid.querySelectorAll('[data-rotate-service-qr]').forEach((button) => button.addEventListener('click', async () => {
     const point = servicePoints.find((item) => item.id === button.dataset.rotateServiceQr);
@@ -230,44 +237,39 @@ function openServicePointModal(point = null) {
   modal.hidden = false;
 }
 
+// حرج: لا تُظهر "تم الحفظ" ولا تعرض QR إلا بعد تأكيد قاعدة البيانات فعلياً،
+// وبرمز QR الحقيقي الذي تولّده هي (qr_token يُنشأ حصراً داخل Supabase).
+// أي رمز يُخترع محلياً في المتصفح لن يطابق car_service_points، فيفشل على
+// أي زبون يمسحه فعلياً.
 async function saveServicePoint(point) {
   const cleanLabel = String(point.label || '').trim();
   if (!cleanLabel) {
     showToast('أدخل اسماً أو رقماً لنقطة الخدمة.');
     return false;
   }
-
-  const existingIdx = servicePoints.findIndex((p) => p.id === point.id);
-  const entry = {
-    id: point.id || `sp-${Date.now()}`,
-    branch_id: point.branch_id || servicePointBranches[0]?.id || '564b34a7-ddbf-454b-a4eb-c4629f3f3173',
-    branch_name: 'فرع طريق المطار',
-    branch_slug: 'airport',
-    label: cleanLabel,
-    kind: point.kind || 'order_lane',
-    is_active: point.is_active !== false,
-    qr_token: point.qr_token || globalThis.crypto?.randomUUID?.() || `token-${Date.now()}`
-  };
-
-  if (existingIdx >= 0) {
-    servicePoints[existingIdx] = { ...servicePoints[existingIdx], ...entry };
-  } else {
-    servicePoints.push(entry);
+  if (!isSupabaseConfigured || !supabase) {
+    showToast('تعذر الاتصال بقاعدة البيانات؛ لم تُحفظ نقطة الخدمة.');
+    return false;
   }
-  localStorage.setItem('box_cofe_service_points', JSON.stringify(servicePoints));
-  renderServicePoints();
-  showToast('تم حفظ نقطة الخدمة بنجاح.');
 
-  if (supabase) {
-    supabase.rpc('admin_save_service_point', {
+  try {
+    const { data, error } = await supabase.rpc('admin_save_service_point', {
       p_service_point_id: point.id || null,
-      p_branch_id: entry.branch_id,
-      p_label: entry.label,
-      p_kind: entry.kind,
-      p_is_active: entry.is_active
-    }).catch((e) => console.debug('Service point sync:', e?.message));
+      p_branch_id: point.branch_id,
+      p_label: cleanLabel,
+      p_kind: point.kind || 'order_lane',
+      p_is_active: point.is_active !== false
+    });
+    if (error) throw error;
+    if (!data?.success) throw new Error(servicePointErrorMessage(data?.error));
+
+    await reloadServicePoints();
+    showToast('تم حفظ نقطة الخدمة بنجاح في قاعدة البيانات.');
+    return true;
+  } catch (err) {
+    showToast(err.message || 'تعذر حفظ نقطة الخدمة في قاعدة البيانات.');
+    return false;
   }
-  return true;
 }
 
 function showServicePointQr(point) {
@@ -1021,9 +1023,20 @@ function renderAccountingBoxes() {
   const expensesBanner = document.getElementById('expenses-total-banner');
   const sourceFilter = document.getElementById('filter-order-source')?.value || 'all';
 
+  const validOrders = (liveOrders || []).filter((o) => o.status !== 'cancelled');
+  const totalSales = validOrders.reduce((s, o) => s + (Number(o.total || o.total_iqd) || 0), 0);
   const totalExp = (liveExpenses || []).reduce((s, e) => s + (Number(e.amount || e.amount_iqd) || 0), 0);
+  const netProfit = totalSales - totalExp;
+
+  const salesEl = document.getElementById('acc-total-sales');
+  if (salesEl) salesEl.textContent = formatIQD(totalSales);
+  const expEl = document.getElementById('acc-total-expenses');
+  if (expEl) expEl.textContent = formatIQD(totalExp);
+  const profitEl = document.getElementById('acc-net-profit');
+  if (profitEl) profitEl.textContent = formatIQD(netProfit);
+
   if (expensesBanner) {
-    expensesBanner.textContent = `إجمالي المصاريف اليوم: ${formatIQD(totalExp)} (${liveExpenses.length} عملية)`;
+    expensesBanner.textContent = totalExp > 0 ? `المجموع: ${formatIQD(totalExp)}` : '';
   }
 
   if (ordersWrap) {
@@ -1057,7 +1070,7 @@ function renderAccountingBoxes() {
           </div>
         </div>
       `;
-    }).join('') : '<div class="menu-empty-state" role="status">ماكو طلبات مسجلة خلال آخر 24 ساعة.</div>';
+    }).join('') : '<div class="menu-empty-state" role="status">لا توجد طلبات</div>';
 
     ordersWrap.querySelectorAll('[data-print-inv]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1068,7 +1081,7 @@ function renderAccountingBoxes() {
   }
 
   if (expensesWrap) {
-    expensesWrap.innerHTML = (liveExpenses || []).map((exp) => `
+    expensesWrap.innerHTML = (liveExpenses || []).length ? (liveExpenses || []).map((exp) => `
       <div class="record-item-box">
         <div class="record-box-main">
           <strong>${exp.title}</strong>
@@ -1079,7 +1092,7 @@ function renderAccountingBoxes() {
           <button type="button" class="box-btn-danger-sm" data-del-expense="${exp.id}">حذف</button>
         </div>
       </div>
-    `).join('');
+    `).join('') : '<div class="menu-empty-state" role="status">لا توجد مصروفات مسجلة</div>';
 
     expensesWrap.querySelectorAll('[data-del-expense]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1144,8 +1157,6 @@ function renderMenuControlBoxes() {
           <span class="menu-price-display">${formatIQD(item.price)}</span>
         </div>
 
-        ${item.description ? `<p class="menu-item-desc-hint">${escapeHtml(item.description)}</p>` : ''}
-
         <div class="menu-stepper-row">
           <button type="button" class="stepper-box-btn" data-price-step="250" data-item-id="${item.id}">+ 250 د.ع</button>
           <button type="button" class="stepper-box-btn" data-price-step="-250" data-item-id="${item.id}">− 250 د.ع</button>
@@ -1164,7 +1175,7 @@ function renderMenuControlBoxes() {
         </div>
       </div>
     `;
-  }).join('') : '<div class="menu-empty-state" role="status">المنيو فارغ حالياً. اضغط «＋ إضافة منتج» لإضافة الأصناف مع الصور والأسعار.</div>';
+  }).join('') : '<div class="menu-empty-state" role="status">لا توجد منتجات في هذا القسم</div>';
 
   gridWrap.querySelectorAll('[data-price-step]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1394,8 +1405,8 @@ function renderStaffAccountsBoxes() {
 
   if (!staffAccounts.length) {
     const emptyMsg = staffAccountsLoaded
-      ? 'لا يوجد موظفون مسجلون حالياً. اضغط «＋ إضافة موظف» لإضافة حسابات الكاشير والمطبخ.'
-      : 'جارٍ تحميل حسابات الموظفين…';
+      ? 'لا توجد حسابات موظفين حالياً'
+      : 'جارٍ التحميل…';
     grid.innerHTML = `<div class="menu-empty-state" style="grid-column: 1 / -1; padding: 22px;">${emptyMsg}</div>`;
     return;
   }
@@ -1432,9 +1443,7 @@ function renderStaffAccountsBoxes() {
           </div>
         </div>
 
-        ${isOwner ? `
-          <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">حساب المالك الرئيسي؛ يُدار من لوحة تحكم Supabase مباشرة.</div>
-        ` : `
+        ${isOwner ? '' : `
           <div class="service-point-card-actions" style="display:flex; gap:6px; margin-top:4px;">
             <button type="button" class="box-btn-secondary" style="flex:1; font-size:0.75rem; padding:6px 8px;" data-toggle-staff-status="${escapeHtml(staff.user_id)}" ${isSelf ? 'disabled' : ''}>
               ${isActive ? 'إيقاف' : 'تفعيل'}
