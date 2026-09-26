@@ -269,7 +269,8 @@ async function handleStatusTransition(orderCode, nextStatus) {
       await loadKitchenOrders();
       const statusNames = {
         preparing: "قيد التحضير",
-        ready: "جاهز للتسليم"
+        ready: "جاهز للتسليم",
+        handed_off: "تم التسليم للسيارة"
       };
       showLiveToast(`الطلب ${orderCode}: ${statusNames[nextStatus] || nextStatus}`);
     } catch (error) {
@@ -285,7 +286,8 @@ async function handleStatusTransition(orderCode, nextStatus) {
 
   const statusNames = {
     preparing: "قيد التحضير",
-    ready: "جاهز للتسليم"
+    ready: "جاهز للتسليم",
+    handed_off: "تم التسليم للسيارة"
   };
   showLiveToast(`الطلب ${orderCode} أصبح: ${statusNames[nextStatus] || nextStatus}`);
 }
@@ -352,30 +354,30 @@ function renderKDS() {
     preparing: {
       badgeText: "قيد التحضير",
       badgeClass: "badge-preparing",
-      btnText: "جاهز للتسليم",
+      btnText: "جاهز للتسليم ✓",
       btnClass: "btn-mark-ready",
       nextStatus: "ready"
     },
     ready: {
       badgeText: "جاهز للتسليم",
       badgeClass: "badge-ready",
-      btnText: null,
-      btnClass: "",
-      nextStatus: null
+      btnText: "تم التسليم للسيارة ✓",
+      btnClass: "btn-mark-delivered",
+      nextStatus: "handed_off"
     },
     handed_off: {
-      badgeText: "مكتمل",
+      badgeText: "تم التسليم ✓",
       badgeClass: "badge-delivered",
-      btnText: null,
-      btnClass: "",
-      nextStatus: null
+      btnText: "إرجاع إلى جاهز ↺",
+      btnClass: "btn-undo-status",
+      nextStatus: "ready"
     },
     delivered: {
-      badgeText: "مكتمل",
+      badgeText: "تم التسليم ✓",
       badgeClass: "badge-delivered",
-      btnText: null,
-      btnClass: "",
-      nextStatus: null
+      btnText: "إرجاع إلى جاهز ↺",
+      btnClass: "btn-undo-status",
+      nextStatus: "ready"
     }
   };
 
