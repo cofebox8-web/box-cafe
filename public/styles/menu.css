@@ -2063,22 +2063,6 @@ dialog.confirm-dialog p {
    Footer
    ========================================================================== */
 
-.menu-footer {
-  margin-top: auto;
-  background: var(--bg-card);
-  border-top: 1px solid var(--border-subtle);
-  padding: var(--space-6) var(--space-4);
-  text-align: center;
-  font-size: var(--font-xs);
-  color: var(--text-muted);
-}
-
-.footer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 /* Accessibility & Motion Preferences */
 @media (prefers-reduced-motion: reduce) {
   * {
