@@ -251,7 +251,7 @@ a {
   font-size: 1.15rem;
   font-weight: 900;
   letter-spacing: 0.14em;
-  color: #ffffff;
+  color: #1F1D1A;
   line-height: 1;
   text-transform: uppercase;
 }
@@ -902,7 +902,7 @@ dialog.customization-modal::backdrop {
 
 .modal-title-group p {
   margin: 0;
-  color: #94a3b8;
+  color: #6B655C;
   font-size: 0.76rem;
   line-height: 1.4;
   display: -webkit-box;
@@ -962,7 +962,7 @@ dialog.customization-modal::backdrop {
 .group-name-title {
   font-size: 0.92rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #1F1D1A;
   margin: 0;
 }
 
@@ -974,15 +974,17 @@ dialog.customization-modal::backdrop {
 }
 
 .group-requirement-pill.required {
-  background: rgba(38, 35, 31, 0.15);
-  color: #1F1D1A;
-  border: 1px solid rgba(38, 35, 31, 0.15);
+  background: #26231F;
+  color: #FFFFFF;
+  border: 1px solid #26231F;
+  font-weight: 800;
 }
 
 .group-requirement-pill.optional {
-  background: #F6F3ED;
-  color: #94a3b8;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #EDE7DE;
+  color: #38342E;
+  border: 1px solid #D5CEBF;
+  font-weight: 750;
 }
 
 /* Sleek Ergonomic Option Tiles Grid */
@@ -1032,263 +1034,301 @@ dialog.customization-modal::backdrop {
 
   .option-tiles-grid {
     grid-template-columns: 1fr;
-    gap: 7px;
+    gap: 8px;
   }
 
   .option-tile {
-    min-height: 46px;
-    padding: 8px 12px;
+    min-height: 48px;
+    padding: 9px 12px;
   }
 
   .modal-footer {
-    padding: 10px 14px;
+    padding: 12px 14px;
   }
 }
 
+/* Sleek Ergonomic Option Tiles */
 .option-tile {
-  min-height: 48px;
-  background: #161622;
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 8px 12px;
+  min-height: 50px;
+  background: #FFFFFF;
+  border: 1.5px solid #DDD6CA;
+  border-radius: 14px;
+  padding: 9px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   text-align: right;
   cursor: pointer;
   transition: all 0.16s ease;
   user-select: none;
   width: 100%;
+  box-shadow: 0 1px 3px rgba(40, 36, 32, 0.04);
 }
 
 .option-tile:hover {
-  background: #1c1c2b;
-  border-color: rgba(38, 35, 31, 0.15);
+  background: #FAF8F5;
+  border-color: #26231F;
   transform: translateY(-1px);
 }
 
+/* Selected Active Option Tile */
 .option-tile.active {
-  background: rgba(38, 35, 31, 0.15);
+  background: #26231F;
   border-color: #26231F;
-  box-shadow: 0 0 14px rgba(38, 35, 31, 0.15), inset 0 0 0 1px #26231F;
+  box-shadow: 0 4px 14px rgba(38, 35, 31, 0.22);
 }
 
 .tile-main-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   min-width: 0;
 }
 
+/* Icon bubble */
 .tile-icon-bubble {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #F2EDE5;
   display: grid;
   place-items: center;
-  color: #94a3b8;
+  color: #5A534A;
   flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
 .tile-icon-bubble svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
 }
 
 .option-tile.active .tile-icon-bubble {
-  background: rgba(38, 35, 31, 0.15);
-  color: #1F1D1A;
+  background: rgba(255, 255, 255, 0.16);
+  color: #FFFFFF;
 }
 
+/* Option Tile Name */
 .tile-name {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 750;
-  color: #cbd5e1;
+  color: #1F1D1A;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.15s ease;
 }
 
 .option-tile.active .tile-name {
-  color: #ffffff;
-  font-weight: 800;
+  color: #FFFFFF;
+  font-weight: 850;
 }
 
+/* Side Info (Price + Checkmark) */
 .tile-side-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .tile-price-tag {
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 800;
+  transition: color 0.15s ease;
 }
 
 .tile-price-tag.free {
-  color: #94a3b8;
+  color: #736C61;
 }
 
 .tile-price-tag.paid {
-  color: var(--brand-electric-neon);
+  color: #1F1D1A;
 }
 
+.option-tile.active .tile-price-tag.free {
+  color: #D5CEBF;
+}
+
+.option-tile.active .tile-price-tag.paid {
+  color: #FAF8F5;
+}
+
+/* Radio / Check Bubble */
 .tile-check-bubble {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border: 1.5px solid #C8C0B2;
+  background: #FFFFFF;
   display: grid;
   place-items: center;
   color: transparent;
-  font-size: 10px;
-  opacity: 0.3;
+  font-size: 11px;
+  opacity: 0.7;
   transition: all 0.15s ease;
   flex-shrink: 0;
 }
 
 .tile-check-bubble svg {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   stroke-width: 3;
 }
 
 .option-tile.active .tile-check-bubble {
-  background: #26231F;
-  border-color: #26231F;
-  color: #ffffff;
+  background: #FFFFFF;
+  border-color: #FFFFFF;
+  color: #26231F;
   opacity: 1;
-  box-shadow: 0 0 8px rgba(38, 35, 31, 0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Quick Barista Notes & Suggestions */
 .modal-item-note-group {
-  margin-top: 14px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #EDE7DE;
 }
 
 .note-label-row label {
   display: block;
-  font-size: 0.76rem;
-  font-weight: 750;
-  color: #94a3b8;
-  margin-bottom: 6px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #1F1D1A;
+  margin-bottom: 8px;
 }
 
 .quick-suggestion-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 7px;
+  margin-bottom: 10px;
 }
 
 .quick-chip-btn {
-  background: #F6F3ED;
-  border: 1px solid rgba(38, 35, 31, 0.15);
-  color: #cbd5e1;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 4px 10px;
+  background: #FFFFFF;
+  border: 1.5px solid #DDD6CA;
+  color: #38342E;
+  font-size: 0.78rem;
+  font-weight: 750;
+  padding: 6px 13px;
   border-radius: 9999px;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(40, 36, 32, 0.04);
   transition: all 0.15s ease;
 }
 
 .quick-chip-btn:hover {
-  background: rgba(38, 35, 31, 0.15);
+  background: #F6F3ED;
   border-color: #26231F;
-  color: #ffffff;
+  color: #1F1D1A;
+}
+
+.quick-chip-btn.active {
+  background: #26231F;
+  border-color: #26231F;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(38, 35, 31, 0.18);
 }
 
 .quick-chip-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 .modal-note-input {
   width: 100%;
-  padding: 9px 12px;
+  padding: 11px 14px;
   background: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  font-size: 0.8rem;
-  color: #ffffff;
+  border: 1.5px solid #D5CEBF;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  color: #1F1D1A;
+  box-shadow: inset 0 1px 2px rgba(40, 36, 32, 0.03);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .modal-note-input:focus {
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(38, 35, 31, 0.15);
+  border-color: #26231F;
+  box-shadow: 0 0 0 3px rgba(38, 35, 31, 0.12);
   outline: none;
+}
+
+.modal-note-input::placeholder {
+  color: #8C867C;
+  font-size: 0.82rem;
 }
 
 /* Modal Sticky Footer */
 .modal-footer {
-  padding: 12px 18px;
+  padding: 14px 18px;
   background: #FAF8F5;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid #EDE7DE;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   touch-action: none;
 }
 
 .quantity-stepper {
   display: flex;
   align-items: center;
-  background: #F6F3ED;
-  border: 1px solid rgba(38, 35, 31, 0.15);
-  border-radius: 10px;
+  background: #FFFFFF;
+  border: 1.5px solid #D5CEBF;
+  border-radius: var(--radius-full);
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(38, 35, 31, 0.15);
+  box-shadow: 0 2px 6px rgba(40, 36, 32, 0.04);
 }
 
 .stepper-btn {
-  width: 34px;
-  height: 38px;
+  width: 36px;
+  height: 40px;
   display: grid;
   place-items: center;
-  background: #F6F3ED;
-  color: var(--text-primary);
-  font-size: 1rem;
-  font-weight: 800;
+  background: #FFFFFF;
+  color: #1F1D1A;
+  font-size: 1.1rem;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .stepper-btn:hover {
-  background: var(--brand-primary);
-  color: #ffffff;
+  background: #F6F3ED;
 }
 
 .stepper-count {
   width: 30px;
   text-align: center;
   font-weight: 850;
-  font-size: 0.9rem;
-  color: var(--text-primary);
+  font-size: 0.95rem;
+  color: #1F1D1A;
 }
 
 .confirm-add-cart-btn {
   flex: 1;
-  min-height: 44px;
+  min-height: 46px;
   border-radius: var(--radius-full);
-  background: var(--brand-primary);
-  color: #ffffff;
-  font-size: 0.88rem;
-  font-weight: 800;
+  background: #26231F;
+  color: #FFFFFF;
+  border: 1.5px solid #26231F;
+  font-size: 0.9rem;
+  font-weight: 850;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-inline: 18px;
+  padding-inline: 20px;
   box-shadow: 0 4px 14px rgba(38, 35, 31, 0.2);
   transition: background 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
 }
 
 .confirm-add-cart-btn:hover {
-  background: var(--brand-primary-hover);
+  background: #38342E;
+  border-color: #38342E;
   box-shadow: 0 6px 18px rgba(38, 35, 31, 0.28);
 }
 
@@ -1335,7 +1375,7 @@ dialog.customization-modal::backdrop {
   margin: 0;
   font-size: var(--font-md);
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -1403,7 +1443,7 @@ dialog.customization-modal::backdrop {
   margin: 0 0 6px;
   font-size: var(--font-md);
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .cart-empty-view p {
@@ -1902,7 +1942,7 @@ dialog.confirm-dialog {
   width: calc(100% - 32px);
   box-shadow: var(--shadow-elevated);
   text-align: center;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 dialog.confirm-dialog::backdrop {
@@ -1914,7 +1954,7 @@ dialog.confirm-dialog h3 {
   margin: 0 0 var(--space-2);
   font-size: var(--font-md);
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 dialog.confirm-dialog p {
@@ -2103,6 +2143,28 @@ dialog.confirm-dialog p {
   align-items: center;
   font-size: 1.05rem;
   font-weight: 850;
+  color: var(--text-primary);
+}
+
+.error-screen-view {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  max-width: 480px;
+  margin: var(--space-8) auto;
+  box-shadow: 0 4px 18px rgba(40, 36, 32, 0.06);
+}
+
+.error-screen-view.visible {
+  display: block;
+}
+
+.error-screen-view h2 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-xl);
   color: var(--text-primary);
 }
 
