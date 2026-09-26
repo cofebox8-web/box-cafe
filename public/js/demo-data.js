@@ -20,8 +20,258 @@ export const DEMO_MENU_DATA = {
     qr_token: "a0000000-0000-0000-0000-000000000001",
     is_active: true
   },
-  categories: [],
-  products: []
+  categories: [
+    {
+      id: "cat-hot",
+      name: "قهوة ساخنة",
+      description: "إسبريسو غني ومشروبات ساخنة محضرة بإتقان",
+      sort_order: 1
+    },
+    {
+      id: "cat-cold",
+      name: "قهوة مثلجة وباردة",
+      description: "مشروبات الإسبريسو الباردة والتقطير المنعش",
+      sort_order: 2
+    },
+    {
+      id: "cat-bakery",
+      name: "مخبوزات وحلويات",
+      description: "مخبوزات فرنسية طازجة تكمل تجربة قهوتك",
+      sort_order: 3
+    },
+    {
+      id: "cat-refresh",
+      name: "شاي ومشروبات منعشة",
+      description: "ماتشا وشاي مختص وعصائر طبيعية",
+      sort_order: 4
+    }
+  ],
+  products: [
+    {
+      id: "prod-spanish-hot",
+      category_id: "cat-hot",
+      name: "سبانش لاتيه ساخن",
+      description: "إسبريسو متوازن مع الحليب المبخر والحليب المكثف المحلى بطابع دافئ وغني",
+      price: 5000,
+      image_url: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80",
+      badge: "الأكثر طلباً 🔥",
+      sort_order: 1,
+      is_available: true,
+      option_groups: [
+        {
+          id: "optg-size-1",
+          name: "الحجم",
+          selection_type: "single",
+          is_required: true,
+          min_selections: 1,
+          max_selections: 1,
+          options: [
+            { id: "opt-size-reg", name: "وسط (Regular)", price_modifier: 0, is_default: true, is_available: true },
+            { id: "opt-size-lrg", name: "كبير (Large)", price_modifier: 750, is_default: false, is_available: true }
+          ]
+        },
+        {
+          id: "optg-milk-1",
+          name: "نوع الحليب",
+          selection_type: "single",
+          is_required: false,
+          min_selections: 0,
+          max_selections: 1,
+          options: [
+            { id: "opt-milk-whole", name: "حليب كامل الدسم", price_modifier: 0, is_default: true, is_available: true },
+            { id: "opt-milk-skim", name: "حليب قليل الدسم", price_modifier: 0, is_default: false, is_available: true },
+            { id: "opt-milk-oat", name: "حليب شوفان عضوي", price_modifier: 750, is_default: false, is_available: true },
+            { id: "opt-milk-almond", name: "حليب لوز", price_modifier: 750, is_default: false, is_available: true }
+          ]
+        },
+        {
+          id: "optg-extras-1",
+          name: "إضافات اختيارية",
+          selection_type: "multiple",
+          is_required: false,
+          min_selections: 0,
+          max_selections: 3,
+          options: [
+            { id: "opt-ext-shot", name: "شوت إسبريسو إضافي", price_modifier: 1000, is_default: false, is_available: true },
+            { id: "opt-ext-caramel", name: "سيرب كراميل مملح", price_modifier: 500, is_default: false, is_available: true },
+            { id: "opt-ext-whip", name: "كريمة مخفوقة فاخرة", price_modifier: 500, is_default: false, is_available: true }
+          ]
+        }
+      ]
+    },
+    {
+      id: "prod-caffe-latte",
+      category_id: "cat-hot",
+      name: "كافيه لاتيه كلاسيك",
+      description: "جرعة إسبريسو غنية ومستخلصة بعناية مع طبقة مخملية ناعمة من الحليب الطازج",
+      price: 4500,
+      image_url: "https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=600&q=80",
+      badge: "كلاسيك ☕",
+      sort_order: 2,
+      is_available: true,
+      option_groups: [
+        {
+          id: "optg-size-latte",
+          name: "الحجم",
+          selection_type: "single",
+          is_required: true,
+          min_selections: 1,
+          max_selections: 1,
+          options: [
+            { id: "opt-sz-latte-reg", name: "وسط (Regular)", price_modifier: 0, is_default: true, is_available: true },
+            { id: "opt-sz-latte-lrg", name: "كبير (Large)", price_modifier: 750, is_default: false, is_available: true }
+          ]
+        },
+        {
+          id: "optg-milk-latte",
+          name: "نوع الحليب",
+          selection_type: "single",
+          is_required: false,
+          min_selections: 0,
+          max_selections: 1,
+          options: [
+            { id: "opt-m-whole", name: "حليب طازج كامل", price_modifier: 0, is_default: true, is_available: true },
+            { id: "opt-m-oat", name: "حليب شوفان", price_modifier: 750, is_default: false, is_available: true }
+          ]
+        }
+      ]
+    },
+    {
+      id: "prod-americano",
+      category_id: "cat-hot",
+      name: "أمريكانو كلاسيك",
+      description: "جرعتان من الإسبريسو الفاخر المخفف بالماء الساخن لنكهة قهوة سوداء نقية وواضحة",
+      price: 3500,
+      image_url: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80",
+      badge: "نكهة نقية",
+      sort_order: 3,
+      is_available: true,
+      option_groups: [
+        {
+          id: "optg-size-amr",
+          name: "الحجم",
+          selection_type: "single",
+          is_required: true,
+          min_selections: 1,
+          max_selections: 1,
+          options: [
+            { id: "opt-amr-reg", name: "وسط (12 oz)", price_modifier: 0, is_default: true, is_available: true },
+            { id: "opt-amr-lrg", name: "كبير (16 oz)", price_modifier: 500, is_default: false, is_available: true }
+          ]
+        }
+      ]
+    },
+    {
+      id: "prod-v60",
+      category_id: "cat-hot",
+      name: "قهوة مقطرة مختصة V60",
+      description: "تقطير يدوي طازج بحبوب إثيوبية مجففة بنوتات التوت والياسمين وقوام ناعم",
+      price: 6000,
+      image_url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80",
+      badge: "مختصة ⭐",
+      sort_order: 4,
+      is_available: true,
+      option_groups: []
+    },
+    {
+      id: "prod-iced-spanish",
+      category_id: "cat-cold",
+      name: "آيس سبانش لاتيه",
+      description: "المشروب البارد الأكثر طلباً في بوكس كافي: إسبريسو منعش مع الحليب المحلى والثلج",
+      price: 5500,
+      image_url: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80",
+      badge: "الأكثر طلباً 🧊",
+      sort_order: 1,
+      is_available: true,
+      option_groups: [
+        {
+          id: "optg-size-ispan",
+          name: "الحجم",
+          selection_type: "single",
+          is_required: true,
+          min_selections: 1,
+          max_selections: 1,
+          options: [
+            { id: "opt-isp-reg", name: "وسط بارد", price_modifier: 0, is_default: true, is_available: true },
+            { id: "opt-isp-lrg", name: "كبير بارد", price_modifier: 750, is_default: false, is_available: true }
+          ]
+        },
+        {
+          id: "optg-ext-ispan",
+          name: "إضافات",
+          selection_type: "multiple",
+          is_required: false,
+          min_selections: 0,
+          max_selections: 2,
+          options: [
+            { id: "opt-isp-shot", name: "شوت إضافي", price_modifier: 1000, is_default: false, is_available: true },
+            { id: "opt-isp-syrup", name: "سيرب بندق", price_modifier: 500, is_default: false, is_available: true }
+          ]
+        }
+      ]
+    },
+    {
+      id: "prod-coldbrew",
+      category_id: "cat-cold",
+      name: "كولد برو منقوع 18 ساعة",
+      description: "قهوة مقطرة بالماء البارد ببطء شديد، ذات حموضة ناعمة ونكهة شوكولاتية عميقة",
+      price: 6000,
+      image_url: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=600&q=80",
+      badge: "منقوع 18h ⏳",
+      sort_order: 2,
+      is_available: true,
+      option_groups: []
+    },
+    {
+      id: "prod-croissant",
+      category_id: "cat-bakery",
+      name: "كرواسون زبدة فرنسي فاخر",
+      description: "مخبوز يومياً بطبقات مقرمشة وهشة وغني بالزبدة الطبيعية",
+      price: 3000,
+      image_url: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80",
+      badge: "مخبوز اليوم 🥐",
+      sort_order: 1,
+      is_available: true,
+      option_groups: [
+        {
+          id: "optg-heat-croissant",
+          name: "درجة التسخين",
+          selection_type: "single",
+          is_required: false,
+          min_selections: 0,
+          max_selections: 1,
+          options: [
+            { id: "opt-cr-warm", name: "تسخين خفيف طازج", price_modifier: 0, is_default: true, is_available: true },
+            { id: "opt-cr-plain", name: "بدون تسخين", price_modifier: 0, is_default: false, is_available: true }
+          ]
+        }
+      ]
+    },
+    {
+      id: "prod-cookie",
+      category_id: "cat-bakery",
+      name: "كوكيز الشوكولاتة البلجيكية",
+      description: "كوكيز دافئ وطري ومحشو بقطع وفيرة من الشوكولاتة البلجيكية الداكنة",
+      price: 2500,
+      image_url: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=600&q=80",
+      badge: "بلجيكي فاخر 🍪",
+      sort_order: 2,
+      is_available: true,
+      option_groups: []
+    },
+    {
+      id: "prod-matcha-latte",
+      category_id: "cat-refresh",
+      name: "آيس ماتشا لاتيه ياباني",
+      description: "شاي ماتشا أوكولوجي مطحون من أجود مزارع أوجي مع حليب الشوفان البارد",
+      price: 6500,
+      image_url: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=600&q=80",
+      badge: "ماتشا أوجي 🍵",
+      sort_order: 1,
+      is_available: true,
+      option_groups: []
+    }
+  ]
 };
 
 const LIVE_ORDERS_STORAGE_KEY = "box_coffee_live_orders_v4";

@@ -84,7 +84,7 @@ function getOptionIcon(groupName = "", optName = "") {
 function parseRouteContext() {
   const pathParts = window.location.pathname.split("/").filter(Boolean);
   const urlParams = new URLSearchParams(window.location.search);
-  state.isDemo = urlParams.get("demo") === "1";
+  const explicitDemo = urlParams.get("demo");
 
   let branch = "";
   let token = "";
@@ -99,9 +99,14 @@ function parseRouteContext() {
   if (!branch) branch = urlParams.get("branch") || "";
   if (!token) token = urlParams.get("token") || "";
 
-  // Demo data requires an explicit preview flag; production errors never become fake orders.
-  if (!branch && state.isDemo) branch = "airport";
-  if (!token && state.isDemo) token = "a0000000-0000-0000-0000-000000000001";
+  // If no branch or token is provided (direct visit to /menu), open in preview mode so the menu is always viewable
+  if (explicitDemo === "1" || (!branch && !token)) {
+    state.isDemo = true;
+    branch = branch || "airport";
+    token = token || "a0000000-0000-0000-0000-000000000001";
+  } else {
+    state.isDemo = false;
+  }
 
   state.branchSlug = branch;
   state.qrToken = token;
@@ -281,6 +286,10 @@ async function loadMenuData({ silent = false } = {}) {
       throw new Error(res.error.message || "تعذر جلب المنيو من الخادم.");
     }
     if (!res.data || res.data.success !== true) {
+      if (res.data?.error === "INVALID_SERVICE_POINT") {
+        showErrorScreen("رمز المسار غير متاح", res.data?.message || "رمز نقطة الخدمة غير متوفر أو تم إيقافه.");
+        return;
+      }
       throw new Error(res.data?.message || res.data?.error || "تعذر جلب بيانات المنيو لهذا الفرع أو نقطة الخدمة.");
     }
 
@@ -1667,7 +1676,7 @@ function setupEventListeners() {
   const retryBtn = document.getElementById("retry-load-menu-btn");
   if (retryBtn) {
     retryBtn.addEventListener("click", () => {
-      loadMenuData();
+      window.location.reload();
     });
   }
 }
