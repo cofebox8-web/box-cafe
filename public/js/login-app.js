@@ -11,8 +11,8 @@ import {
   updateStaffPassword,
   sanitizeNextPath,
   roleLabel
-} from "./staff-auth.js?v=20260926_v60";
-import { isSupabaseConfigured, supabase } from "./supabase-client.js?v=20260926_v60";
+} from "./staff-auth.js";
+import { isSupabaseConfigured, supabase } from "./supabase-client.js";
 
 const $ = (id) => document.getElementById(id);
 

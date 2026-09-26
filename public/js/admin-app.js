@@ -10,8 +10,8 @@ import {
   getStaffSession,
   signInStaff,
   signOutStaff
-} from './staff-auth.js?v=20260926_v60';
-import { supabase, isSupabaseConfigured } from './supabase-client.js?v=20260926_v60';
+} from './staff-auth.js';
+import { supabase, isSupabaseConfigured } from './supabase-client.js';
 
 const syncChannel = typeof BroadcastChannel !== 'undefined'
   ? new BroadcastChannel('box_coffee_kitchen_sync')
