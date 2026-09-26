@@ -544,74 +544,90 @@
       <form id="form-menu-item" class="structured-form">
         <input type="hidden" id="item-id-input" />
 
-        <!-- القسم 1: بيانات الصنف الأساسية -->
-        <div class="form-two-boxes">
-          <div class="field-box">
-            <label for="item-name-input">اسم المنتج <span style="color:#F43F5E;">*</span></label>
-            <input type="text" id="item-name-input" class="structured-input" placeholder="مثال: سبانش لاتيه بارد" required />
+        <div class="menu-form-intro">
+          <span class="menu-form-kicker">بيانات المنيو</span>
+          <p>رتّب معلومات المنتج على مراحل واضحة حتى يظهر للزبون بشكل ثابت وسهل القراءة.</p>
+        </div>
+
+        <section class="menu-form-section" aria-labelledby="product-basics-title">
+          <div class="menu-form-section-heading">
+            <span class="menu-form-section-index">01</span>
+            <div><h4 id="product-basics-title">البيانات الأساسية والسعر</h4><p>الاسم والقسم والسعر الأساسي قبل أي إضافات.</p></div>
           </div>
-          <div class="field-box">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <label for="item-category-select">القسم <span style="color:#F43F5E;">*</span></label>
-              <button type="button" id="btn-quick-new-category" style="background:none;border:none;color:var(--purple-bright);font-size:0.75rem;font-weight:700;cursor:pointer;padding:0;">＋ قسم جديد</button>
+          <div class="form-two-boxes">
+            <div class="field-box">
+              <label for="item-name-input">اسم المنتج <span class="required-mark">*</span></label>
+              <input type="text" id="item-name-input" class="structured-input" placeholder="مثال: سبانش لاتيه بارد" required />
             </div>
-            <select id="item-category-select" class="structured-input" required></select>
+            <div class="field-box">
+              <div class="field-label-row">
+                <label for="item-category-select">القسم <span class="required-mark">*</span></label>
+                <button type="button" id="btn-quick-new-category" class="inline-action-btn">＋ قسم جديد</button>
+              </div>
+              <select id="item-category-select" class="structured-input" required></select>
+            </div>
           </div>
-        </div>
+          <div class="form-two-boxes">
+            <div class="field-box">
+              <label for="item-price-input">السعر الأساسي <span class="required-mark">*</span></label>
+              <div class="price-input-wrap">
+                <input type="number" id="item-price-input" class="structured-input" placeholder="مثال: 4500" min="0" step="250" required inputmode="numeric" />
+                <span class="price-currency">د.ع</span>
+              </div>
+              <small class="field-help">يظهر هذا السعر قبل اختيار أي إضافة.</small>
+            </div>
+            <div class="field-box">
+              <label for="item-available-select">حالة التوفر بالمنيو</label>
+              <select id="item-available-select" class="structured-input">
+                <option value="true">متوفر للطلب حالياً (نشط)</option>
+                <option value="false">غير متوفر (متوقف مؤقتاً)</option>
+              </select>
+            </div>
+          </div>
+        </section>
 
-        <!-- القسم 2: التسعير وحالة التوفر بالمنيو -->
-        <div class="form-two-boxes">
+        <section class="menu-form-section" aria-labelledby="product-details-title">
+          <div class="menu-form-section-heading">
+            <span class="menu-form-section-index">02</span>
+            <div><h4 id="product-details-title">الوصف والصورة</h4><p>معلومات إضافية تساعد الزبون على اختيار المنتج بسرعة.</p></div>
+          </div>
           <div class="field-box">
-            <label for="item-price-input">السعر بالدينار العراقي (د.ع) <span style="color:#F43F5E;">*</span></label>
-            <input type="number" id="item-price-input" class="structured-input" placeholder="مثال: 4500" min="0" step="250" required />
+            <label for="item-description-input">وصف المنتج ومكوناته <span class="optional-mark">اختياري</span></label>
+            <textarea id="item-description-input" class="structured-input" rows="2" maxlength="500" placeholder="مكونات المشروب، الحجم القياسي، أو أي ملاحظة تظهر للزبون..."></textarea>
           </div>
           <div class="field-box">
-            <label for="item-available-select">حالة التوفر بالمنيو</label>
-            <select id="item-available-select" class="structured-input">
-              <option value="true">متوفر للطلب حالياً (نشط)</option>
-              <option value="false">غير متوفر (متوقف مؤقتاً)</option>
-            </select>
-          </div>
-        </div>
+            <div class="field-label-row">
+              <label>صورة المنتج</label>
+              <button type="button" id="btn-remove-item-image" class="box-btn-danger-sm image-remove-btn" style="display:none;">🗑️ إزالة الصورة</button>
+            </div>
+            <input type="file" id="item-image-file" accept="image/*" style="display:none;" />
+            <input type="hidden" id="item-image-input" />
 
-        <!-- القسم 3: وصف وتفاصيل الصنف -->
-        <div class="field-box">
-          <label for="item-description-input">وصف المنتج ومكوناته <span style="color:var(--text-dim);font-weight:normal;">(اختياري)</span></label>
-          <textarea id="item-description-input" class="structured-input" rows="2" maxlength="500" placeholder="مكونات المشروب، الحجم القياسي، أو أي ملاحظة تظهر للزبون..."></textarea>
-        </div>
-
-        <!-- القسم 4: صورة المنتج واختيارها من الهاتف مباشرة -->
-        <div class="field-box">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <label>صورة المنتج</label>
-            <button type="button" id="btn-remove-item-image" class="box-btn-danger-sm" style="display:none;padding:2px 8px;font-size:0.72rem;">🗑️ إزالة الصورة</button>
-          </div>
-          <input type="file" id="item-image-file" accept="image/*" style="display:none;" />
-          <input type="hidden" id="item-image-input" />
-
-          <div class="image-single-picker-card" id="item-image-picker-zone" role="button" tabindex="0" title="اضغط لفتح استوديو الصور بالهاتف">
-            <div id="item-image-preview-wrap" class="picker-preview-wrap" style="display:none;">
-              <img id="item-image-preview" src="" alt="معاينة المنتج" />
-              <div class="picker-change-overlay">
-                <span>🔄 تغيير الصورة من الهاتف</span>
+            <div class="image-single-picker-card" id="item-image-picker-zone" role="button" tabindex="0" title="اضغط لفتح استوديو الصور بالهاتف">
+              <div id="item-image-preview-wrap" class="picker-preview-wrap" style="display:none;">
+                <img id="item-image-preview" src="" alt="معاينة المنتج" />
+                <div class="picker-change-overlay"><span>🔄 تغيير الصورة من الهاتف</span></div>
+              </div>
+              <div id="item-image-placeholder" class="picker-empty-placeholder">
+                <div class="picker-icon-circle">📷</div>
+                <strong class="picker-prompt-title">اضغط هنا لاختيار صورة المنتج من الهاتف</strong>
+                <small id="item-image-status" class="picker-prompt-sub">يفتح معرض الصور والألبوم مباشرة (JPG, PNG, WebP)</small>
               </div>
             </div>
-            <div id="item-image-placeholder" class="picker-empty-placeholder">
-              <div class="picker-icon-circle">📷</div>
-              <strong class="picker-prompt-title">اضغط هنا لاختيار صورة المنتج من الهاتف</strong>
-              <small id="item-image-status" class="picker-prompt-sub">يفتح معرض الصور والألبوم مباشرة (JPG, PNG, WebP)</small>
-            </div>
           </div>
-        </div>
+        </section>
 
-        <!-- القسم 5: الإضافات والخيارات (الأحجام، الحليب، النكهات) -->
-        <section class="option-authoring" aria-labelledby="option-groups-title">
-          <div class="option-authoring-heading">
-            <div>
+        <section class="option-authoring menu-form-section" aria-labelledby="option-groups-title">
+          <div class="option-authoring-heading menu-form-section-heading">
+            <span class="menu-form-section-index">03</span>
+            <div class="option-heading-copy">
               <h4 id="option-groups-title">الإضافات والخيارات المخصصة</h4>
-              <p>مثل الحجم، نوع الحليب، شوت إضافي، أو النكهة (اختياري).</p>
+              <p>أنشئ مجموعات مثل الحجم أو نوع الحليب، ثم حدد السعر الإضافي لكل خيار.</p>
             </div>
-            <button type="button" id="btn-add-option-group" class="box-btn-secondary">+ مجموعة خيارات</button>
+            <div class="option-heading-actions">
+              <span id="option-groups-count" class="option-count-badge" aria-live="polite">0 مجموعات</span>
+              <button type="button" id="btn-add-option-group" class="box-btn-secondary">＋ إضافة مجموعة</button>
+            </div>
           </div>
           <div id="item-option-groups" class="option-groups-list"></div>
         </section>

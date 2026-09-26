@@ -344,22 +344,31 @@ function renderOptionGroupsEditor(groups = []) {
   const root = document.getElementById('item-option-groups');
   if (!root) return;
   root.replaceChildren();
+  if (!groups.length) {
+    const empty = document.createElement('div');
+    empty.className = 'option-groups-empty';
+    empty.innerHTML = '<span class="option-empty-icon">＋</span><strong>لا توجد إضافات لهذا المنتج</strong><small>أضف مجموعة خيارات إذا كان للمنتج أحجام أو نكهات أو إضافات بسعر مختلف.</small>';
+    root.append(empty);
+    updateOptionGroupsMeta(0);
+    return;
+  }
   groups.forEach((group = {}, groupIndex) => {
     const card = document.createElement('div');
     card.className = 'option-group-editor';
     card.dataset.groupIndex = String(groupIndex);
     card.innerHTML = `
       <div class="option-group-editor-head">
-        <strong>مجموعة ${groupIndex + 1}</strong>
+        <div class="option-group-title-wrap"><span class="option-group-number">${String(groupIndex + 1).padStart(2, '0')}</span><div><strong>مجموعة الخيارات ${groupIndex + 1}</strong><small>حدد طريقة الاختيار ثم أضف الخيارات</small></div></div>
         <button type="button" class="option-remove-btn" data-remove-group aria-label="حذف المجموعة">حذف المجموعة</button>
       </div>
       <div class="form-two-boxes">
-        <div class="field-box"><label>اسم المجموعة</label><input type="text" class="structured-input" data-group-name maxlength="80" placeholder="مثال: حجم المشروب" /></div>
-        <div class="field-box"><label>طريقة الاختيار</label><select class="structured-input" data-group-type><option value="single">اختيار واحد</option><option value="multiple">اختيارات متعددة</option></select></div>
+        <div class="field-box"><label>اسم المجموعة</label><input type="text" class="structured-input" data-group-name maxlength="80" placeholder="مثال: حجم المشروب" /><small class="field-help">يظهر كعنوان للخيارات عند الطلب.</small></div>
+        <div class="field-box"><label>طريقة الاختيار</label><select class="structured-input" data-group-type><option value="single">اختيار واحد</option><option value="multiple">اختيارات متعددة</option></select><small class="field-help">اختيار واحد للحجم، ومتعددة للإضافات.</small></div>
       </div>
-      <label class="option-required-toggle"><input type="checkbox" data-group-required /> الاختيار إلزامي</label>
+      <label class="option-required-toggle"><input type="checkbox" data-group-required /> <span>إلزام اختيار من هذه المجموعة</span><small>لن يكتمل الطلب بدون تحديد خيار.</small></label>
+      <div class="option-rows-heading"><span>اسم الخيار</span><span>السعر الإضافي</span><span class="sr-only">إجراء</span></div>
       <div class="option-rows" data-option-rows></div>
-      <button type="button" class="option-add-row" data-add-option>+ إضافة خيار</button>`;
+      <button type="button" class="option-add-row" data-add-option>＋ إضافة خيار جديد</button>`;
     card.querySelector('[data-group-name]').value = group.name || '';
     card.querySelector('[data-group-type]').value = group.selection_type === 'multiple' ? 'multiple' : 'single';
     card.querySelector('[data-group-required]').checked = Boolean(group.is_required);
@@ -368,14 +377,20 @@ function renderOptionGroupsEditor(groups = []) {
     options.forEach((option) => appendOptionRow(rows, option));
     root.append(card);
   });
+  updateOptionGroupsMeta(groups.length);
+}
+
+function updateOptionGroupsMeta(count = document.querySelectorAll('#item-option-groups .option-group-editor').length) {
+  const badge = document.getElementById('option-groups-count');
+  if (badge) badge.textContent = `${count} ${count === 1 ? 'مجموعة' : 'مجموعات'}`;
 }
 
 function appendOptionRow(container, option = {}) {
   const row = document.createElement('div');
   row.className = 'option-editor-row';
   row.innerHTML = `
-    <input type="text" class="structured-input" data-option-name maxlength="80" placeholder="اسم الخيار" aria-label="اسم الخيار" />
-    <input type="number" class="structured-input" data-option-price min="0" max="1000000" step="250" value="0" placeholder="إضافة السعر" aria-label="السعر الإضافي بالدينار" />
+    <div class="option-name-cell"><input type="text" class="structured-input" data-option-name maxlength="80" placeholder="مثال: حليب قليل الدسم" aria-label="اسم الخيار" /></div>
+    <div class="option-price-cell"><input type="number" class="structured-input" data-option-price min="0" max="1000000" step="250" value="0" placeholder="0" aria-label="السعر الإضافي بالدينار" /><span>د.ع</span></div>
     <button type="button" class="option-remove-btn" data-remove-option aria-label="حذف الخيار">حذف</button>`;
   row.querySelector('[data-option-name]').value = option.name || '';
   row.querySelector('[data-option-price]').value = Number(option.price_modifier) || 0;
@@ -1834,12 +1849,18 @@ async function initAdminERP() {
   document.getElementById('btn-open-add-item')?.addEventListener('click', () => openMenuItemModal(null));
   document.getElementById('btn-add-option-group')?.addEventListener('click', () => {
     const root = document.getElementById('item-option-groups');
-    renderOptionGroupsEditor([...readOptionGroupsFromForm(), { name: '', selection_type: 'single', is_required: false, options: [{}] }]);
+    const groups = [...readOptionGroupsFromForm(), { name: '', selection_type: 'single', is_required: false, options: [{}] }];
+    renderOptionGroupsEditor(groups);
+    root?.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
   document.getElementById('item-option-groups')?.addEventListener('click', (event) => {
     const group = event.target.closest('.option-group-editor');
     if (!group) return;
-    if (event.target.closest('[data-remove-group]')) group.remove();
+    if (event.target.closest('[data-remove-group]')) {
+      group.remove();
+      updateOptionGroupsMeta();
+      if (!document.querySelector('#item-option-groups .option-group-editor')) renderOptionGroupsEditor([]);
+    }
     if (event.target.closest('[data-add-option]')) appendOptionRow(group.querySelector('[data-option-rows]'));
     if (event.target.closest('[data-remove-option]')) {
       const rows = group.querySelector('[data-option-rows]');
