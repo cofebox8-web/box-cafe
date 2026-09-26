@@ -493,14 +493,14 @@ a {
 /* Modern Responsive Grid: 2 columns on mobile, 3 on tablet, 3-4 on desktop */
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
 }
 
 @media (max-width: 359px) {
   .products-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
   }
 }
 
@@ -611,7 +611,7 @@ a {
 
 /* Product Content & Bottom Bar */
 .product-card-body {
-  padding: var(--space-3) var(--space-3) var(--space-3);
+  padding: 10px 10px 12px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -645,19 +645,19 @@ a {
 .product-card-bottom {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 9px;
+  gap: 8px;
   margin-top: auto;
   padding-top: var(--space-2);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  width: 100%;
 }
 
 .price-container {
   display: flex;
   align-items: baseline;
   gap: 3px;
-  align-self: flex-start;
+  width: 100%;
+  justify-content: flex-start;
 }
 
 .price-value {
@@ -671,32 +671,29 @@ a {
 .card-action-slot {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
   width: 100%;
   min-width: 0;
-  justify-content: stretch;
 }
 
-/* Unified Luxury Add Button across ALL Cards */
+/* Unified Luxury Add Button across ALL Cards (Full Width at Bottom / جوه) */
 .add-product-btn {
-  min-height: 36px;
-  padding: 0 13px;
-  border-radius: 10px;
-  font-size: 0.78rem;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 11px;
+  font-size: 0.8rem;
   font-weight: 850;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
   color: #ffffff;
   border: 1px solid rgba(192, 132, 252, 0.45);
-  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.16s ease;
   white-space: nowrap;
   cursor: pointer;
-  flex: 1;
-  min-width: 0;
 }
 
 .add-product-btn:hover {
@@ -706,7 +703,7 @@ a {
 }
 
 .add-product-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 /* In-Card Stepper */
@@ -748,14 +745,13 @@ a {
 .card-options-in-cart-group {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  gap: 6px;
   width: 100%;
   min-width: 0;
 }
 
 .card-options-in-cart-group .in-cart-count-pill {
-  align-self: flex-start;
+  align-self: center;
 }
 
 .card-options-in-cart-group .add-product-btn span {
