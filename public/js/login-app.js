@@ -135,10 +135,6 @@ function checkUrlParams() {
   const rawNext = searchParams.get("next");
   state.nextParam = sanitizeNextPath(rawNext);
 
-  if (searchParams.get("signed_out") === "1") {
-    setAuthAlert("تم تسجيل الخروج من النظام بنجاح.", "success", "تسجيل الخروج");
-  }
-
   // Check if arriving from Supabase password recovery email
   const type = searchParams.get("type") || hashParams.get("type");
   if (type === "recovery") {
@@ -159,28 +155,12 @@ async function checkExistingSession() {
     if (searchParams.get("signed_out") === "1") return;
 
     const sessionPromise = getStaffSession();
-    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1500));
+    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
     const context = await Promise.race([sessionPromise, timeoutPromise]);
     if (!context || !context.profile) return;
 
-    // Do NOT automatically redirect away while the user might be typing.
-    // Instead, inform them of their active session with an option to continue or sign in with another account.
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
-    const label = roleLabel(context.profile.role);
-    const name = context.profile.full_name || context.user.email;
-
-    const alertEl = $("auth-alert");
-    const msgEl = $("auth-alert-message");
-    if (alertEl && msgEl) {
-      alertEl.dataset.tone = "info";
-      msgEl.innerHTML = `
-        <span>أنت مسجل حالياً كـ <strong>${name}</strong> (${label}).</span>
-        <div style="margin-top: 6px;">
-          <a href="${targetUrl}" style="color: #FACC15; font-weight: 700; text-decoration: underline;">متابعة الدخول إلى شاشة العمل ←</a>
-        </div>
-      `;
-      alertEl.hidden = false;
-    }
+    window.location.replace(targetUrl);
   } catch (error) {
     console.debug("Session pre-check passed:", error?.message);
   }
@@ -213,38 +193,18 @@ async function handleSignInSubmit(event) {
 
   if (hasError) return;
 
-  setButtonLoading(
-    "login-submit-btn",
-    "login-btn-spinner",
-    "login-submit-label",
-    true,
-    "جارٍ التحقق من الصلاحيات…",
-    "تسجيل الدخول"
-  );
+  const submitBtn = $("login-submit-btn");
+  const spinner = $("login-btn-spinner");
+  if (submitBtn) submitBtn.disabled = true;
+  if (spinner) spinner.hidden = false;
 
   try {
     const context = await signInStaff(emailVal, passwordVal);
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
-    const label = roleLabel(context.profile.role);
-
-    setAuthAlert(
-      `تم التحقق بنجاح. مرحباً بك ${context.profile.full_name || context.user.email} (${label})، جارٍ نقلك إلى شاشة عملك…`,
-      "success",
-      "تم الدخول"
-    );
-
-    window.setTimeout(() => {
-      window.location.replace(targetUrl);
-    }, 350);
+    window.location.replace(targetUrl);
   } catch (error) {
-    setButtonLoading(
-      "login-submit-btn",
-      "login-btn-spinner",
-      "login-submit-label",
-      false,
-      "جارٍ التحقق من الصلاحيات…",
-      "تسجيل الدخول"
-    );
+    if (submitBtn) submitBtn.disabled = false;
+    if (spinner) spinner.hidden = true;
     setAuthAlert(error.message || "تعذر تسجيل الدخول. تحقق من بياناتك وحاول مرة أخرى.", "error");
   }
 }
@@ -319,10 +279,7 @@ async function handleRecoverySubmit(event) {
   try {
     const context = await updateStaffPassword(passwordVal);
     const targetUrl = resolveStaffDestination(context?.profile, state.nextParam);
-    setAuthAlert("تم تحديث كلمة المرور بنجاح. جارٍ نقلك إلى شاشة عملك…", "success", "تم التحديث");
-    window.setTimeout(() => {
-      window.location.replace(targetUrl);
-    }, 450);
+    window.location.replace(targetUrl);
   } catch (error) {
     setButtonLoading(
       "recovery-submit-btn",
