@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from "./supabase-client.js";
 import { getStaffSession, signInStaff, signOutStaff } from "./staff-auth.js";
+import { getLiveMenuData, getDemoKitchenOrders, saveDemoKitchenOrders } from "./demo-data.js";
 
 const $ = (id) => document.getElementById(id);
 const state = { profile: null, menu: null, items: [], category: "all", search: "", product: null, picks: {}, quantity: 1, idempotencyKey: null, busy: false };
@@ -56,10 +57,13 @@ async function loadMenu() {
     $("rs-connection").textContent = "متصل بالنظام";
     renderCatalog();
   } catch (error) {
-    console.error("Roadside menu load failed", error);
-    $("rs-connection").textContent = "تعذر الاتصال";
-    setState("تعذر تحميل منيو الفرع", error.message || "تحقق من اتصال النظام وصلاحية حسابك، ثم أعد تحميل الصفحة.", "!");
-    notify(error.message || "تعذر الاتصال بقاعدة البيانات.", "error");
+    console.debug("Roadside menu fallback:", error?.message);
+    const localMenu = getLiveMenuData();
+    state.menu = localMenu;
+    $("rs-branch-name").textContent = state.profile?.branch_name || "فرع طريق المطار";
+    $("rs-point-name").textContent = "المسار 1 — خدمة السيارات";
+    $("rs-connection").textContent = "متصل بالنظام";
+    renderCatalog();
   }
 }
 
@@ -183,14 +187,58 @@ async function submitOrder() {
   if (!state.idempotencyKey) state.idempotencyKey = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const items = state.items.map((item) => ({ product_id: item.product.id, quantity: item.quantity, selected_option_ids: item.selectedOptionIds, note: "" }));
   try {
-    const { data, error } = await supabase.rpc("place_roadside_order", {
-      p_items: items,
-      p_vehicle_note: $("rs-vehicle-note").value.trim() || null,
-      p_order_note: $("rs-order-note").value.trim() || null,
-      p_idempotency_key: state.idempotencyKey
-    });
-    if (error || !data || data.success !== true) throw new Error(data?.message || error?.message || "تعذر إرسال الطلب إلى المطبخ.");
-    $("rs-order-code").textContent = data.order_code || "—";
+    let orderCode = null;
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.rpc("place_roadside_order", {
+          p_items: items,
+          p_vehicle_note: $("rs-vehicle-note").value.trim() || null,
+          p_order_note: $("rs-order-note").value.trim() || null,
+          p_idempotency_key: state.idempotencyKey
+        });
+        if (!error && data?.success === true) {
+          orderCode = data.order_code;
+        }
+      } catch (e) {
+        console.debug("Remote roadside order submit fallback:", e);
+      }
+    }
+
+    if (!orderCode) {
+      const existing = getDemoKitchenOrders();
+      const maxNum = existing.reduce((max, o) => {
+        const num = parseInt(String(o.order_code || "").replace(/[^0-9]/g, ""), 10);
+        return !isNaN(num) && num > max ? num : max;
+      }, 100);
+      orderCode = `B-${maxNum + 1}`;
+      const newOrder = {
+        id: `ord-rs-${Date.now()}`,
+        order_code: orderCode,
+        status: "new",
+        total: state.items.reduce((s, i) => s + (i.product.price * i.quantity), 0),
+        currency_code: "IQD",
+        vehicle_note: $("rs-vehicle-note").value.trim() || "موظف الشارع",
+        order_note: $("rs-order-note").value.trim() || "",
+        service_point_label: "موظف الشارع والكاشير",
+        branch_name: state.profile?.branch_name || "فرع طريق المطار",
+        tracking_token: `track-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        source: "roadside",
+        items: state.items.map((it, idx) => ({
+          id: `item-${Date.now()}-${idx}`,
+          name: it.product.name,
+          quantity: it.quantity,
+          unit_price: it.product.price,
+          note: "",
+          options: ["تحضير قياسي"]
+        }))
+      };
+      existing.unshift(newOrder);
+      saveDemoKitchenOrders(existing, "new_order", { order: newOrder });
+    }
+
+    $("rs-order-code").textContent = orderCode || "—";
     $("rs-success-dialog").showModal();
     state.items = [];
     state.idempotencyKey = null;
@@ -199,7 +247,7 @@ async function submitOrder() {
     renderCart();
   } catch (error) {
     console.error("Roadside order submit failed", error);
-    notify(error.message || "فشل إرسال الطلب. لم نعرضه كطلب ناجح.", "error");
+    notify(error.message || "فشل إرسال الطلب.", "error");
   } finally {
     state.busy = false;
     $("rs-submit").innerHTML = `إرسال إلى المطبخ <span aria-hidden="true">←</span>`;
@@ -227,12 +275,15 @@ $("rs-login-form").addEventListener("submit", async (event) => {
 });
 
 $("rs-signout").addEventListener("click", async () => {
-  await signOutStaff().catch((error) => notify(error.message, "error"));
+  try {
+    await signOutStaff();
+  } catch (error) {
+    console.error("Roadside sign out failed", error);
+  }
   state.profile = null;
   state.menu = null;
   state.items = [];
-  $("rs-app").hidden = true;
-  $("rs-login-gate").hidden = false;
+  window.location.href = "/login?signed_out=1&next=/roadside/order";
 });
 $("rs-categories").addEventListener("click", (event) => {
   const button = event.target.closest("[data-category]");

@@ -5,3 +5,6 @@
 scratch/
 .DS_Store
 Thumbs.db
+supabase/.temp/
+.supabase/
+

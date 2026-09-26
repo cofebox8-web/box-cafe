@@ -63,3 +63,26 @@ where b.slug = 'airport' and csp.is_active;
 ```
 
 استبدل `YOUR-VERCEL-DOMAIN` بنطاق Vercel الفعلي. لا تنشر هذه الروابط قبل تجربة كل QR بنفسك.
+
+## 6. نشر دالة إدارة الموظفين (Edge Function)
+
+تبويب "الموظفين" في `/admin` (إنشاء/تعديل/حذف حساب موظف) يستدعي دالة خادمية على Supabase اسمها `admin-manage-staff` (المصدر في `supabase/functions/admin-manage-staff/index.ts`). هذه الدالة هي المكان الوحيد المسموح فيه استخدام مفتاح `service_role`، ولا تُشحن أبداً إلى المتصفح. **دون نشرها، عرض قائمة الموظفين والتفعيل/التعطيل يعملان (RPC عادية)، لكن الإنشاء والتعديل والحذف لا يعملون.**
+
+هذه الخطوة تستخدم أداة سطر أوامر (Supabase CLI) على جهازك لنشر كود الدالة إلى خوادم Supabase — وهي أداة تشغيل خارجية، لا تضيف Node.js أو خطوة بناء إلى موقع `public/` نفسه، ولا تخالف كونه ثابتاً بلا bundler.
+
+1. ثبّت Supabase CLI مرة واحدة على جهازك (راجع التعليمات الرسمية لنظام تشغيلك)، ثم سجّل الدخول:
+   ```
+   supabase login
+   ```
+2. اربط مجلد المشروع بمشروع Supabase الفعلي (مرجع المشروع هو الجزء الأول من رابط `SUPABASE_URL` في `public/js/config.js`، أي `rtzzoyaxivujzvghudgz`):
+   ```
+   supabase link --project-ref rtzzoyaxivujzvghudgz
+   ```
+3. انشر الدالة:
+   ```
+   supabase functions deploy admin-manage-staff
+   ```
+   لا حاجة لضبط أي أسرار يدوياً؛ متغيرات `SUPABASE_URL` و`SUPABASE_SERVICE_ROLE_KEY` تُحقن تلقائياً داخل كل Edge Function من Supabase نفسه.
+4. جرّب الدالة بحساب مالك حقيقي من تبويب "الموظفين" في `/admin`: أضف موظفاً تجريبياً، تحقق من ظهوره وقدرته على تسجيل الدخول من `/login`، ثم عدّل حالته واحذفه للتأكد من عمل المسارات الثلاثة.
+
+بعد النشر الأول، أي تعديل لاحق على `supabase/functions/admin-manage-staff/index.ts` يحتاج إعادة تنفيذ أمر `supabase functions deploy admin-manage-staff` فقط لتحديثه.

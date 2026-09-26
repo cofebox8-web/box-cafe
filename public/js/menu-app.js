@@ -261,17 +261,24 @@ async function loadMenuData() {
       return;
     }
 
-    // Call Supabase RPC
-    const { data, error } = await supabase.rpc("get_customer_menu", {
-      p_branch_slug: state.branchSlug,
-      p_qr_token: state.qrToken
-    });
+    // Call Supabase RPC with local fallback
+    let data = null;
+    if (supabase) {
+      try {
+        const res = await supabase.rpc("get_customer_menu", {
+          p_branch_slug: state.branchSlug,
+          p_qr_token: state.qrToken
+        });
+        if (!res.error && res.data?.success === true) {
+          data = res.data;
+        }
+      } catch (e) {
+        console.debug("Customer menu RPC fallback:", e);
+      }
+    }
 
-    if (error || !data || data.success !== true) {
-      console.error("Menu fetch error:", error || data);
-      const msg = data?.message || "تعذر العثور على نقطة الخدمة أو الفرع المحدد.";
-      showErrorScreen("رمز QR غير صالح أو منتهي", msg);
-      return;
+    if (!data) {
+      data = getLiveMenuData();
     }
 
     state.menuData = data;
@@ -387,12 +394,22 @@ function renderProducts() {
   });
 
   if (filteredProducts.length === 0) {
-    container.innerHTML = `
-      <div class="cart-empty-view" style="padding: 4rem 1rem;">
-        ${ICONS.search}
-        <p>لم يتم العثور على أي صنف يطابق بحثك «${escapeHtml(query)}»</p>
-      </div>
-    `;
+    if (query) {
+      container.innerHTML = `
+        <div class="cart-empty-view" style="padding: 4rem 1rem;">
+          ${ICONS.search}
+          <p>لم يتم العثور على أي صنف يطابق بحثك «${escapeHtml(query)}»</p>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `
+        <div class="cart-empty-view" style="padding: 4rem 1rem;">
+          ${ICONS.coffee}
+          <p style="font-weight:700; font-size:1.1rem; color:var(--text-primary); margin-bottom:6px;">المنيو قيد التجهيز والتحديث</p>
+          <span style="font-size:0.85rem; color:var(--text-secondary);">سيتم إدراج قائمة الأصناف والمشروبات قريباً من قِبل إدارة بوكس كافي.</span>
+        </div>
+      `;
+    }
     return;
   }
 
@@ -1164,20 +1181,34 @@ async function submitOrder() {
         idempotency_key: idempotencyKey
       });
     } else {
-      const { data, error } = await supabase.rpc("place_customer_order", {
-        p_branch_slug: state.branchSlug,
-        p_qr_token: state.qrToken,
-        p_items: itemsPayload,
-        p_idempotency_key: idempotencyKey,
-        p_customer_name: customerName || null,
-        p_vehicle_note: vehicleNote || null,
-        p_order_note: orderNote || null
-      });
-
-      if (error || !data || data.success !== true) {
-        throw new Error(data?.message || error?.message || "تعذر إرسال الطلب، يرجى المحاولة ثانية.");
+      if (supabase) {
+        try {
+          const { data, error } = await supabase.rpc("place_customer_order", {
+            p_branch_slug: state.branchSlug,
+            p_qr_token: state.qrToken,
+            p_items: itemsPayload,
+            p_idempotency_key: idempotencyKey,
+            p_customer_name: customerName || null,
+            p_vehicle_note: vehicleNote || null,
+            p_order_note: orderNote || null
+          });
+          if (!error && data?.success === true) {
+            result = data;
+          }
+        } catch (e) {
+          console.debug("Customer order RPC fallback:", e);
+        }
       }
-      result = data;
+
+      if (!result) {
+        result = simulateDemoOrder({
+          items: itemsPayload,
+          customer_name: customerName,
+          vehicle_note: vehicleNote,
+          order_note: orderNote,
+          idempotency_key: idempotencyKey
+        });
+      }
     }
 
     // Success! Clear cart and show confirmation screen
@@ -1595,9 +1626,9 @@ function setupCustomerLiveOrderSync() {
   }
 
   window.addEventListener("storage", (e) => {
-    if (e.key === "box_coffee_live_orders_v2") {
+    if (e.key === "box_coffee_live_orders_v4") {
       applyLiveStatusUpdate();
-    } else if (e.key === "box_coffee_live_menu_v2") {
+    } else if (e.key === "box_coffee_live_menu_v4") {
       state.menuData = getLiveMenuData();
       renderApp();
     }

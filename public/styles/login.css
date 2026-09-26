@@ -1,0 +1,433 @@
+/* ==========================================================================
+   BOX COFE — Pure Luxury Minimalist Login Card
+   Ultra-clean, Centered, Zero Distractions
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+  --bg-obsidian: #06050a;
+  --bg-card: rgba(18, 14, 28, 0.78);
+  --bg-input: #090710;
+
+  --purple-main: #9333ea;
+  --purple-bright: #c084fc;
+  --purple-glow: rgba(168, 85, 247, 0.28);
+  --purple-soft: rgba(192, 132, 252, 0.12);
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(192, 132, 252, 0.25);
+  --border-focus: #c084fc;
+
+  --text-white: #f8fafc;
+  --text-light: #cbd5e1;
+  --text-dim: #94a3b8;
+  --text-muted: #64748b;
+
+  --color-danger: #ef4444;
+  --color-danger-bg: rgba(239, 68, 68, 0.12);
+  --color-danger-border: rgba(239, 68, 68, 0.35);
+
+  --color-success: #10b981;
+  --color-success-bg: rgba(16, 185, 129, 0.12);
+  --color-success-border: rgba(16, 185, 129, 0.35);
+
+  --font-ar: "Cairo", "Tajawal", system-ui, -apple-system, sans-serif;
+  --font-en: "Montserrat", system-ui, sans-serif;
+
+  --radius-card: 24px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body.login-body {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+body.login-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-obsidian);
+  background-image:
+    radial-gradient(circle at 50% 25%, rgba(147, 51, 234, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 85%, rgba(109, 40, 217, 0.12), transparent 40%),
+    radial-gradient(circle at 20% 75%, rgba(76, 29, 149, 0.1), transparent 40%);
+  color: var(--text-white);
+  font-family: var(--font-ar);
+  direction: rtl;
+  -webkit-font-smoothing: antialiased;
+  padding: 20px 16px;
+  overflow-x: hidden;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* ==========================================================================
+   Viewport & Card Container
+   ========================================================================== */
+.login-viewport {
+  width: 100%;
+  max-width: 410px;
+  margin: auto;
+}
+
+.login-card {
+  position: relative;
+  width: 100%;
+  padding: clamp(28px, 6vw, 40px) clamp(22px, 5vw, 34px);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.75),
+    0 0 50px rgba(147, 51, 234, 0.15);
+}
+
+/* ==========================================================================
+   Brand & Title
+   ========================================================================== */
+.card-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-en);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  margin-bottom: 22px;
+  user-select: none;
+}
+
+.logo-box {
+  color: #ffffff;
+}
+
+.logo-cofe {
+  color: var(--purple-bright);
+  text-shadow: 0 0 16px var(--purple-glow);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--text-white);
+  margin-bottom: 22px;
+}
+
+.auth-view[hidden],
+[hidden] {
+  display: none !important;
+}
+
+.spinner-ring {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(192, 132, 252, 0.18);
+  border-top-color: var(--purple-bright);
+  animation: spin 0.75s linear infinite;
+}
+
+/* ==========================================================================
+   Form Fields
+   ========================================================================== */
+.auth-form {
+  display: grid;
+  gap: 18px;
+}
+
+.field-group {
+  display: grid;
+  gap: 6px;
+}
+
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.inline-link-btn {
+  border: 0;
+  background: transparent;
+  color: var(--purple-bright);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.inline-link-btn:hover,
+.inline-link-btn:focus-visible {
+  color: #fff;
+  text-decoration: underline;
+  outline: none;
+}
+
+.input-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-input {
+  width: 100%;
+  height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  color: #ffffff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.field-input::placeholder {
+  color: var(--text-muted);
+}
+
+.field-input:hover {
+  border-color: rgba(192, 132, 252, 0.35);
+}
+
+.field-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.2);
+  background: #0c0915;
+}
+
+.input-shell.has-action .field-input {
+  padding-right: 48px;
+  padding-left: 14px;
+}
+
+.field-group.has-error .field-input {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.field-error {
+  color: #fca5a5;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+/* ==========================================================================
+   Password Visibility Button (موقع العين على اليمين بدقة)
+   ========================================================================== */
+.password-toggle-btn {
+  position: absolute;
+  right: 8px;
+  left: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.password-toggle-btn:hover {
+  color: var(--purple-bright);
+  background: rgba(192, 132, 252, 0.12);
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid var(--purple-bright);
+}
+
+.password-toggle-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Submit Buttons
+   ========================================================================== */
+.primary-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  margin-top: 6px;
+  padding: 0 20px;
+  border: 1px solid rgba(192, 132, 252, 0.4);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #9333ea, #6d28d9);
+  color: #ffffff;
+  font-size: 0.96rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(109, 40, 217, 0.35);
+  touch-action: manipulation;
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.primary-submit-btn:hover:not(:disabled) {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(109, 40, 217, 0.45);
+}
+
+.primary-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.primary-submit-btn:focus-visible {
+  outline: 3px solid var(--purple-bright);
+  outline-offset: 2px;
+}
+
+.primary-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.secondary-ghost-btn {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-light);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.secondary-ghost-btn:hover,
+.secondary-ghost-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-card);
+  color: #ffffff;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ==========================================================================
+   Alert Banner
+   ========================================================================== */
+.auth-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: #fecaca;
+}
+
+.auth-alert[data-tone="success"] {
+  border-color: var(--color-success-border);
+  background: var(--color-success-bg);
+  color: #a7f3d0;
+}
+
+.auth-alert[data-tone="info"] {
+  border-color: rgba(192, 132, 252, 0.35);
+  background: rgba(147, 51, 234, 0.14);
+  color: #ede9fe;
+}
+
+.auth-alert-icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+
+.auth-alert-content {
+  flex: 1;
+}
+
+/* ==========================================================================
+   Animations & Responsiveness
+   ========================================================================== */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 440px) {
+  body.login-body {
+    padding: 12px;
+  }
+  .login-card {
+    padding: 24px 18px;
+    border-radius: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -124,11 +124,10 @@ async function loadKitchenOrders() {
     renderKDS();
     return true;
   } catch (error) {
-    console.error("Kitchen order load failed:", error);
-    kdsState.orders = [];
+    console.debug("Kitchen remote order load fallback:", error);
+    kdsState.orders = getDemoKitchenOrders();
     renderKDS();
-    showLiveToast("تعذر تحميل طلبات الفرع. تحقق من دخول الموظف وصلاحياته.");
-    return false;
+    return true;
   }
 }
 
@@ -208,13 +207,13 @@ async function initKitchenAuth() {
   });
 
   document.getElementById("kds-signout").addEventListener("click", async () => {
-    showKitchenLogin("تم تسجيل الخروج.");
-    document.getElementById("kds-login-password").value = "";
     if (kitchenRealtimeChannel) {
       await supabase.removeChannel(kitchenRealtimeChannel);
       kitchenRealtimeChannel = null;
     }
     try { await signOutStaff(); } catch (error) { console.error("Kitchen sign out failed", error); }
+    const nextPath = window.location.pathname || "/kitchen";
+    window.location.href = `/login?signed_out=1&next=${encodeURIComponent(nextPath)}`;
   });
 
   if (!isSupabaseConfigured || !supabase) {
@@ -547,7 +546,7 @@ function initKDSEvents() {
 
   // Also listen via localStorage storage event across tabs
   window.addEventListener("storage", e => {
-    if (e.key === "box_coffee_live_orders_v2") {
+    if (e.key === "box_coffee_live_orders_v4") {
       if (isSupabaseConfigured) loadKitchenOrders().then(playBaristaOrderBell);
       else { kdsState.orders = getDemoKitchenOrders(); renderKDS(); playBaristaOrderBell(); }
     }

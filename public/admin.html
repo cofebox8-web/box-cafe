@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles/admin.css?v=20260926_v12" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <link rel="stylesheet" href="/styles/admin.css?v=20260926_v60" />
+  <script src="/vendor/qrcode.min.js"></script>
 </head>
 <body class="erp-locked-body auth-pending">
 
@@ -81,8 +81,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
           </span>
           <span class="menu-item-info">
-            <strong class="menu-item-title">الأصناف والأسعار</strong>
-            <small class="menu-item-sub">تعديل أسعار المنيو وإضافة مشروبات</small>
+            <strong class="menu-item-title">المنيو</strong>
+            <small class="menu-item-sub">قائمة المشروبات وتعديل الأسعار</small>
           </span>
         </button>
 
@@ -167,15 +167,16 @@
           <div class="page-inner-container">
 
             <div class="structured-section-header">
-              <h2 class="section-box-title">الملخص المالي المباشر لليوم</h2>
+              <h2 class="section-box-title">الملخص المالي لليوم</h2>
               <button type="button" class="box-btn-secondary" data-goto-tab="overview">التقرير التفصيلي ←</button>
             </div>
 
-            <div class="four-boxes-grid">
+            <!-- 3 كردات مالية أساسية مركزة بدون حشو -->
+            <div class="three-boxes-grid">
               <div class="structured-stat-box box-accent-purple">
                 <span class="stat-box-label">إجمالي المبيعات</span>
                 <strong id="hub-gross-revenue" class="stat-box-number">0 د.ع</strong>
-                <div id="hub-orders-count" class="stat-box-foot">0 فاتورة مسجلة اليوم</div>
+                <div id="hub-orders-count" class="stat-box-foot">0 فاتورة اليوم</div>
               </div>
 
               <div class="structured-stat-box box-accent-green">
@@ -185,116 +186,86 @@
               </div>
 
               <div class="structured-stat-box box-accent-amber">
-                <span class="stat-box-label">الكمية خلال آخر 24 ساعة</span>
+                <span class="stat-box-label">الكمية المباعة</span>
                 <strong id="hub-items-sold" class="stat-box-number">0 كوب / قطعة</strong>
                 <div id="hub-top-item" class="stat-box-foot">الأعلى مبيعاً: —</div>
               </div>
 
-              <div class="structured-stat-box box-accent-blue">
-                <span class="stat-box-label">قيمة الطلبات خلال 24 ساعة</span>
-                <strong id="hub-cash-revenue" class="stat-box-number">0 د.ع</strong>
-                <div id="hub-electronic-sub" class="stat-box-foot">طريقة الدفع غير مسجلة</div>
+              <!-- حقول مخفية للحفاظ على استقرار التحديثات البرمجية -->
+              <div style="display:none;" aria-hidden="true">
+                <span id="hub-cash-revenue">0 د.ع</span>
+                <span id="hub-electronic-sub">طريقة الدفع</span>
               </div>
             </div>
 
             <div class="structured-section-header">
-              <h2 class="section-box-title">خانات أقسام النظام الرئيسية (اضغط على أي بطاقة لفتح القسم)</h2>
+              <h2 class="section-box-title">أقسام النظام المباشرة</h2>
             </div>
 
-            <div class="six-modules-grid">
-              <!-- بطاقة 1: الكاشير POS -->
-              <div class="module-card-box" data-goto-tab="pos">
+            <!-- كردات وصول سريع أنيقة ومختصرة بدون نصوص زائدة -->
+            <div class="quick-modules-grid">
+              <div class="module-card-box compact" data-goto-tab="pos">
                 <div class="module-card-top">
                   <span class="module-icon-wrap">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h4"/><path d="M14 8h4"/><path d="M6 12h12"/><path d="M6 16h6"/></svg>
                   </span>
-                  <span class="module-live-tag" id="hub-badge-pos">نقطة بيع فورية</span>
+                  <span class="module-live-tag" id="hub-badge-pos">نقطة بيع</span>
                 </div>
-                <h3 class="module-box-title">نقطة البيع والكاشير (POS)</h3>
-                <p class="module-box-desc">إصدار فواتير سريعة، أزرار نقدية جاهزة لحساب الواصل والباقي للزبون، وطباعة فاتورة الكاشير مع الإرسال الفوري للمطبخ.</p>
+                <h3 class="module-box-title">الكاشير (POS)</h3>
                 <div class="module-box-footer">
-                  <span class="module-meta-pill">حاسبة الباقي + طابعة حرارية</span>
                   <span class="module-open-link">فتح الكاشير ←</span>
                 </div>
               </div>
 
-              <!-- بطاقة 2: الإحصائيات وكم انباع -->
-              <div class="module-card-box" data-goto-tab="overview">
-                <div class="module-card-top">
-                  <span class="module-icon-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
-                  </span>
-                  <span class="module-live-tag" id="hub-badge-sales">جرد الأكواب والقطع</span>
-                </div>
-                <h3 class="module-box-title">الإحصائيات وجرد كم انباع</h3>
-                <p class="module-box-desc">كردات تفصيلية توضح كم كوب وقطعة انباعت من كل مشروب وصنف، سعر المفرد، وإجمالي إيراد كل صنف ونسبة مبيعاته.</p>
-                <div class="module-box-footer">
-                  <span class="module-meta-pill">جرد المبيعات بالقطعة</span>
-                  <span class="module-open-link">فتح الإحصائيات ←</span>
-                </div>
-              </div>
-
-              <!-- بطاقة 3: السجل المالي والمصاريف -->
-              <div class="module-card-box" data-goto-tab="accounting">
-                <div class="module-card-top">
-                  <span class="module-icon-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
-                  </span>
-                  <span class="module-live-tag" id="hub-badge-ledger">الفواتير والمصاريف</span>
-                </div>
-                <h3 class="module-box-title">السجل المالي والمصاريف</h3>
-                <p class="module-box-desc">كردات الفواتير الحية مع تغيير حالة الطلب بضغطة واحدة وطباعة الفاتورة، بالإضافة إلى سجل المصاريف اليومية.</p>
-                <div class="module-box-footer">
-                  <span class="module-meta-pill">تحديث فوري للحالات</span>
-                  <span class="module-open-link">فتح الحسابات ←</span>
-                </div>
-              </div>
-
-              <!-- بطاقة 4: الأصناف والأسعار -->
-              <div class="module-card-box" data-goto-tab="menu">
+              <div class="module-card-box compact" data-goto-tab="menu">
                 <div class="module-card-top">
                   <span class="module-icon-wrap">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/></svg>
                   </span>
-                  <span class="module-live-tag" id="hub-badge-menu">إدارة المنيو والأسعار</span>
+                  <span class="module-live-tag" id="hub-badge-menu">المنيو والأسعار</span>
                 </div>
-                <h3 class="module-box-title">إدارة الأصناف والأسعار</h3>
-                <p class="module-box-desc">تعديل أسعار المشروبات فوراً (+250 / -250 د.ع)، إيقاف أو تفعيل توفر الصنف، تعديل وحذف الأصناف، وإضافة أقسام جديدة.</p>
+                <h3 class="module-box-title">المنيو</h3>
                 <div class="module-box-footer">
-                  <span class="module-meta-pill">تزامن لحظي مع المنيو</span>
-                  <span class="module-open-link">فتح الأصناف ←</span>
+                  <span class="module-open-link">فتح المنيو ←</span>
                 </div>
               </div>
 
-              <!-- بطاقة 5: حسابات الموظفين والدخول -->
-              <div class="module-card-box" data-goto-tab="staff">
+              <div class="module-card-box compact" data-goto-tab="accounting">
+                <div class="module-card-top">
+                  <span class="module-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                  </span>
+                  <span class="module-live-tag" id="hub-badge-ledger">الفواتير</span>
+                </div>
+                <h3 class="module-box-title">الحسابات والمصاريف</h3>
+                <div class="module-box-footer">
+                  <span class="module-open-link">فتح الحسابات ←</span>
+                </div>
+              </div>
+
+              <div class="module-card-box compact" data-goto-tab="staff">
                 <div class="module-card-top">
                   <span class="module-icon-wrap">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
                   </span>
-                  <span class="module-live-tag" id="hub-badge-staff">حسابات موظفين محمية</span>
+                  <span class="module-live-tag" id="hub-badge-staff">الموظفون</span>
                 </div>
-                <h3 class="module-box-title">حسابات الموظفين وتسجيل الدخول</h3>
-                <p class="module-box-desc">إدارة صلاحيات حسابات الموظفين المرتبطة بتسجيل الدخول الآمن.</p>
+                <h3 class="module-box-title">الموظفون ورموز QR</h3>
                 <div class="module-box-footer">
-                  <span class="module-meta-pill">Supabase Auth + أدوار</span>
-                  <span class="module-open-link">فتح الموظفين ←</span>
+                  <span class="module-open-link">إدارة الصلاحيات ←</span>
                 </div>
               </div>
 
-              <!-- بطاقة 6: شاشات الفرع المباشرة -->
-              <div class="module-card-box module-card-links">
+              <div class="module-card-box compact module-card-links">
                 <div class="module-card-top">
                   <span class="module-icon-wrap">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                   </span>
-                  <span class="module-live-tag">روابط الفرع الحية</span>
+                  <span class="module-live-tag">شاشة حية</span>
                 </div>
-                <h3 class="module-box-title">شاشات الفرع (المنيو والمطبخ)</h3>
-                <p class="module-box-desc">أنشئ واطبع رموز QR لكل نقطة خدمة، أو افتح شاشة تحضير الطلبات في المطبخ.</p>
-                <div class="module-dual-buttons">
-                  <button type="button" data-goto-tab="staff" class="box-btn-primary">إدارة QR والمنيو</button>
-                  <a href="/kitchen" target="_blank" class="box-btn-secondary">شاشة المطبخ ↗</a>
+                <h3 class="module-box-title">شاشة المطبخ KDS</h3>
+                <div class="module-box-footer">
+                  <a href="/kitchen" target="_blank" class="module-open-link" style="color:var(--purple-bright);">فتح الشاشة ↗</a>
                 </div>
               </div>
             </div>
@@ -355,15 +326,11 @@
         <section id="tab-pos" class="erp-fixed-page">
           <div class="page-inner-container pos-page-container">
 
-            <!-- شريط الكاشير العلوي الذكي: يعرض ملخص الفاتورة اللحظي مع زر انتقال فوري للدفع -->
-            <div class="pos-sticky-summary-bar">
-              <div class="pos-sticky-info">
-                <span class="pos-sticky-badge"><strong id="pos-sticky-count">0</strong> أصناف في الفاتورة</span>
-                <strong id="pos-sticky-total" class="pos-sticky-amount">0 د.ع</strong>
-              </div>
-              <div class="pos-sticky-actions">
-                <button type="button" class="box-btn-primary" id="btn-pos-scroll-cart">الذهاب للفاتورة والدفع ↓</button>
-              </div>
+            <!-- عناصر حفظ ملخص الفاتورة برمجياً -->
+            <div style="display:none;" aria-hidden="true">
+              <span id="pos-sticky-count">0</span>
+              <span id="pos-sticky-total">0</span>
+              <button type="button" id="btn-pos-scroll-cart"></button>
             </div>
 
             <div class="pos-fixed-layout">
@@ -388,7 +355,7 @@
                     <small class="panel-sub-hint">حاسبة المبلغ الواصل والباقي وإرسال الطلب للمطبخ</small>
                   </div>
                   <div style="display:flex;gap:6px;">
-                    <button type="button" id="btn-pos-scroll-top" class="box-btn-secondary" style="height:30px;padding:0 9px;font-size:0.72rem;">↑ الأصناف</button>
+                    <button type="button" id="btn-pos-scroll-top" class="box-btn-secondary" style="height:30px;padding:0 9px;font-size:0.72rem;">↑ قائمة المنيو</button>
                     <button type="button" id="btn-clear-pos" class="box-btn-danger-sm">تفريغ</button>
                   </div>
                 </div>
@@ -500,7 +467,7 @@
         </section>
 
         <!-- =========================================================
-             الصفحة 05: الأصناف والأسعار (Menu & Price Control Cards)
+             الصفحة 05: المنيو (Menu & Products Control)
              ========================================================= -->
         <section id="tab-menu" class="erp-fixed-page">
           <div class="page-inner-container">
@@ -508,13 +475,20 @@
             <div class="structured-box-panel">
               <div class="panel-box-header">
                 <div>
-                  <h2 class="panel-box-title">إدارة الأصناف والأسعار والأقسام</h2>
-                  <small class="panel-sub-hint">تحكم كامل بالأسعار (+250 / -250 د.ع)، التوفر، التعديل، الحذف، وإضافة الأصناف</small>
+                  <h2 class="panel-box-title">المنيو</h2>
+                  <small class="panel-sub-hint">قائمة المشروبات، تعديل الأسعار الفوري (+250 / −250 د.ع)، والتحكم بالتوفر</small>
                 </div>
                 <div class="panel-box-actions">
-                  <input type="search" id="admin-menu-search" class="structured-input" placeholder="ابحث عن مشروب أو صنف..." />
-                  <button type="button" id="btn-open-add-category" class="box-btn-secondary">+ قسم جديد</button>
-                  <button type="button" id="btn-open-add-item" class="box-btn-primary">+ إضافة صنف جديد</button>
+                  <input type="search" id="admin-menu-search" class="structured-input" placeholder="ابحث في المنيو..." />
+                  <!-- زران: إضافة قسم + إضافة منتج -->
+                  <button type="button" id="btn-open-add-category" class="box-btn-secondary" style="display:inline-flex;align-items:center;gap:6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                    <span>＋ إضافة قسم</span>
+                  </button>
+                  <button type="button" id="btn-open-add-item" class="box-btn-primary" style="display:inline-flex;align-items:center;gap:6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    <span>＋ إضافة منتج</span>
+                  </button>
                 </div>
               </div>
 
@@ -546,8 +520,9 @@
               <div class="panel-box-header">
                 <div>
                   <h2 class="panel-box-title">حسابات الموظفين والصلاحيات</h2>
-                  <small class="panel-sub-hint">الحسابات تعتمد على Supabase Auth وربط آمن بين المستخدم والدور الوظيفي.</small>
+                  <small class="panel-sub-hint">إدارة حسابات طاقم العمل، تحديد الأدوار (شارع / مطبخ / إدارة)، والتحكم بصلاحيات الوصول.</small>
                 </div>
+                <button type="button" id="btn-open-add-staff" class="box-btn-primary">+ إضافة موظف جديد</button>
               </div>
               <div id="staff-accounts-grid" class="staff-boxes-grid" aria-live="polite"></div>
             </div>
@@ -617,7 +592,7 @@
               <line x1="14" y1="2" x2="14" y2="4"/>
             </svg>
           </span>
-          <span class="bottom-box-label">الأصناف</span>
+          <span class="bottom-box-label">المنيو</span>
         </button>
 
         <button type="button" class="bottom-bar-box" data-tab="staff">
@@ -640,92 +615,163 @@
        النوافذ المنبثقة المخصصة والداكنة بالكامل (Modals)
        ========================================================= -->
 
-  <!-- 1. بوابة تسجيل الدخول وقفل النظام -->
-  <div id="modal-staff-login" class="erp-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="staff-login-title">
-    <div class="erp-modal-box login-modal-box">
+  <!-- 1. نافذة إضافة / تعديل موظف وتحديد الصلاحية -->
+  <div id="modal-staff-account" class="erp-modal-backdrop" hidden>
+    <div class="erp-modal-box">
       <div class="modal-box-top">
-        <div class="pure-text-logo" style="font-size:1.05rem;">
-          <span class="logo-word-box">BOX</span>
-          <span class="logo-word-cofe">COFE</span>
-        </div>
-        <span class="login-security-label">دخول آمن</span>
+        <h3 id="modal-staff-title">إضافة موظف جديد وتحديد الصلاحية</h3>
+        <button type="button" class="modal-close-x" data-close-modal="modal-staff-account">✕</button>
       </div>
-      <div class="login-header-titles">
-        <h3 id="staff-login-title" class="login-box-title">تسجيل دخول الإدارة</h3>
-        <p class="login-box-sub">استخدم البريد وكلمة المرور المرتبطين بحساب موظف بوكس كافي.</p>
-      </div>
-
-      <form id="form-staff-login" class="structured-form">
+      <form id="form-staff-account" class="structured-form">
+        <input type="hidden" id="staff-account-id" />
         <div class="field-box">
-          <label for="login-email-input">البريد الإلكتروني</label>
-          <input type="email" id="login-email-input" class="structured-input" autocomplete="username" inputmode="email" dir="ltr" required />
+          <label for="staff-name-input">اسم الموظف الكامل</label>
+          <input type="text" id="staff-name-input" class="structured-input" placeholder="مثال: أحمد علي" required />
         </div>
         <div class="field-box">
-          <label for="login-password-input">كلمة المرور</label>
-          <input type="password" id="login-password-input" class="structured-input" autocomplete="current-password" dir="ltr" required />
+          <label for="staff-email-input">البريد الإلكتروني المهني</label>
+          <input type="email" id="staff-email-input" class="structured-input" placeholder="staff@boxcofe.iq" dir="ltr" required />
         </div>
-        <div id="login-error-msg" class="erp-error-banner" role="alert" aria-live="assertive" hidden></div>
+        <div class="field-box" id="staff-password-field-box">
+          <label for="staff-password-input">كلمة المرور للدخول</label>
+          <input type="password" id="staff-password-input" class="structured-input" placeholder="8 أحرف على الأقل" dir="ltr" required />
+          <small class="field-hint">يستخدمها الموظف لتسجيل الدخول إلى شاشة عمله من صفحة الدخول الموحدة.</small>
+        </div>
+        <div class="form-two-boxes">
+          <div class="field-box">
+            <label for="staff-role-select">الدور والصلاحية (الوصول)</label>
+            <select id="staff-role-select" class="structured-input" required>
+              <option value="roadside">موظف الشارع والكاشير (Roadside)</option>
+              <option value="kitchen">طاقم المطبخ وشاشة الطلبات (Kitchen)</option>
+              <option value="admin">مدير نظام مساعد (Admin)</option>
+            </select>
+          </div>
+          <div class="field-box">
+            <label for="staff-branch-select">الفرع المخصص</label>
+            <select id="staff-branch-select" class="structured-input" required></select>
+          </div>
+        </div>
+        <div class="field-box">
+          <label for="staff-active-select">حالة الحساب</label>
+          <select id="staff-active-select" class="structured-input">
+            <option value="true">نشط ومفعل (يمكنه الدخول)</option>
+            <option value="false">معطل مؤقتاً (ممنوع من الدخول)</option>
+          </select>
+        </div>
+        <div id="staff-modal-error" class="erp-error-banner" role="alert" hidden></div>
         <div class="modal-box-actions">
-          <button type="submit" id="login-submit-btn" class="box-btn-primary">دخول</button>
+          <button type="submit" id="staff-save-btn" class="box-btn-primary">حفظ وتفعيل الحساب</button>
+          <button type="button" class="box-btn-secondary" data-close-modal="modal-staff-account">إلغاء</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 2. نافذة إضافة / تعديل صنف وسعره -->
+  <!-- 2. نافذة إضافة / تعديل منتج في المنيو (شاملة التفاصيل والصورة والمعاينة) -->
   <div id="modal-menu-item" class="erp-modal-backdrop" hidden>
-    <div class="erp-modal-box">
+    <div class="erp-modal-box modal-lg">
       <div class="modal-box-top">
-        <h3 id="modal-item-title">إضافة / تعديل صنف في المنيو</h3>
+        <h3 id="modal-item-title">إضافة منتج جديد للمنيو</h3>
         <button type="button" class="modal-close-x" data-close-modal="modal-menu-item">✕</button>
       </div>
       <form id="form-menu-item" class="structured-form">
         <input type="hidden" id="item-id-input" />
+
+        <!-- صف 1: اسم المنتج + القسم (مع خيار إضافة قسم فوري) -->
         <div class="form-two-boxes">
           <div class="field-box">
-          <label for="item-name-input">اسم الصنف</label>
-            <input type="text" id="item-name-input" class="structured-input" placeholder="مثال: سبانش لاتيه مثلج" required />
+            <label for="item-name-input">اسم المنتج <span style="color:#F43F5E;">*</span></label>
+            <input type="text" id="item-name-input" class="structured-input" placeholder="مثال: سبانش لاتيه بارد" required />
           </div>
           <div class="field-box">
-            <label>القسم</label>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <label for="item-category-select">القسم <span style="color:#F43F5E;">*</span></label>
+              <button type="button" id="btn-quick-new-category" style="background:none;border:none;color:var(--purple-bright);font-size:0.75rem;font-weight:700;cursor:pointer;padding:0;">＋ قسم جديد</button>
+            </div>
             <select id="item-category-select" class="structured-input" required></select>
           </div>
         </div>
-        <div class="field-box">
-          <label for="item-description-input">وصف الصنف</label>
-          <textarea id="item-description-input" class="structured-input" rows="3" maxlength="500" placeholder="اكتب وصفاً قصيراً يوضح مكونات الصنف"></textarea>
-        </div>
+
+        <!-- صف 2: نوع وتصنيف المنتج + السعر بالدينار -->
         <div class="form-two-boxes">
           <div class="field-box">
-          <label for="item-price-input">السعر (د.ع)</label>
-            <input type="number" id="item-price-input" class="structured-input" placeholder="أدخل السعر بالدينار" min="0" step="250" required />
+            <label for="item-type-select">نوع وتصنيف المنتج</label>
+            <select id="item-type-select" class="structured-input">
+              <option value="cold">مشروب بارد 🧊</option>
+              <option value="hot">مشروب ساخن ☕</option>
+              <option value="bakery">حلويات ومخبوزات 🥐</option>
+              <option value="other">صنف خاص / أخرى ✨</option>
+            </select>
           </div>
           <div class="field-box">
-            <label>حالة التوفر بالمنيو</label>
+            <label for="item-price-input">السعر بالدينار العراقي (د.ع) <span style="color:#F43F5E;">*</span></label>
+            <input type="number" id="item-price-input" class="structured-input" placeholder="مثلاً: 5000" min="0" step="250" required />
+          </div>
+        </div>
+
+        <!-- صف 3: الشارة الترويجية + حالة التوفر بالمنيو -->
+        <div class="form-two-boxes">
+          <div class="field-box">
+            <label for="item-badge-select">شارة تمييز المنتج (اختياري)</label>
+            <select id="item-badge-select" class="structured-input">
+              <option value="">بدون شارة</option>
+              <option value="الأكثر طلباً 🔥">الأكثر طلباً 🔥</option>
+              <option value="جديد ✨">جديد ✨</option>
+              <option value="توقيع بوكس 👑">توقيع بوكس 👑</option>
+              <option value="عرض خاص 🏷️">عرض خاص 🏷️</option>
+            </select>
+          </div>
+          <div class="field-box">
+            <label for="item-available-select">حالة التوفر بالمنيو</label>
             <select id="item-available-select" class="structured-input">
-              <option value="true">متوفر للطلب حالياً</option>
-              <option value="false">غير متوفر (نفذت الكمية)</option>
+              <option value="true">متوفر للطلب حالياً (نشط)</option>
+              <option value="false">غير متوفر (متوقف مؤقتاً)</option>
             </select>
           </div>
         </div>
+
+        <!-- صف 4: وصف المنتج ومكوناته -->
         <div class="field-box">
-          <label for="item-image-file">صورة الصنف (اختياري)</label>
-          <input type="file" id="item-image-file" class="structured-input" accept="image/jpeg,image/png,image/webp,image/avif" />
-          <small id="item-image-status" class="field-help">اختر صورة واضحة بحجم لا يتجاوز 5 ميغابايت.</small>
-          <input type="hidden" id="item-image-input" />
+          <label for="item-description-input">وصف وتفاصيل المنتج</label>
+          <textarea id="item-description-input" class="structured-input" rows="2" maxlength="500" placeholder="مكونات المشروب، التحضير، أو أي ملاحظات توضيحية للزبون..."></textarea>
         </div>
+
+        <!-- صف 5: صورة المنتج واختيارها من الهاتف مباشرة -->
+        <div class="field-box">
+          <label>صورة المنتج</label>
+          <input type="file" id="item-image-file" accept="image/*" style="display:none;" />
+          <input type="hidden" id="item-image-input" />
+
+          <div class="image-single-picker-card" id="item-image-picker-zone" role="button" tabindex="0" title="اضغط لفتح استوديو الصور بالهاتف">
+            <div id="item-image-preview-wrap" class="picker-preview-wrap" style="display:none;">
+              <img id="item-image-preview" src="" alt="معاينة المنتج" />
+              <div class="picker-change-overlay">
+                <span>🔄 تغيير الصورة من الهاتف</span>
+              </div>
+            </div>
+            <div id="item-image-placeholder" class="picker-empty-placeholder">
+              <div class="picker-icon-circle">📷</div>
+              <strong class="picker-prompt-title">اضغط هنا لاختيار صورة المنتج من الهاتف</strong>
+              <small id="item-image-status" class="picker-prompt-sub">يفتح معرض الصور والألبوم مباشرة (JPG, PNG, WebP)</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- صف 6: الإضافات والخيارات (Option Groups) -->
         <section class="option-authoring" aria-labelledby="option-groups-title">
           <div class="option-authoring-heading">
             <div>
-              <h4 id="option-groups-title">الإضافات والخيارات</h4>
-              <p>مثل الحجم أو نوع الحليب أو إضافة نكهة. اتركها فارغة إذا كان الصنف بلا خيارات.</p>
+              <h4 id="option-groups-title">الإضافات والخيارات المخصصة</h4>
+              <p>مثل الحجم، نوع الحليب، شوت إضافي، أو النكهة (اختياري).</p>
             </div>
             <button type="button" id="btn-add-option-group" class="box-btn-secondary">+ مجموعة خيارات</button>
           </div>
           <div id="item-option-groups" class="option-groups-list"></div>
         </section>
+
+        <!-- أزرار الحفظ -->
         <div class="modal-box-actions">
-          <button type="submit" class="box-btn-primary">حفظ الصنف وتحديث السعر فوراً</button>
+          <button type="submit" class="box-btn-primary" style="flex:1;">حفظ وتثبيت المنتج بالمنيو</button>
           <button type="button" data-close-modal="modal-menu-item" class="box-btn-secondary">إلغاء</button>
         </div>
       </form>
@@ -855,6 +901,7 @@
 
   <div id="admin-toast" class="erp-toast" role="status" aria-live="polite" hidden></div>
 
-  <script type="module" src="/js/admin-app.js?v=20260926_v12"></script>
+  <script src="/vendor/supabase.umd.js"></script>
+  <script type="module" src="/js/admin-app.js?v=20260926_v60"></script>
 </body>
 </html>

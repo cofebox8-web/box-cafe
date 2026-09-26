@@ -10,16 +10,29 @@ let supabaseClient = null;
 
 if (isSupabaseConfigured) {
   try {
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    });
+    let createClient = (typeof window !== "undefined" ? window.supabase?.createClient : null) || globalThis.supabase?.createClient;
+    if (!createClient) {
+      try {
+        const mod = await Promise.race([
+          import("https://esm.sh/@supabase/supabase-js@2"),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("CDN timeout")), 2000))
+        ]);
+        createClient = mod?.createClient;
+      } catch (importErr) {
+        console.warn("Remote CDN fallback skipped:", importErr.message);
+      }
+    }
+    if (createClient) {
+      supabaseClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      });
+    }
   } catch (err) {
-    console.warn("Supabase CDN unavailable, falling back to local mode:", err);
+    console.warn("Supabase initialization error:", err);
   }
 }
 

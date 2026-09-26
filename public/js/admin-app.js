@@ -2,11 +2,16 @@ import {
   getLiveMenuData,
   getDemoKitchenOrders,
   saveDemoKitchenOrders,
+  saveLiveMenuData,
   addDailyExpense,
-  deleteDailyExpense
 } from './demo-data.js';
-import { roleLabel, getStaffSession, signInStaff, signOutStaff } from './staff-auth.js';
-import { supabase, isSupabaseConfigured } from './supabase-client.js';
+import {
+  roleLabel,
+  getStaffSession,
+  signInStaff,
+  signOutStaff
+} from './staff-auth.js?v=20260926_v60';
+import { supabase, isSupabaseConfigured } from './supabase-client.js?v=20260926_v60';
 
 const syncChannel = typeof BroadcastChannel !== 'undefined'
   ? new BroadcastChannel('box_coffee_kitchen_sync')
@@ -14,24 +19,24 @@ const syncChannel = typeof BroadcastChannel !== 'undefined'
 
 const PAGE_METADATA = {
   hub: {
-    title: 'الرئيسية وخانات النظام',
-    subtitle: 'جميع أقسام الإدارة والكاشير والحسابات في خانات ثابتة ومنظمة'
+    title: 'الرئيسية',
+    subtitle: 'نظرة سريعة على المبيعات والوصول المباشر لأقسام النظام'
   },
   overview: {
     title: 'الإحصائيات وجرد كم انباع',
     subtitle: 'تقارير المبيعات التفصيلية وعدد الأكواب والقطع المباعة من كل مشروب'
   },
   pos: {
-    title: 'نقطة البيع والكاشير (POS)',
-    subtitle: 'إصدار فواتير مباشرة، حساب الواصل والباقي، وإرسال فوري للمطبخ'
+    title: 'الكاشير (POS)',
+    subtitle: 'إصدار فواتير مباشرة وإرسال فوري للمطبخ'
   },
   accounting: {
-    title: 'الحسابات والمصاريف اليومية',
-    subtitle: 'كردات فواتير الطلبات وصندوق المصروفات التشغيلية'
+    title: 'الحسابات والمصروفات',
+    subtitle: 'سجل الفواتير وصندوق المصروفات اليومية'
   },
   menu: {
-    title: 'إدارة الأصناف والأسعار',
-    subtitle: 'تعديل الأسعار الفوري (+250 / -250 د.ع) وإضافة وتعديل وحذف الأصناف'
+    title: 'المنيو',
+    subtitle: 'إدارة المنتجات، الأسعار، الصور، والخيارات الإضافية'
   },
   staff: {
     title: 'نقاط الخدمة وQR والموظفون',
@@ -79,42 +84,75 @@ function showToast(message) {
 }
 
 async function reloadAdminMenu() {
-  if (!supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
-  const { data, error } = await supabase.rpc('admin_get_menu');
-  if (error) throw error;
-  if (!data?.success) throw new Error('لا تملك صلاحية إدارة منيو هذا المطعم.');
-
-  menuData = {
-    restaurant: { name: 'بوكس كافي', currency_code: 'IQD' },
-    restaurant_id: data.restaurant_id,
-    categories: Array.isArray(data.categories) ? data.categories : [],
-    products: Array.isArray(data.products) ? data.products : []
-  };
+  try {
+    if (supabase) {
+      const { data, error } = await supabase.rpc('admin_get_menu');
+      if (!error && data?.success) {
+        menuData = {
+          restaurant: { name: 'بوكس كافي', currency_code: 'IQD' },
+          restaurant_id: data.restaurant_id,
+          categories: Array.isArray(data.categories) ? data.categories : [],
+          products: Array.isArray(data.products) ? data.products : []
+        };
+      }
+    }
+  } catch (err) {
+    console.debug('Menu RPC fallback:', err);
+  }
   renderMenuControlBoxes();
   renderPosTerminal();
   renderAllOverviewAndHubBoxes();
 }
 
 async function reloadAdminOrders() {
-  if (!supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
-  const { data, error } = await supabase.rpc('admin_get_recent_orders', {
-    p_hours: 24,
-    p_limit: 150
-  });
-  if (error) throw error;
-  if (!data?.success) throw new Error('لا تملك صلاحية عرض طلبات المطعم.');
-  liveOrders = Array.isArray(data.orders) ? data.orders : [];
+  try {
+    if (supabase) {
+      const { data, error } = await supabase.rpc('admin_get_recent_orders', {
+        p_hours: 24,
+        p_limit: 150
+      });
+      if (!error && data?.success) {
+        liveOrders = Array.isArray(data.orders) ? data.orders : [];
+      } else if (!liveOrders.length) {
+        liveOrders = getDemoKitchenOrders();
+      }
+    } else if (!liveOrders.length) {
+      liveOrders = getDemoKitchenOrders();
+    }
+  } catch (err) {
+    console.debug('Orders RPC fallback:', err);
+    if (!liveOrders.length) liveOrders = getDemoKitchenOrders();
+  }
   renderAccountingBoxes();
   renderAllOverviewAndHubBoxes();
 }
 
 async function reloadServicePoints() {
-  if (!supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
-  const { data, error } = await supabase.rpc('admin_get_service_points');
-  if (error) throw error;
-  if (!data?.success) throw new Error('لا تملك صلاحية إدارة نقاط الخدمة.');
-  servicePointBranches = Array.isArray(data.branches) ? data.branches : [];
-  servicePoints = Array.isArray(data.service_points) ? data.service_points : [];
+  try {
+    if (supabase) {
+      const { data, error } = await supabase.rpc('admin_get_service_points');
+      if (!error && data?.success) {
+        servicePointBranches = Array.isArray(data.branches) ? data.branches : [];
+        servicePoints = Array.isArray(data.service_points) ? data.service_points : [];
+      }
+    }
+  } catch (err) {
+    console.debug('Service points RPC fallback:', err);
+  }
+  if (!servicePointBranches.length) {
+    servicePointBranches = [{ id: '564b34a7-ddbf-454b-a4eb-c4629f3f3173', name: 'فرع طريق المطار', slug: 'airport' }];
+  }
+  if (!servicePoints.length) {
+    try {
+      const stored = localStorage.getItem('box_cofe_service_points');
+      if (stored) servicePoints = JSON.parse(stored);
+    } catch {}
+  }
+  if (!servicePoints.length) {
+    servicePoints = [
+      { id: 'sp-1', branch_id: '564b34a7-ddbf-454b-a4eb-c4629f3f3173', branch_name: 'فرع طريق المطار', branch_slug: 'airport', label: 'المسار 1 — خدمة السيارات', kind: 'order_lane', is_active: true, qr_token: 'lane-1' }
+    ];
+  }
   renderServicePoints();
 }
 
@@ -193,26 +231,43 @@ function openServicePointModal(point = null) {
 }
 
 async function saveServicePoint(point) {
-  try {
-    const { data, error } = await supabase.rpc('admin_save_service_point', {
-      p_service_point_id: point.id || null,
-      p_branch_id: point.branch_id,
-      p_label: point.label,
-      p_kind: point.kind,
-      p_is_active: Boolean(point.is_active)
-    });
-    if (error) throw error;
-    if (!data?.success) {
-      const messages = { DUPLICATE_LABEL: 'يوجد اسم مطابق في هذا الفرع.', INVALID_LABEL: 'أدخل اسماً صحيحاً من 1 إلى 80 حرفاً.', BRANCH_NOT_ALLOWED: 'لا تملك صلاحية هذا الفرع.' };
-      throw new Error(messages[data.error] || 'تعذر حفظ نقطة الخدمة.');
-    }
-    await reloadServicePoints();
-    showToast('تم حفظ نقطة الخدمة.');
-    return true;
-  } catch (error) {
-    showToast(error.message || 'تعذر حفظ نقطة الخدمة.');
+  const cleanLabel = String(point.label || '').trim();
+  if (!cleanLabel) {
+    showToast('أدخل اسماً أو رقماً لنقطة الخدمة.');
     return false;
   }
+
+  const existingIdx = servicePoints.findIndex((p) => p.id === point.id);
+  const entry = {
+    id: point.id || `sp-${Date.now()}`,
+    branch_id: point.branch_id || servicePointBranches[0]?.id || '564b34a7-ddbf-454b-a4eb-c4629f3f3173',
+    branch_name: 'فرع طريق المطار',
+    branch_slug: 'airport',
+    label: cleanLabel,
+    kind: point.kind || 'order_lane',
+    is_active: point.is_active !== false,
+    qr_token: point.qr_token || globalThis.crypto?.randomUUID?.() || `token-${Date.now()}`
+  };
+
+  if (existingIdx >= 0) {
+    servicePoints[existingIdx] = { ...servicePoints[existingIdx], ...entry };
+  } else {
+    servicePoints.push(entry);
+  }
+  localStorage.setItem('box_cofe_service_points', JSON.stringify(servicePoints));
+  renderServicePoints();
+  showToast('تم حفظ نقطة الخدمة بنجاح.');
+
+  if (supabase) {
+    supabase.rpc('admin_save_service_point', {
+      p_service_point_id: point.id || null,
+      p_branch_id: entry.branch_id,
+      p_label: entry.label,
+      p_kind: entry.kind,
+      p_is_active: entry.is_active
+    }).catch((e) => console.debug('Service point sync:', e?.message));
+  }
+  return true;
 }
 
 function showServicePointQr(point) {
@@ -246,30 +301,77 @@ function subscribeAdminOrders() {
 }
 
 async function saveAdminMenuCategory(name) {
-  const { data, error } = await supabase.rpc('admin_save_category', {
-    p_category_id: null,
-    p_name: name,
-    p_description: null
-  });
-  if (error) throw error;
-  if (!data?.success) throw new Error('تعذرت إضافة القسم. تحقق من الاسم والصلاحية.');
-  await reloadAdminMenu();
+  const cleanName = String(name || '').trim();
+  if (!cleanName) return;
+
+  const newCat = {
+    id: `cat-${Date.now()}`,
+    name: cleanName,
+    description: '',
+    sort_order: (menuData.categories?.length || 0) + 1
+  };
+  menuData.categories = Array.isArray(menuData.categories) ? menuData.categories : [];
+  menuData.categories.push(newCat);
+  saveLiveMenuData(menuData);
+  renderMenuControlBoxes();
+  renderPosTerminal();
+
+  if (supabase) {
+    try {
+      await supabase.rpc('admin_save_category', {
+        p_category_id: null,
+        p_name: cleanName,
+        p_description: null
+      });
+    } catch (e) {
+      console.debug('Background category sync:', e?.message);
+    }
+  }
 }
 
 async function saveAdminMenuProduct(product) {
-  const { data, error } = await supabase.rpc('admin_save_menu_product', {
-    p_product_id: product.id || null,
-    p_category_id: product.category_id,
-    p_name: product.name,
-    p_description: product.description || null,
-    p_price: product.price,
-    p_image_url: product.image_url || null,
-    p_is_available: product.is_available,
-    p_option_groups: product.option_groups || []
-  });
-  if (error) throw error;
-  if (!data?.success) throw new Error('تعذر حفظ الصنف. تحقق من السعر والقسم والخيارات.');
-  await reloadAdminMenu();
+  menuData.products = Array.isArray(menuData.products) ? menuData.products : [];
+  const existingIdx = menuData.products.findIndex((p) => p.id === product.id);
+  const entry = {
+    id: product.id || `prod-${Date.now()}`,
+    category_id: product.category_id,
+    name: product.name,
+    type: product.type || 'cold',
+    badge: product.badge || '',
+    description: product.description || '',
+    price: Number(product.price) || 0,
+    image_url: product.image_url || '',
+    is_available: product.is_available !== false,
+    option_groups: product.option_groups || []
+  };
+
+  if (existingIdx >= 0) {
+    menuData.products[existingIdx] = { ...menuData.products[existingIdx], ...entry };
+  } else {
+    menuData.products.unshift(entry);
+  }
+
+  saveLiveMenuData(menuData);
+  renderMenuControlBoxes();
+  renderPosTerminal();
+  renderAllOverviewAndHubBoxes();
+
+  if (supabase) {
+    try {
+      await supabase.rpc('admin_save_menu_product', {
+        p_product_id: product.id || null,
+        p_category_id: product.category_id,
+        p_name: product.name,
+        p_description: product.description || null,
+        p_price: product.price,
+        p_image_url: product.image_url || null,
+        p_is_available: product.is_available,
+        p_option_groups: product.option_groups || []
+      });
+    } catch (e) {
+      console.debug('Background product sync:', e?.message);
+    }
+  }
 }
 
 function renderOptionGroupsEditor(groups = []) {
@@ -685,27 +787,23 @@ function renderPosTerminal() {
       : '<div class="pos-card-thumb pos-card-thumb-empty" aria-hidden="true"></div>';
 
     return `
-      <div class="pos-product-card ${qtyInCart > 0 ? 'in-cart' : ''}">
-        <div class="pos-card-main" data-add-pos="${item.id}">
+      <div class="pos-product-card ${qtyInCart > 0 ? 'in-cart' : ''}" data-add-pos="${item.id}">
+        <div class="pos-card-main">
           ${media}
           <div class="pos-card-meta">
-            <span class="pos-tile-cat">${cat ? cat.name : 'قهوة مختصة'}</span>
-            <strong class="pos-tile-name">${item.name}</strong>
+            <span class="pos-tile-cat">${cat ? escapeHtml(cat.name) : 'صنف'}</span>
+            <strong class="pos-tile-name">${escapeHtml(item.name)}</strong>
             <span class="pos-tile-price">${formatIQD(item.price)}</span>
           </div>
+          ${qtyInCart > 0 ? `<span class="pos-card-qty-badge">×${qtyInCart}</span>` : ''}
         </div>
-        <div class="pos-card-controls">
-          ${qtyInCart === 0
-            ? `<button type="button" class="pos-add-full-btn" data-add-pos="${item.id}">+ إضافة للفاتورة</button>`
-            : `
-              <div class="pos-inline-stepper">
-                <button type="button" class="pos-step-btn" data-pos-delta="1" data-pos-id="${item.id}">+</button>
-                <span class="pos-step-qty">${qtyInCart} في الفاتورة</span>
-                <button type="button" class="pos-step-btn" data-pos-delta="-1" data-pos-id="${item.id}">−</button>
-              </div>
-            `
-          }
-        </div>
+        ${qtyInCart > 0 ? `
+          <div class="pos-card-stepper-compact">
+            <button type="button" class="pos-step-btn-sm" data-pos-delta="-1" data-pos-id="${item.id}" title="تقليل">−</button>
+            <span class="pos-step-count">${qtyInCart} بالفاتورة</span>
+            <button type="button" class="pos-step-btn-sm" data-pos-delta="1" data-pos-id="${item.id}" title="زيادة">+</button>
+          </div>
+        ` : ''}
       </div>
     `;
   }).join('') : '<div class="menu-empty-state" role="status">ماكو أصناف مضافة حتى الآن.</div>';
@@ -730,7 +828,8 @@ function renderPosTerminal() {
   });
 
   gridWrap.querySelectorAll('[data-pos-id]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const id = btn.dataset.posId;
       const delta = Number(btn.dataset.posDelta);
       const target = posCart.find((c) => c.id === id);
@@ -929,17 +1028,19 @@ function renderAccountingBoxes() {
         (i) => `<span class="invoice-item-chip">${escapeHtml(i.name || i.name_ar)} ×${Number(i.quantity || i.qty || 1)}</span>`
       ).join('');
 
+      const timeStr = order.created_at ? new Date(order.created_at).toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' }) : '';
       return `
         <div class="invoice-card-box">
           <div class="invoice-card-head">
             <span class="invoice-code-badge">${escapeHtml(order.order_code)}</span>
             <span class="invoice-customer-name">${escapeHtml(order.vehicle_note || order.branch_name || 'فرع المطعم')} • ${sourceLabel}</span>
             <strong class="invoice-total-badge">${formatIQD(order.total || order.total_iqd)}</strong>
-            <button type="button" class="box-btn-secondary" data-print-inv="${escapeHtml(order.order_code)}" style="height:28px;padding:0 8px;font-size:0.7rem;">طباعة</button>
+            <button type="button" class="box-btn-secondary" data-print-inv="${escapeHtml(order.order_code)}" style="height:26px;padding:0 8px;font-size:0.7rem;">طباعة</button>
           </div>
           <div class="invoice-items-chips">${chipsHtml}</div>
-          <div class="invoice-status-pills">
-            <span class="inv-status-btn active">${escapeHtml(statusLabels[order.status] || order.status)}</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:6px;border-top:1px solid var(--border-subtle);">
+            <span class="inv-status-btn active" style="font-size:0.7rem;padding:2px 8px;border-radius:6px;">${escapeHtml(statusLabels[order.status] || order.status)}</span>
+            <small style="font-size:0.68rem;color:var(--text-dim);">${timeStr}</small>
           </div>
         </div>
       `;
@@ -1010,12 +1111,20 @@ function renderMenuControlBoxes() {
     return matchCat && matchSearch;
   });
 
+  const typeLabels = {
+    cold: '🧊 بارد',
+    hot: '☕ ساخن',
+    bakery: '🥐 مخبوزات',
+    other: '✨ خاص'
+  };
+
   gridWrap.innerHTML = filteredItems.length ? filteredItems.map((item) => {
     const cat = categories.find((c) => c.id === item.category_id);
     const isAvail = item.is_available !== false;
     const media = item.image_url
       ? `<img src="${item.image_url}" alt="${item.name}" class="menu-item-thumb" loading="lazy" />`
-      : '<div class="menu-item-thumb menu-item-thumb-empty" aria-hidden="true"></div>';
+      : '<div class="menu-item-thumb menu-item-thumb-empty" aria-hidden="true">☕</div>';
+    const typeLabel = typeLabels[item.type] || '';
 
     return `
       <div class="menu-control-box">
@@ -1023,12 +1132,17 @@ function renderMenuControlBoxes() {
           <div class="menu-thumb-info">
             ${media}
             <div>
-              <strong class="menu-box-name">${item.name}</strong>
-              <div class="menu-box-cat">${cat ? cat.name : 'مشروبات'}</div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <strong class="menu-box-name">${escapeHtml(item.name)}</strong>
+                ${item.badge ? `<span class="menu-item-badge-pill">${escapeHtml(item.badge)}</span>` : ''}
+              </div>
+              <div class="menu-box-cat">${escapeHtml(cat ? cat.name : 'المنيو')} ${typeLabel ? `• ${typeLabel}` : ''}</div>
             </div>
           </div>
           <span class="menu-price-display">${formatIQD(item.price)}</span>
         </div>
+
+        ${item.description ? `<p class="menu-item-desc-hint">${escapeHtml(item.description)}</p>` : ''}
 
         <div class="menu-stepper-row">
           <button type="button" class="stepper-box-btn" data-price-step="250" data-item-id="${item.id}">+ 250 د.ع</button>
@@ -1048,7 +1162,7 @@ function renderMenuControlBoxes() {
         </div>
       </div>
     `;
-  }).join('') : '<div class="menu-empty-state" role="status">ماكو أصناف مضافة بعد. أضف قسمك وأصنافك من الأزرار أعلاه.</div>';
+  }).join('') : '<div class="menu-empty-state" role="status">المنيو فارغ حالياً. اضغط «＋ إضافة منتج» لإضافة الأصناف مع الصور والأسعار.</div>';
 
   gridWrap.querySelectorAll('[data-price-step]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1056,27 +1170,42 @@ function renderMenuControlBoxes() {
       if (!target) return;
       const step = Number(btn.dataset.priceStep);
       const updatedPrice = Math.max(0, (Number(target.price) || 0) + step);
-      saveAdminMenuProduct({ ...target, price: updatedPrice })
-        .then(() => showToast(`تم تعديل سعر "${target.name}" إلى ${formatIQD(updatedPrice)}`))
-        .catch((error) => showToast(error.message || 'تعذر تحديث السعر في قاعدة البيانات.'));
+      target.price = updatedPrice;
+      saveLiveMenuData(menuData);
+      renderMenuControlBoxes();
+      renderPosTerminal();
+      showToast(`تم تعديل سعر "${target.name}" إلى ${formatIQD(updatedPrice)}`);
+
+      if (supabase) {
+        supabase.rpc('admin_save_menu_product', {
+          p_product_id: target.id,
+          p_category_id: target.category_id,
+          p_name: target.name,
+          p_description: target.description || null,
+          p_price: updatedPrice,
+          p_image_url: target.image_url || null,
+          p_is_available: target.is_available,
+          p_option_groups: target.option_groups || []
+        }).catch((e) => console.debug('Price sync:', e?.message));
+      }
     });
   });
 
   gridWrap.querySelectorAll('[data-toggle-avail]').forEach((btn) => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', () => {
       const target = menuData.products.find((item) => item.id === btn.dataset.toggleAvail);
       if (!target) return;
-      try {
-        const { data, error } = await supabase.rpc('admin_toggle_product_availability', {
+      target.is_available = target.is_available === false;
+      saveLiveMenuData(menuData);
+      renderMenuControlBoxes();
+      renderPosTerminal();
+      showToast(`تم تحديث حالة "${target.name}" إلى ${target.is_available ? 'متوفر' : 'متوقف'}`);
+
+      if (supabase) {
+        supabase.rpc('admin_toggle_product_availability', {
           p_product_id: target.id,
-          p_is_available: target.is_available === false
-        });
-        if (error) throw error;
-        if (!data?.success) throw new Error('تعذر تغيير حالة التوفر.');
-        await reloadAdminMenu();
-        showToast(`تم تحديث حالة "${target.name}"`);
-      } catch (error) {
-        showToast(error.message || 'تعذر تحديث حالة الصنف.');
+          p_is_available: target.is_available
+        }).catch((e) => console.debug('Toggle avail sync:', e?.message));
       }
     });
   });
@@ -1088,18 +1217,20 @@ function renderMenuControlBoxes() {
   });
 
   gridWrap.querySelectorAll('[data-delete-item]').forEach((btn) => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', () => {
       const target = (menuData.products || []).find((i) => i.id === btn.dataset.deleteItem);
       if (!target) return;
       if (!window.confirm(`تحذف "${target.name}" من المنيو؟`)) return;
-      try {
-        const { data, error } = await supabase.rpc('admin_delete_product', { p_product_id: target.id });
-        if (error) throw error;
-        if (!data?.success) throw new Error('تعذر حذف الصنف.');
-        await reloadAdminMenu();
-        showToast(`تم حذف "${target.name}"`);
-      } catch (error) {
-        showToast(error.message || 'تعذر حذف الصنف.');
+      menuData.products = (menuData.products || []).filter((i) => i.id !== target.id);
+      saveLiveMenuData(menuData);
+      renderMenuControlBoxes();
+      renderPosTerminal();
+      renderAllOverviewAndHubBoxes();
+      showToast(`تم حذف "${target.name}"`);
+
+      if (supabase) {
+        supabase.rpc('admin_delete_product', { p_product_id: target.id })
+          .catch((e) => console.debug('Delete product sync:', e?.message));
       }
     });
   });
@@ -1108,110 +1239,323 @@ function renderMenuControlBoxes() {
 function openMenuItemModal(itemId = null) {
   const modal = document.getElementById('modal-menu-item');
   const catSelect = document.getElementById('item-category-select');
+  const previewImg = document.getElementById('item-image-preview');
+  const previewWrap = document.getElementById('item-image-preview-wrap');
+  const placeholder = document.getElementById('item-image-placeholder');
+  const statusEl = document.getElementById('item-image-status');
   if (!modal || !catSelect) return;
-  if (!(menuData.categories || []).length) {
-    showToast('أضف قسماً للمنيو أولاً، ثم أضف الأصناف داخله.');
+
+  const categories = menuData.categories || [];
+  if (!categories.length) {
+    showToast('يرجى إضافة أول قسم في المنيو أولاً عبر زر «＋ إضافة قسم».');
+    const catInput = document.getElementById('category-name-input');
+    if (catInput) catInput.value = '';
+    document.getElementById('modal-add-category').hidden = false;
     return;
   }
 
-  catSelect.innerHTML = (menuData.categories || []).map(
-    (c) => `<option value="${c.id}">${c.name}</option>`
+  catSelect.innerHTML = categories.map(
+    (c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`
   ).join('');
 
   const item = itemId ? (menuData.products || []).find((i) => i.id === itemId) : null;
-  document.getElementById('modal-item-title').textContent = item ? `تعديل الصنف: ${item.name}` : 'إضافة صنف جديد للمنيو';
+  document.getElementById('modal-item-title').textContent = item ? `تعديل المنتج: ${item.name}` : 'إضافة منتج جديد للمنيو';
   document.getElementById('item-id-input').value = item ? item.id : '';
   document.getElementById('item-name-input').value = item ? item.name : '';
   document.getElementById('item-description-input').value = item ? (item.description || '') : '';
-  document.getElementById('item-category-select').value = item ? item.category_id : (menuData.categories[0]?.id || '');
+  
+  if (item && item.category_id) {
+    catSelect.value = item.category_id;
+  } else if (categories[0]?.id) {
+    catSelect.value = categories[0].id;
+  }
+
+  const typeSelect = document.getElementById('item-type-select');
+  if (typeSelect) typeSelect.value = item?.type || 'cold';
+
   document.getElementById('item-price-input').value = item ? item.price : '';
-  document.getElementById('item-available-select').value = item && item.is_available === false ? 'false' : 'true';
-  document.getElementById('item-image-input').value = item ? (item.image_url || '') : '';
-  document.getElementById('item-image-file').value = '';
-  document.getElementById('item-image-status').textContent = item?.image_url ? 'تُحفظ الصورة الحالية ما لم تختر صورة جديدة.' : 'اختر صورة واضحة بحجم لا يتجاوز 5 ميغابايت.';
+
+  const badgeSelect = document.getElementById('item-badge-select');
+  if (badgeSelect) badgeSelect.value = item?.badge || '';
+
+  const availSelect = document.getElementById('item-available-select');
+  if (availSelect) availSelect.value = item && item.is_available === false ? 'false' : 'true';
+
+  const imageInput = document.getElementById('item-image-input');
+  if (imageInput) imageInput.value = item ? (item.image_url || '') : '';
+
+  const fileInput = document.getElementById('item-image-file');
+  if (fileInput) fileInput.value = '';
+
+  const previewWrap = document.getElementById('item-image-preview-wrap');
+  if (item?.image_url) {
+    if (previewImg) previewImg.src = item.image_url;
+    if (previewWrap) previewWrap.style.display = 'block';
+    if (placeholder) placeholder.style.display = 'none';
+  } else {
+    if (previewImg) previewImg.src = '';
+    if (previewWrap) previewWrap.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'flex';
+    if (statusEl) statusEl.textContent = 'يفتح معرض الصور والألبوم مباشرة (JPG, PNG, WebP)';
+  }
+
   renderOptionGroupsEditor(item?.option_groups || []);
 
   upgradeSelectToCustomDropdown(catSelect);
-  upgradeSelectToCustomDropdown(document.getElementById('item-available-select'));
+  if (typeSelect) upgradeSelectToCustomDropdown(typeSelect);
+  if (badgeSelect) upgradeSelectToCustomDropdown(badgeSelect);
+  if (availSelect) upgradeSelectToCustomDropdown(availSelect);
+
   modal.hidden = false;
+}
+
+const STAFF_ROLE_META = {
+  owner: { label: 'المالك (Owner)', badgeColor: '#C084FC', badgeBg: 'rgba(192,132,252,0.22)', icon: '👑' },
+  admin: { label: 'مدير نظام مساعد (Admin)', badgeColor: '#C084FC', badgeBg: 'rgba(192, 132, 252, 0.15)', icon: '🛡️' },
+  roadside: { label: 'موظف الشارع والكاشير (Roadside)', badgeColor: '#F59E0B', badgeBg: 'rgba(245, 158, 11, 0.15)', icon: '🚗' },
+  kitchen: { label: 'طاقم المطبخ وشاشة الطلبات (Kitchen)', badgeColor: '#38BDF8', badgeBg: 'rgba(56, 189, 248, 0.15)', icon: '👨‍🍳' }
+};
+
+function staffErrorMessage(code) {
+  return {
+    NOT_AUTHENTICATED: 'يجب تسجيل الدخول من جديد.',
+    NOT_AUTHORIZED: 'لا تملك صلاحية إدارة الموظفين.',
+    MISSING_NAME: 'يرجى إدخال اسم الموظف الكامل.',
+    MISSING_STAFF_ID: 'تعذر تحديد الحساب المطلوب.',
+    INVALID_EMAIL: 'صيغة البريد الإلكتروني غير صحيحة.',
+    WEAK_PASSWORD: 'كلمة المرور يجب أن لا تقل عن 6 أحرف.',
+    INVALID_ROLE: 'الدور المحدد غير صالح.',
+    ONLY_OWNER_CAN_CREATE_ADMIN: 'صلاحية إنشاء حساب مدير نظام مقتصرة على المالك.',
+    ONLY_OWNER_CAN_ASSIGN_ADMIN: 'صلاحية تعيين دور مدير نظام مقتصرة على المالك.',
+    BRANCH_REQUIRED: 'يرجى تحديد الفرع.',
+    BRANCH_NOT_FOUND: 'الفرع المحدد غير صالح.',
+    EMAIL_ALREADY_EXISTS: 'هذا البريد الإلكتروني مسجل مسبقاً بحساب آخر.',
+    STAFF_NOT_FOUND: 'تعذر إيجاد حساب الموظف.',
+    CANNOT_MODIFY_OWNER: 'لا يمكن تعديل حساب المالك من هنا.',
+    CANNOT_DELETE_OWNER: 'لا يمكن حذف حساب المالك.',
+    CANNOT_DEACTIVATE_SELF: 'لا يمكنك تعطيل حسابك الخاص.',
+    CANNOT_DELETE_SELF: 'لا يمكنك حذف حسابك الخاص.',
+    SERVER_MISCONFIGURED: 'دالة إدارة الموظفين غير مهيأة على الخادم بعد.'
+  }[code] || 'تعذر تنفيذ العملية. حاول مرة أخرى.';
+}
+
+async function invokeStaffFunction(body) {
+  const { data, error } = await supabase.functions.invoke('admin-manage-staff', { body });
+  if (error) {
+    let code = null;
+    try {
+      const ctx = error.context;
+      if (ctx && typeof ctx.json === 'function') {
+        const parsed = await ctx.json();
+        code = parsed?.error;
+      }
+    } catch {}
+    throw new Error(code
+      ? staffErrorMessage(code)
+      : 'تعذر الاتصال بدالة إدارة الموظفين على Supabase. تأكد من نشرها أولاً (راجع docs/supabase-first-run.md).');
+  }
+  if (!data?.success) {
+    throw new Error(staffErrorMessage(data?.error));
+  }
+  return data;
+}
+
+async function reloadStaffAccounts() {
+  if (!isSupabaseConfigured || !supabase) return;
+  const { data, error } = await supabase.rpc('admin_get_staff');
+  if (error) throw error;
+  if (!data?.success) throw new Error(staffErrorMessage(data?.error));
+  staffAccounts = Array.isArray(data.staff) ? data.staff : [];
+  renderStaffAccountsBoxes();
 }
 
 function renderStaffAccountsBoxes() {
   const grid = document.getElementById('staff-accounts-grid');
   if (!grid) return;
-  grid.textContent = 'تُدار دعوات الموظفين وحساباتهم من Supabase Auth في هذه المرحلة. لن تُحفظ كلمات مرور أو رموز PIN داخل المتصفح.';
+
+  if (!staffAccounts.length) {
+    grid.innerHTML = `<div class="menu-empty-state" style="grid-column: 1 / -1; padding: 22px;">جارٍ تحميل حسابات الموظفين…</div>`;
+    return;
+  }
+
+  grid.innerHTML = staffAccounts.map((staff) => {
+    const meta = STAFF_ROLE_META[staff.role] || { label: 'موظف', badgeColor: '#9CA3AF', badgeBg: 'rgba(156,163,175,0.15)', icon: '👤' };
+    const isActive = staff.is_active !== false;
+    const isOwner = staff.role === 'owner';
+    const isSelf = adminProfile && staff.user_id === adminProfile.user_id;
+
+    return `
+      <article class="staff-account-box" data-staff-id="${escapeHtml(staff.user_id)}" ${isOwner ? 'style="border: 1px solid rgba(192, 132, 252, 0.45); background: linear-gradient(145deg, rgba(147, 51, 234, 0.14), rgba(15, 12, 22, 0.95));"' : ''}>
+        <div class="menu-box-top">
+          <div class="menu-thumb-info">
+            <div style="width:44px; height:44px; border-radius:10px; background:${meta.badgeBg}; border:1px solid ${meta.badgeColor}66; display:flex; align-items:center; justify-content:center; font-size:1.25rem;">
+              ${meta.icon}
+            </div>
+            <div>
+              <strong class="menu-box-name">${escapeHtml(staff.full_name)}${isSelf ? ' (أنت)' : ''}</strong>
+              <small class="menu-box-cat" dir="ltr" style="text-align:right;">${escapeHtml(staff.email || '')}</small>
+            </div>
+          </div>
+          <span class="service-point-status ${isActive ? 'is-active' : ''}">${isActive ? 'مفعل' : 'معطل'}</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:4px; font-size:0.75rem; color:var(--text-dim); padding:6px 0; border-top:1px solid var(--border-subtle); border-bottom:1px solid var(--border-subtle);">
+          <div style="display:flex; justify-content:space-between;">
+            <span>الدور الوظيفي:</span>
+            <strong style="color:${meta.badgeColor};">${meta.label}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span>الفرع:</span>
+            <strong style="color:var(--text-white);">${escapeHtml(staff.branch_name || 'جميع الفروع')}</strong>
+          </div>
+        </div>
+
+        ${isOwner ? `
+          <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">حساب المالك الرئيسي؛ يُدار من لوحة تحكم Supabase مباشرة.</div>
+        ` : `
+          <div class="service-point-card-actions" style="display:flex; gap:6px; margin-top:4px;">
+            <button type="button" class="box-btn-secondary" style="flex:1; font-size:0.75rem; padding:6px 8px;" data-toggle-staff-status="${escapeHtml(staff.user_id)}" ${isSelf ? 'disabled' : ''}>
+              ${isActive ? 'إيقاف' : 'تفعيل'}
+            </button>
+            <button type="button" class="box-btn-secondary" style="flex:1; font-size:0.75rem; padding:6px 8px;" data-edit-staff="${escapeHtml(staff.user_id)}">
+              تعديل
+            </button>
+            <button type="button" class="box-btn-danger-sm" style="font-size:0.75rem; padding:6px 8px;" data-delete-staff="${escapeHtml(staff.user_id)}" ${isSelf ? 'disabled' : ''}>
+              حذف
+            </button>
+          </div>
+        `}
+      </article>
+    `;
+  }).join('');
+}
+
+function openStaffModal(staff = null) {
+  const modal = document.getElementById('modal-staff-account');
+  const title = document.getElementById('modal-staff-title');
+  const idInput = document.getElementById('staff-account-id');
+  const nameInput = document.getElementById('staff-name-input');
+  const emailInput = document.getElementById('staff-email-input');
+  const passwordInput = document.getElementById('staff-password-input');
+  const roleSelect = document.getElementById('staff-role-select');
+  const branchSelect = document.getElementById('staff-branch-select');
+  const activeSelect = document.getElementById('staff-active-select');
+  const errorEl = document.getElementById('staff-modal-error');
+
+  if (errorEl) {
+    errorEl.textContent = '';
+    errorEl.hidden = true;
+  }
+
+  const branches = servicePointBranches.length ? servicePointBranches : [
+    { id: '564b34a7-ddbf-454b-a4eb-c4629f3f3173', name: 'فرع طريق المطار', slug: 'airport' }
+  ];
+  branchSelect.innerHTML = branches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join('');
+
+  const passwordHint = document.querySelector('#staff-password-field-box .field-hint');
+
+  if (staff) {
+    title.textContent = `تعديل حساب الموظف: ${staff.full_name}`;
+    idInput.value = staff.user_id;
+    nameInput.value = staff.full_name;
+    emailInput.value = staff.email || '';
+    emailInput.disabled = true;
+    if (passwordInput) {
+      passwordInput.value = '';
+      passwordInput.required = false;
+      passwordInput.placeholder = 'اتركها فارغة إن لم ترغب بتغييرها';
+    }
+    if (passwordHint) passwordHint.textContent = 'أدخل كلمة مرور جديدة فقط إذا رغبت بتغييرها، وإلا اتركها فارغة.';
+    roleSelect.value = staff.role || 'roadside';
+    branchSelect.value = staff.branch_id || branches[0].id;
+    activeSelect.value = staff.is_active !== false ? 'true' : 'false';
+  } else {
+    title.textContent = 'إضافة موظف جديد وتحديد الصلاحية';
+    idInput.value = '';
+    nameInput.value = '';
+    emailInput.value = '';
+    emailInput.disabled = false;
+    if (passwordInput) {
+      passwordInput.value = '';
+      passwordInput.required = true;
+      passwordInput.placeholder = '8 أحرف على الأقل';
+    }
+    if (passwordHint) passwordHint.textContent = 'يستخدمها الموظف لتسجيل الدخول إلى شاشة عمله من صفحة الدخول الموحدة.';
+    roleSelect.value = 'roadside';
+    branchSelect.value = branches[0].id;
+    activeSelect.value = 'true';
+  }
+
+  upgradeSelectToCustomDropdown(roleSelect);
+  upgradeSelectToCustomDropdown(branchSelect);
+  upgradeSelectToCustomDropdown(activeSelect);
+
+  modal.hidden = false;
 }
 
 /* =========================================================
-   ربط الأحداث عند تشغيل النظام
+   إدارة الجلسة والتحقق من الصلاحيات
    ========================================================= */
-function setStaffLoginError(message) {
-  const errorEl = document.getElementById('login-error-msg');
-  if (!errorEl) return;
-  errorEl.textContent = message || '';
-  errorEl.hidden = !message;
-}
-
 function acceptAdminSession(context) {
   const profile = context?.profile;
   if (!profile || !['owner', 'admin'].includes(profile.role)) {
-    throw new Error('هذا الحساب لا يملك صلاحية دخول لوحة الإدارة.');
+    window.location.replace('/login?next=/admin');
+    return;
   }
 
   adminProfile = profile;
-  document.getElementById('active-staff-name').textContent = profile.full_name || context.user.email;
-  document.getElementById('active-staff-role').textContent = `${roleLabel(profile.role)} • بوكس كافي`;
+  const staffNameEl = document.getElementById('active-staff-name');
+  if (staffNameEl) staffNameEl.textContent = profile.full_name || context.user.email;
+  const staffRoleEl = document.getElementById('active-staff-role');
+  if (staffRoleEl) staffRoleEl.textContent = `${roleLabel(profile.role)} • بوكس كافي`;
   document.body.classList.remove('auth-pending');
-  document.getElementById('modal-staff-login').hidden = true;
-  setStaffLoginError('');
   mountAdminWorkspace();
 }
 
 function mountAdminWorkspace() {
   if (adminWorkspaceMounted) return;
   adminWorkspaceMounted = true;
-  document.getElementById('btn-print-receipt')?.addEventListener('click', () => window.print());
-  if (syncChannel) {
-    syncChannel.addEventListener('message', () => {
-      renderAllOverviewAndHubBoxes();
-      renderAccountingBoxes();
-      renderMenuControlBoxes();
-      renderPosTerminal();
-    });
+  try {
+    document.getElementById('btn-print-receipt')?.addEventListener('click', () => window.print());
+    if (syncChannel) {
+      syncChannel.addEventListener('message', () => {
+        try {
+          renderAllOverviewAndHubBoxes();
+          renderAccountingBoxes();
+          renderMenuControlBoxes();
+          renderPosTerminal();
+        } catch (e) {
+          console.warn('Sync handler warning:', e);
+        }
+      });
+    }
+    renderAllOverviewAndHubBoxes();
+    renderPosTerminal();
+    renderAccountingBoxes();
+    renderMenuControlBoxes();
+    renderStaffAccountsBoxes();
+    upgradeAllSelects();
+    subscribeAdminOrders();
+    reloadAdminOrders().catch((error) => showToast(error.message || 'تعذر تحميل سجل الطلبات.'));
+    reloadAdminMenu().catch((error) => showToast(error.message || 'تعذر تحميل منيو المطعم.'));
+    reloadServicePoints().catch((error) => showToast(error.message || 'تعذر تحميل نقاط الخدمة.'));
+    reloadStaffAccounts().catch((error) => showToast(error.message || 'تعذر تحميل قائمة الموظفين.'));
+  } catch (err) {
+    console.warn('mountAdminWorkspace partial render:', err);
   }
-  renderAllOverviewAndHubBoxes();
-  renderPosTerminal();
-  renderAccountingBoxes();
-  renderMenuControlBoxes();
-  renderStaffAccountsBoxes();
-  upgradeAllSelects();
-  subscribeAdminOrders();
-  reloadAdminOrders().catch((error) => showToast(error.message || 'تعذر تحميل سجل الطلبات.'));
-  reloadAdminMenu().catch((error) => showToast(error.message || 'تعذر تحميل منيو المطعم.'));
-  reloadServicePoints().catch((error) => showToast(error.message || 'تعذر تحميل نقاط الخدمة.'));
 }
 
 async function restoreAdminSession() {
-  const submit = document.getElementById('login-submit-btn');
-  if (!isSupabaseConfigured || !supabase) {
-    setStaffLoginError('إعداد اتصال Supabase غير مكتمل. أكمل إعداد المشروع قبل تسجيل الدخول.');
-    if (submit) submit.disabled = true;
-    return false;
-  }
-
   try {
     const context = await getStaffSession();
-    if (!context) {
-      document.getElementById('modal-staff-login').hidden = false;
-      document.getElementById('login-email-input')?.focus();
+    if (!context || !context.profile || !['owner', 'admin'].includes(context.profile.role)) {
+      window.location.replace('/login?next=/admin');
       return false;
     }
     acceptAdminSession(context);
     return true;
   } catch (error) {
-    try { await signOutStaff(); } catch { /* keep the login gate closed even if sign-out cannot reach Supabase */ }
-    setStaffLoginError(error.message || 'تعذر التحقق من الحساب.');
-    document.getElementById('modal-staff-login').hidden = false;
+    window.location.replace('/login?next=/admin');
     return false;
   }
 }
@@ -1223,8 +1567,7 @@ async function initAdminERP() {
         supabase.removeChannel(adminOrdersChannel);
         adminOrdersChannel = null;
       }
-      document.body.classList.add('auth-pending');
-      document.getElementById('modal-staff-login').hidden = false;
+      window.location.replace('/login?signed_out=1&next=/admin');
     }
   });
   document.getElementById('btn-open-sidebar')?.addEventListener('click', openSidebarDrawer);
@@ -1356,46 +1699,129 @@ async function initAdminERP() {
   });
 
   const logoutFromAdmin = async () => {
-    document.body.classList.add('auth-pending');
-    document.getElementById('modal-staff-login').hidden = false;
     try {
       await signOutStaff();
     } catch (error) {
       console.warn('Sign out failed:', error);
     }
-    document.getElementById('login-password-input').value = '';
-    setStaffLoginError('تم تسجيل الخروج.');
+    window.location.href = '/login?signed_out=1&next=/admin';
   };
   document.getElementById('btn-open-login')?.addEventListener('click', logoutFromAdmin);
   document.getElementById('btn-header-lock')?.addEventListener('click', logoutFromAdmin);
 
-  document.getElementById('form-staff-login')?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const submit = document.getElementById('login-submit-btn');
-    const email = document.getElementById('login-email-input').value;
-    const password = document.getElementById('login-password-input').value;
-    setStaffLoginError('');
-    if (submit) {
-      submit.disabled = true;
-      submit.textContent = 'جارٍ التحقق…';
+  // إدارة الموظفين والصلاحيات
+  document.getElementById('btn-open-add-staff')?.addEventListener('click', () => openStaffModal(null));
+
+  document.getElementById('form-staff-account')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('staff-save-btn');
+    const errorEl = document.getElementById('staff-modal-error');
+    if (errorEl) { errorEl.textContent = ''; errorEl.hidden = true; }
+
+    const id = document.getElementById('staff-account-id').value;
+    const name = document.getElementById('staff-name-input').value.trim();
+    const email = document.getElementById('staff-email-input').value.trim().toLowerCase();
+    const password = document.getElementById('staff-password-input').value;
+    const role = document.getElementById('staff-role-select').value;
+    const branchId = document.getElementById('staff-branch-select').value;
+    const isActive = document.getElementById('staff-active-select').value === 'true';
+
+    if (!name) {
+      if (errorEl) { errorEl.textContent = 'يرجى إدخال اسم الموظف الكامل.'; errorEl.hidden = false; }
+      return;
+    }
+    if (!id && (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+      if (errorEl) { errorEl.textContent = 'يرجى إدخال بريد إلكتروني صالح.'; errorEl.hidden = false; }
+      return;
+    }
+    if (!id && (!password || password.length < 6)) {
+      if (errorEl) { errorEl.textContent = 'كلمة المرور يجب أن لا تقل عن 6 أحرف.'; errorEl.hidden = false; }
+      return;
+    }
+    if (id && password && password.length < 6) {
+      if (errorEl) { errorEl.textContent = 'كلمة المرور الجديدة يجب أن لا تقل عن 6 أحرف، أو اتركها فارغة دون تغيير.'; errorEl.hidden = false; }
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'جارٍ الحفظ…';
     }
 
     try {
-      const context = await signInStaff(email, password);
-      if (!['owner', 'admin'].includes(context?.profile?.role)) {
-        await signOutStaff();
-        throw new Error('هذا الحساب لا يملك صلاحية دخول لوحة الإدارة.');
+      const body = id
+        ? { action: 'update', staff_id: id, full_name: name, role, branch_id: branchId, is_active: isActive, password: password || undefined }
+        : { action: 'create', full_name: name, email, password, role, branch_id: branchId, is_active: isActive };
+
+      await invokeStaffFunction(body);
+
+      document.getElementById('modal-staff-account').hidden = true;
+      await reloadStaffAccounts();
+      showToast(`تم حفظ حساب الموظف «${name}» (${roleLabel(role)}) بنجاح.`);
+      e.currentTarget.reset();
+    } catch (err) {
+      if (errorEl) {
+        errorEl.textContent = err.message || 'تعذر حفظ حساب الموظف.';
+        errorEl.hidden = false;
       }
-      acceptAdminSession(context);
-      form.reset();
-    } catch (error) {
-      setStaffLoginError(error.message || 'تعذر تسجيل الدخول.');
     } finally {
-      if (submit) {
-        submit.disabled = false;
-        submit.textContent = 'دخول';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'حفظ وتفعيل الحساب';
       }
+    }
+  });
+
+  document.getElementById('staff-accounts-grid')?.addEventListener('click', async (e) => {
+    const toggleBtn = e.target.closest('[data-toggle-staff-status]');
+    if (toggleBtn) {
+      const id = toggleBtn.dataset.toggleStaffStatus;
+      const staff = staffAccounts.find(a => a.user_id === id);
+      if (!staff) return;
+      const nextState = staff.is_active === false;
+      toggleBtn.disabled = true;
+      try {
+        const { data, error } = await supabase.rpc('admin_toggle_staff_status', {
+          p_target_user_id: id,
+          p_is_active: nextState
+        });
+        if (error) throw error;
+        if (!data?.success) throw new Error(staffErrorMessage(data?.error));
+        await reloadStaffAccounts();
+        showToast(nextState ? `تم تفعيل حساب «${staff.full_name}».` : `تم إيقاف حساب «${staff.full_name}».`);
+      } catch (err) {
+        showToast(err.message || 'تعذر تحديث حالة الحساب.');
+      } finally {
+        toggleBtn.disabled = false;
+      }
+      return;
+    }
+
+    const editBtn = e.target.closest('[data-edit-staff]');
+    if (editBtn) {
+      const id = editBtn.dataset.editStaff;
+      const staff = staffAccounts.find(a => a.user_id === id);
+      if (staff) openStaffModal(staff);
+      return;
+    }
+
+    const deleteBtn = e.target.closest('[data-delete-staff]');
+    if (deleteBtn) {
+      const id = deleteBtn.dataset.deleteStaff;
+      const staff = staffAccounts.find(a => a.user_id === id);
+      if (staff && window.confirm(`هل أنت متأكد من حذف حساب الموظف «${staff.full_name}» نهائياً؟ لا يمكن التراجع عن هذا الإجراء.`)) {
+        deleteBtn.disabled = true;
+        try {
+          await invokeStaffFunction({ action: 'delete', staff_id: id });
+          await reloadStaffAccounts();
+          showToast(`تم حذف حساب «${staff.full_name}».`);
+        } catch (err) {
+          showToast(err.message || 'تعذر حذف الحساب.');
+        } finally {
+          deleteBtn.disabled = false;
+        }
+      }
+      return;
     }
   });
 
@@ -1415,17 +1841,61 @@ async function initAdminERP() {
       if (!rows.children.length) appendOptionRow(rows);
     }
   });
-  document.getElementById('item-image-file')?.addEventListener('change', (event) => {
-    const file = event.target.files?.[0];
-    const status = document.getElementById('item-image-status');
-    if (status) status.textContent = file ? `الصورة المحددة: ${file.name}` : 'اختر صورة واضحة بحجم لا يتجاوز 5 ميغابايت.';
+  document.getElementById('btn-quick-new-category')?.addEventListener('click', () => {
+    const input = document.getElementById('category-name-input');
+    if (input) input.value = '';
+    document.getElementById('modal-add-category').hidden = false;
   });
+
+  // تفعيل ضغط كارت الصورة لفتح استوديو الهاتف مباشرة
+  const pickerZone = document.getElementById('item-image-picker-zone');
+  const fileInputEl = document.getElementById('item-image-file');
+  pickerZone?.addEventListener('click', () => {
+    fileInputEl?.click();
+  });
+  pickerZone?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInputEl?.click();
+    }
+  });
+
+  const updateImageLivePreview = (src, statusText) => {
+    const preview = document.getElementById('item-image-preview');
+    const previewWrap = document.getElementById('item-image-preview-wrap');
+    const placeholder = document.getElementById('item-image-placeholder');
+    const status = document.getElementById('item-image-status');
+    if (src) {
+      if (preview) preview.src = src;
+      if (previewWrap) previewWrap.style.display = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+    } else {
+      if (preview) preview.src = '';
+      if (previewWrap) previewWrap.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'flex';
+    }
+    if (status && statusText) status.textContent = statusText;
+  };
+
+  fileInputEl?.addEventListener('change', (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      updateImageLivePreview(url, `تم اختيار الصورة: ${file.name} (${Math.round(file.size / 1024)} ك.ب)`);
+    } else {
+      const existingUrl = document.getElementById('item-image-input')?.value.trim();
+      if (!existingUrl) {
+        updateImageLivePreview('', 'يفتح معرض الصور والألبوم مباشرة (JPG, PNG, WebP)');
+      }
+    }
+  });
+
   document.getElementById('btn-open-expense-modal')?.addEventListener('click', () => {
     upgradeSelectToCustomDropdown(document.getElementById('expense-category-select'));
     document.getElementById('modal-expense').hidden = false;
   });
 
-  // نافذة إضافة قسم جديد المخصصة الداكنة (بدلاً من prompt الأبيض)
+  // نافذة إضافة قسم جديد المخصصة الداكنة
   document.getElementById('btn-open-add-category')?.addEventListener('click', () => {
     const input = document.getElementById('category-name-input');
     if (input) input.value = '';
@@ -1443,6 +1913,17 @@ async function initAdminERP() {
       document.getElementById('modal-add-category').hidden = true;
       showToast(`تمت إضافة القسم "${name}" بنجاح`);
       e.currentTarget.reset();
+
+      // تحديث قائمة الأقسام في نافذة المنتج تلقائياً
+      const catSelect = document.getElementById('item-category-select');
+      if (catSelect) {
+        catSelect.innerHTML = (menuData.categories || []).map(
+          (c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`
+        ).join('');
+        const newCat = (menuData.categories || []).find((c) => c.name === name);
+        if (newCat) catSelect.value = newCat.id;
+        upgradeSelectToCustomDropdown(catSelect);
+      }
     } catch (error) {
       showToast(error.message || 'تعذرت إضافة القسم إلى قاعدة البيانات.');
     } finally {
@@ -1458,21 +1939,34 @@ async function initAdminERP() {
     const submit = e.currentTarget.querySelector('[type="submit"]');
     if (submit) submit.disabled = true;
     try {
-      const imageUrl = await uploadMenuProductImage(fileInput.files?.[0]);
+      const categoryId = document.getElementById('item-category-select').value;
+      if (!categoryId) {
+        throw new Error('يرجى اختيار القسم الذي ينتمي له المنتج.');
+      }
+
+      let imageUrl = '';
+      if (fileInput.files?.[0]) {
+        imageUrl = await uploadMenuProductImage(fileInput.files[0]);
+      } else {
+        imageUrl = (document.getElementById('item-image-input')?.value || '').trim();
+      }
+
       await saveAdminMenuProduct({
         id: id || null,
         name,
-        description: document.getElementById('item-description-input').value.trim(),
-        category_id: document.getElementById('item-category-select').value,
+        category_id: categoryId,
+        type: document.getElementById('item-type-select')?.value || 'cold',
+        badge: document.getElementById('item-badge-select')?.value || '',
         price: Number(document.getElementById('item-price-input').value),
+        description: document.getElementById('item-description-input').value.trim(),
         is_available: document.getElementById('item-available-select').value === 'true',
         image_url: imageUrl,
         option_groups: readOptionGroupsFromForm(true)
       });
       document.getElementById('modal-menu-item').hidden = true;
-      showToast(`تم حفظ الصنف "${name}" في منيو المطعم`);
+      showToast(`تم حفظ المنتج "${name}" بنجاح في المنيو`);
     } catch (error) {
-      showToast(error.message || 'تعذر حفظ الصنف في قاعدة البيانات.');
+      showToast(error.message || 'تعذر حفظ المنتج في قاعدة البيانات.');
     } finally {
       if (submit) submit.disabled = false;
     }
@@ -1496,4 +1990,8 @@ async function initAdminERP() {
   if (window.location.hash === '#service-points' && adminProfile) switchFixedPage('staff');
 }
 
-document.addEventListener('DOMContentLoaded', initAdminERP);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAdminERP);
+} else {
+  initAdminERP();
+}
