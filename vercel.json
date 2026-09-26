@@ -8,39 +8,19 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/menu/:branch/:token",
+      "source": "/menu/:path*",
       "destination": "/menu.html"
     },
     {
-      "source": "/menu/:branch",
-      "destination": "/menu.html"
-    },
-    {
-      "source": "/menu",
-      "destination": "/menu.html"
-    },
-    {
-      "source": "/kitchen/:branch",
+      "source": "/kitchen/:path*",
       "destination": "/kitchen.html"
     },
     {
-      "source": "/kitchen",
-      "destination": "/kitchen.html"
-    },
-    {
-      "source": "/roadside/order",
+      "source": "/roadside/:path*",
       "destination": "/roadside.html"
     },
     {
-      "source": "/roadside",
-      "destination": "/roadside.html"
-    },
-    {
-      "source": "/admin/:section",
-      "destination": "/admin.html"
-    },
-    {
-      "source": "/admin",
+      "source": "/admin/:path*",
       "destination": "/admin.html"
     },
     {
