@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles/admin.css?v=20260926_v60" />
+  <link rel="stylesheet" href="/styles/admin.css?v=20260926_v62" />
   <script src="/vendor/qrcode.min.js"></script>
 </head>
 <body class="erp-locked-body auth-pending">
@@ -345,19 +345,19 @@
         <section id="tab-menu" class="erp-fixed-page">
           <div class="page-inner-container">
 
-            <!-- زران كبيران احترافيان لإضافة منتج وإضافة قسم -->
+            <!-- زران كبيران: إضافة قسم وتحته إضافة منتج -->
             <div class="menu-hero-actions-grid">
-              <button type="button" id="btn-open-add-item" class="menu-hero-btn primary">
-                <span class="menu-hero-btn-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                </span>
-                <span>＋ إضافة منتج جديد</span>
-              </button>
               <button type="button" id="btn-open-add-category" class="menu-hero-btn secondary">
                 <span class="menu-hero-btn-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
                 </span>
                 <span>＋ إضافة قسم جديد</span>
+              </button>
+              <button type="button" id="btn-open-add-item" class="menu-hero-btn primary">
+                <span class="menu-hero-btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                </span>
+                <span>＋ إضافة منتج جديد للمنيو</span>
               </button>
             </div>
 
@@ -423,8 +423,6 @@
           </span>
           <span class="bottom-box-label">الإحصائيات</span>
         </button>
-
-
 
         <button type="button" class="bottom-bar-box" data-tab="accounting">
           <span class="bottom-nav-icon">
@@ -755,6 +753,6 @@
   <div id="admin-toast" class="erp-toast" role="status" aria-live="polite" hidden></div>
 
   <script src="/vendor/supabase.umd.js"></script>
-  <script type="module" src="/js/admin-app.js?v=20260926_v61"></script>
+  <script type="module" src="/js/admin-app.js?v=20260926_v62"></script>
 </body>
 </html>

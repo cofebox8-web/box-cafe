@@ -1536,7 +1536,7 @@ button, a, input, select {
   background: rgba(14, 11, 22, 0.98);
   backdrop-filter: blur(14px);
   border-top: 1px solid rgba(192, 132, 252, 0.28);
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
   padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
   z-index: 1700;
@@ -2336,10 +2336,11 @@ button, a, input, select {
    تحسينات أزرار المنيو الكبيرة وشاشة الحسابات والموظفين
    ========================================================= */
 .menu-hero-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .menu-hero-btn {
