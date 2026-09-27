@@ -12,7 +12,7 @@ import {
   sanitizeNextPath,
   roleLabel
 } from "./staff-auth.js";
-import { isSupabaseConfigured, supabase } from "./supabase-client.js";
+import { isSupabaseConfigured, supabase, createScopedSupabaseClient } from "./supabase-client.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -21,6 +21,16 @@ const state = {
   nextParam: "",
   isRecoveryFlow: false
 };
+
+// The waiter must not share the browser auth session with /admin. When this
+// unified login is opened for /waiter, use the same isolated storage namespace
+// as waiter-app.js so the redirect and refresh keep the session alive.
+const waiterSupabase = createScopedSupabaseClient("box_cofe_waiter_auth") || supabase;
+
+function getAuthClient() {
+  const next = state.nextParam || "";
+  return next.startsWith("/waiter") || next.startsWith("/roadside") ? waiterSupabase : supabase;
+}
 
 // ============================================================================
 // UI Helper Functions
@@ -154,7 +164,7 @@ async function checkExistingSession() {
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get("signed_out") === "1") return;
 
-    const sessionPromise = getStaffSession();
+    const sessionPromise = getStaffSession(getAuthClient());
     const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
     const context = await Promise.race([sessionPromise, timeoutPromise]);
     if (!context || !context.profile) return;
@@ -199,7 +209,7 @@ async function handleSignInSubmit(event) {
   if (spinner) spinner.hidden = false;
 
   try {
-    const context = await signInStaff(emailVal, passwordVal);
+    const context = await signInStaff(emailVal, passwordVal, getAuthClient());
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
     window.location.replace(targetUrl);
   } catch (error) {
