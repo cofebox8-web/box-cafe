@@ -425,30 +425,30 @@ body.customer-menu-body {
    -------------------------------------------------------------------------- */
 .products-grid {
   display: grid;
-  grid-template-columns: 1fr; /* Mobile: Single column strictly */
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns on mobile */
+  gap: 12px;
 }
 
-/* Tablet (iPad): 2 balanced columns */
-@media (min-width: 768px) {
+@media (max-width: 359px) {
   .products-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+    gap: 8px;
   }
 }
 
-/* Desktop: 3 to 4 columns */
-@media (min-width: 1024px) {
+/* Tablet (iPad): 3 balanced columns */
+@media (min-width: 768px) and (max-width: 1023px) {
   .products-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px;
+    gap: 16px;
   }
 }
 
-@media (min-width: 1280px) {
+/* Desktop: 4 columns or auto-fill */
+@media (min-width: 1024px) {
   .products-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
   }
 }
 
@@ -467,7 +467,7 @@ body.customer-menu-body {
 }
 
 .product-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   border-color: var(--border-hover);
   box-shadow: var(--shadow-hover);
 }
@@ -501,7 +501,7 @@ body.customer-menu-body {
 }
 
 .product-card:hover .product-card-img {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
 .product-image-fallback {
@@ -511,20 +511,20 @@ body.customer-menu-body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--coffee-accent);
   background: linear-gradient(135deg, #F3ECE2 0%, #EBE3D7 100%);
 }
 
 .placeholder-coffee-svg {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   opacity: 0.75;
 }
 
 .placeholder-brand-text {
   font-family: var(--font-brand);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   opacity: 0.6;
@@ -532,13 +532,13 @@ body.customer-menu-body {
 
 .product-soldout-badge {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 8px;
+  left: 8px;
   background: rgba(185, 28, 28, 0.9);
   color: #FFFFFF;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 2.5px 8px;
   border-radius: var(--radius-pill);
   backdrop-filter: blur(4px);
 }
@@ -548,37 +548,38 @@ body.customer-menu-body {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 16px;
+  padding: 10px 10px 12px;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .product-card-top-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .product-name {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 4px;
-  line-height: 1.4;
+  margin: 0 0 3px;
+  line-height: 1.35;
 }
 
 /* Subtle Options Hint (بديل خيارات متعددة المربكة) */
 .product-custom-hint {
   display: inline-block;
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   font-weight: 500;
   color: var(--coffee-accent);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .product-desc {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.45;
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -589,53 +590,57 @@ body.customer-menu-body {
 /* Card Footer: Price & Details Button */
 .product-card-footer {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
   margin-top: auto;
-  padding-top: 12px;
+  padding-top: 8px;
   border-top: 1px solid var(--border-subtle);
+  width: 100%;
 }
 
 .product-price-row {
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 3px;
+  width: 100%;
 }
 
 .price-amount {
-  font-size: 1.18rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--coffee-primary);
   font-feature-settings: "tnum";
 }
 
 .price-currency {
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 500;
   color: var(--text-muted);
 }
 
 .view-details-btn {
-  min-height: 40px;
-  padding: 0 14px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
   border-radius: var(--radius-pill);
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   color: var(--coffee-primary);
   font-family: var(--font-arabic);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 5px;
   cursor: pointer;
   transition: all 0.18s ease;
+  white-space: nowrap;
 }
 
 .view-details-btn .btn-arrow-icon {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   stroke: currentColor;
   stroke-width: 2.2;
   transition: transform 0.18s ease;
@@ -938,24 +943,33 @@ dialog.customization-modal::backdrop {
 
 .skeleton-cards-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 359px) {
   .skeleton-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .skeleton-cards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
   }
 }
 
 @media (min-width: 1024px) {
   .skeleton-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
   }
 }
 
 .skeleton-card {
-  height: 280px;
+  height: 260px;
   border-radius: var(--radius-card);
 }
 
