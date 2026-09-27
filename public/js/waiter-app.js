@@ -76,6 +76,7 @@ async function initAuth() {
     }
   } catch (err) {
     console.warn("Session check fallback:", err);
+    showLoginError(err.message || "تعذر التحقق من صلاحية حساب الويتر.");
     showLoginGate(true);
   }
 }
@@ -100,13 +101,22 @@ function showLoginError(msg) {
 
 async function enterWithProfile(profile) {
   // Validate Staff Role
-  if (profile.role !== "roadside" && profile.role !== "owner" && profile.role !== "admin") {
+  if (profile.role === "owner" || profile.role === "admin") {
+    window.location.replace("/admin");
+    return;
+  }
+
+  if (profile.role !== "roadside") {
     await signOutStaff().catch(() => {});
-    throw new Error("هذا الحساب غير مصرح له باستخدام نقطة بيع الويتر.");
+    throw new Error("هذه الشاشة مخصصة لحساب الويتر فقط. حساب الإدارة يستخدم صفحة /admin.");
+  }
+
+  if (!profile.branch_id) {
+    await signOutStaff().catch(() => {});
+    throw new Error("حساب الويتر غير مربوط بفرع فعال. اربطه بفرع طريق المطار من الإدارة ثم أعد تسجيل الدخول.");
   }
 
   state.profile = profile;
-  showLoginGate(false);
 
   // Set Header Information
   const nameEl = $("waiter-name-badge");
@@ -115,6 +125,7 @@ async function enterWithProfile(profile) {
   if (branchEl) branchEl.textContent = profile.branch_name ? `· ${profile.branch_name}` : "";
 
   await loadMenuData();
+  showLoginGate(false);
   setupWaiterRealtime();
 }
 
@@ -185,6 +196,7 @@ async function loadMenuData({ silent = false } = {}) {
         `;
       }
       showToast(err.message || "تعذر تحميل المنيو", "error");
+      throw err;
     }
   }
 }
