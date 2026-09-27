@@ -5,12 +5,6 @@
 
 import { supabase, isSupabaseConfigured } from "./supabase-client.js";
 import { getStaffSession, signInStaff, signOutStaff, roleLabel } from "./staff-auth.js";
-import {
-  getDemoKitchenOrders,
-  updateDemoKitchenOrderStatus,
-  resetDemoKitchenOrders,
-  simulateDemoOrder
-} from "./demo-data.js";
 
 const kdsState = {
   orders: [],
@@ -92,13 +86,7 @@ function escapeHtml(str) {
 }
 
 async function loadKitchenOrders() {
-  if (!isSupabaseConfigured) {
-    kdsState.orders = getDemoKitchenOrders();
-    renderKDS();
-    return true;
-  }
-
-  if (!supabase) {
+  if (!isSupabaseConfigured || !supabase) {
     kdsState.orders = [];
     renderKDS();
     showLiveToast("تعذر الاتصال بخدمة الطلبات. تحقق من إعداد Supabase والإنترنت.");
@@ -279,17 +267,7 @@ async function handleStatusTransition(orderCode, nextStatus) {
     }
     return;
   }
-
-  updateDemoKitchenOrderStatus(orderCode, nextStatus);
-  kdsState.orders = getDemoKitchenOrders();
-  renderKDS();
-
-  const statusNames = {
-    preparing: "قيد التحضير",
-    ready: "جاهز للتسليم",
-    handed_off: "تم التسليم للسيارة"
-  };
-  showLiveToast(`الطلب ${orderCode} أصبح: ${statusNames[nextStatus] || nextStatus}`);
+  showLiveToast("النظام غير متصل بقاعدة البيانات. لا يمكن تعديل الحالة.");
 }
 
 function renderKDS() {
@@ -519,40 +497,7 @@ function initKDSEvents() {
     });
   }
 
-  // Reset Demo Orders Button
-  const resetBtn = document.getElementById("btn-reset-orders");
-  if (resetBtn && !isSupabaseConfigured) {
-    resetBtn.addEventListener("click", () => {
-      kdsState.checkedItems = {};
-      kdsState.orders = resetDemoKitchenOrders();
-      renderKDS();
-      playBaristaOrderBell();
-      showLiveToast("تم إعادة ضبط جميع الطلبات التجريبية (7 طلبات واقعية) بنجاح!");
-    });
-  }
-
-  // Simulate Quick Incoming Order Button
-  const simBtn = document.getElementById("btn-simulate-order");
-  if (simBtn && !isSupabaseConfigured) {
-    simBtn.addEventListener("click", () => {
-      const cars = ["بي إم دبليو أسود • 55120", "تاهو أبيض • 88410", "لكزس فضي • 33901", "جيب رانجلر رمادي • 77419", "سوناتا أبيض • 19402"];
-      const randomCar = cars[Math.floor(Math.random() * cars.length)];
-      const newOrder = simulateDemoOrder({
-        items: [
-          { product_id: "prod-spanish-latte-hot", quantity: 2, selected_option_ids: ["opt-size-large", "opt-milk-oat"], note: "سكر خفيف" },
-          { product_id: "prod-butter-croissant", quantity: 1, selected_option_ids: ["opt-serve-warm"], note: "تسخين طازج" }
-        ],
-        vehicle_note: randomCar,
-        order_note: "يرجى توفير حامل أكواب"
-      });
-      kdsState.orders = getDemoKitchenOrders();
-      renderKDS();
-      playBaristaOrderBell();
-      showLiveToast(`وصل طلب جديد ${newOrder.order_code} — ${randomCar}`);
-    });
-  }
-
-  // Listen for live orders from Customer / Street Staff Menu via BroadcastChannel
+  // Listen for live orders from Customer / Staff Menu via BroadcastChannel
   if (typeof BroadcastChannel !== "undefined") {
     const bc = new BroadcastChannel("box_coffee_kitchen_sync");
     bc.onmessage = e => {
@@ -564,15 +509,9 @@ function initKDSEvents() {
               showLiveToast("وصل طلب جديد الآن.");
             }
           });
-        } else {
-          kdsState.orders = getDemoKitchenOrders();
-          renderKDS();
-          playBaristaOrderBell();
-          showLiveToast(`وصل طلب جديد الآن: ${e.data.order?.order_code || ""}!`);
         }
       } else if (e.data && (e.data.type === "status_changed" || e.data.type === "orders_reset")) {
         if (isSupabaseConfigured) loadKitchenOrders();
-        else { kdsState.orders = getDemoKitchenOrders(); renderKDS(); }
       }
     };
   }
@@ -584,10 +523,6 @@ function initKDSEvents() {
         loadKitchenOrders().then((ok) => {
           if (ok) playBaristaOrderBell();
         });
-      } else {
-        kdsState.orders = getDemoKitchenOrders();
-        renderKDS();
-        playBaristaOrderBell();
       }
     }
   });

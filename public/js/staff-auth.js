@@ -28,7 +28,7 @@ async function resolveProfileBranch(profile) {
 
   if (profile.branch_slug && profile.branch_name) {
     return {
-      id: profile.branch_id || "564b34a7-ddbf-454b-a4eb-c4629f3f3173",
+      id: profile.branch_id,
       name: profile.branch_name,
       slug: profile.branch_slug,
       is_active: true
@@ -49,21 +49,7 @@ async function resolveProfileBranch(profile) {
     } catch {}
   }
 
-  if (profile.role === "owner" || profile.role === "admin") {
-    return {
-      id: "564b34a7-ddbf-454b-a4eb-c4629f3f3173",
-      name: "فرع طريق المطار",
-      slug: "airport",
-      is_active: true
-    };
-  }
-
-  return {
-    id: profile.branch_id || "564b34a7-ddbf-454b-a4eb-c4629f3f3173",
-    name: "فرع طريق المطار",
-    slug: "airport",
-    is_active: true
-  };
+  return null;
 }
 
 async function loadStaffProfile(userId, userObj = null) {
@@ -142,8 +128,8 @@ export function resolveStaffDestination(profile, requestedNext = "") {
     if (safeNext.startsWith("/admin") && (role === "owner" || role === "admin")) {
       return safeNext;
     }
-    if (safeNext.startsWith("/roadside") && role === "roadside" && profile.branch_id) {
-      return "/roadside/order";
+    if ((safeNext.startsWith("/waiter") || safeNext.startsWith("/roadside")) && role === "roadside" && profile.branch_id) {
+      return "/waiter";
     }
     if (safeNext.startsWith("/kitchen") && (role === "kitchen" || role === "owner" || role === "admin")) {
       const match = safeNext.match(/^\/kitchen\/([^/?#]+)/);
@@ -159,9 +145,9 @@ export function resolveStaffDestination(profile, requestedNext = "") {
   }
   if (role === "roadside") {
     if (!profile.branch_id) {
-      throw new Error("حساب موظف الشارع غير مربوط بفرع فعّال.");
+      throw new Error("حساب الويتر غير مربوط بفرع فعّال.");
     }
-    return "/roadside/order";
+    return "/waiter";
   }
   if (role === "kitchen") {
     if (!defaultKitchenPath) {
@@ -302,7 +288,7 @@ export function roleLabel(role) {
   return {
     owner: "المالك",
     admin: "مدير النظام",
-    roadside: "موظف الشارع",
+    roadside: "الويتر",
     kitchen: "المطبخ"
   }[role] || "موظف";
 }

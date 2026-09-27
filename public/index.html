@@ -2,69 +2,129 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="refresh" content="0; url=/login" />
-    <script>window.location.replace('/login');</script>
-    <meta name="theme-color" content="#f5f2ea" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F6F3ED" />
+    <title>BOX COFE — قائمة المنيو</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="manifest" href="/site.webmanifest" />
-    <link rel="stylesheet" href="/styles/foundation.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/menu.css?v=20260927_customer_v1" />
   </head>
-  <body>
-    <header class="topbar">
-      <a class="brand" href="/" aria-label="بوكس كافي، الصفحة الرئيسية">
-        <span class="brand-mark" aria-hidden="true">B</span>
-        <span><strong>BOX</strong><small>COFFEE SYSTEM</small></span>
-      </a>
-      <div style="display: flex; align-items: center; gap: 14px;">
-        <span class="phase-label"><i aria-hidden="true"></i> مرحلة التأسيس</span>
-        <a href="/login" class="next-badge" style="text-decoration: none; font-weight: 700;">دخول الموظفين والإدارة ←</a>
+  <body class="customer-menu-body">
+    <!-- Pure Typographic Brand Header -->
+    <header class="menu-header">
+      <div class="header-container">
+        <a href="/" class="brand-signature-lockup" aria-label="BOX COFE" dir="ltr">
+          <span class="logo-word-box">BOX</span>
+          <span class="logo-word-cofe">COFE</span>
+        </a>
+        <div class="header-context-tags">
+          <span class="context-pill" id="header-branch-name" style="display: none;">فرع طريق المطار</span>
+          <span class="context-pill highlight" id="header-point-tag" style="display: none;">قائمة المنيو</span>
+        </div>
       </div>
     </header>
 
-    <main>
-      <section class="intro" aria-labelledby="page-title">
-        <div class="intro-copy">
-          <p class="eyebrow">نظام واحد — أربع تجارب مترابطة</p>
-          <h1 id="page-title">كل طلب يبدأ<br /><em>بتجربة مرتّبة.</em></h1>
-          <p class="lead">نؤسس لبوكس كافي كنظام خدمة سيارات متكامل: منيو QR وطلب سريع من السيارة، ثم تحضير ومتابعة تسليم، بواجهة عربية للهاتف والآيباد والكمبيوتر.</p>
-          <div class="intro-meta">
-            <span class="status-dot" aria-hidden="true"></span>
-            <span>الأساس التقني جاهز للمراجعة</span>
-            <span class="meta-separator" aria-hidden="true">·</span>
-            <span>بدون خادم Node.js</span>
-          </div>
+    <main class="customer-main-view">
+      <!-- Search & Category Filters -->
+      <section class="search-filter-section" id="search-filter-section" aria-label="البحث وفئات المنيو">
+        <div class="search-box-wrapper">
+          <span class="search-icon-pos" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input
+            type="search"
+            id="search-input"
+            class="search-input"
+            placeholder="ابحث عن مشروب، صنف، أو إضافة..."
+            aria-label="البحث في المنيو"
+          />
+          <button type="button" id="search-clear-btn" class="search-clear-btn" style="display: none;" aria-label="مسح البحث">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-        <aside class="architecture-card" aria-label="ملخص البنية">
-          <div class="card-heading"><span>البنية المعتمدة مبدئياً</span><span class="card-index">01 / 04</span></div>
-          <div class="stack-row"><span class="stack-number">01</span><div><strong>واجهة ثابتة</strong><small>HTML · CSS · JavaScript</small></div><span class="stack-check" aria-hidden="true">✓</span></div>
-          <div class="stack-row"><span class="stack-number">02</span><div><strong>الاستضافة</strong><small>Vercel Static Hosting</small></div><span class="stack-check" aria-hidden="true">✓</span></div>
-          <div class="stack-row"><span class="stack-number">03</span><div><strong>البيانات والصلاحيات</strong><small>Supabase · PostgreSQL · RLS</small></div><span class="stack-check" aria-hidden="true">✓</span></div>
-          <div class="card-foot"><span class="lock-icon" aria-hidden="true">⌑</span> المفتاح العام فقط في المتصفح؛ الصلاحيات تحمي البيانات من قاعدة البيانات.</div>
-        </aside>
+
+        <nav class="categories-nav" id="categories-nav-section" aria-label="فئات الأصناف">
+          <ul class="categories-list" id="categories-list">
+            <!-- Dynamically populated categories pills -->
+          </ul>
+        </nav>
       </section>
 
-      <section class="workflows" aria-labelledby="workflows-title">
-        <div class="section-heading">
-          <div><p class="eyebrow">خريطة المنتج</p><h2 id="workflows-title">أربع شاشات، سير عمل واحد</h2></div>
-          <p>تتشارك هذه الشاشات القائمة والأسعار والطلبات نفسها، مع صلاحية مختلفة لكل دور.</p>
+      <!-- Skeleton Loading State -->
+      <div class="skeleton-loading-container" id="skeleton-loading-container">
+        <div class="skeleton-box skeleton-bar"></div>
+        <div class="skeleton-cards-grid">
+          <div class="skeleton-box skeleton-card"></div>
+          <div class="skeleton-box skeleton-card"></div>
+          <div class="skeleton-box skeleton-card"></div>
+          <div class="skeleton-box skeleton-card"></div>
         </div>
-        <div class="workflow-grid">
-          <article class="workflow-card customer"><span class="workflow-no">01</span><span class="workflow-icon" aria-hidden="true">⌗</span><h3>منيو الزبون</h3><p>يفتح الزبون المنيو بعد مسح رمز QR الخاص بالمسار، ثم يختار الأصناف ويرسل الطلب من السيارة.</p><small>QR MENU · متاح عبر رمز المسار</small></article>
-          <a class="workflow-card staff" href="/login?next=/roadside/order" style="text-decoration: none; cursor: pointer;"><span class="workflow-no">02</span><span class="workflow-icon" aria-hidden="true">＋</span><h3>موظف الشارع</h3><p>إضافة سريعة للأصناف، تسجيل معلومة تميّز السيارة، وإرسال الطلب للمطبخ.</p><small>ROADSIDE ORDER · تسجيل الدخول ←</small></a>
-          <a class="workflow-card kitchen" href="/login?next=/kitchen" style="text-decoration: none; cursor: pointer;"><span class="workflow-no">03</span><span class="workflow-icon" aria-hidden="true">▤</span><h3>شاشة المطبخ</h3><p>طلبات السيارات مرتبة حسب الوصول، مع متابعة التحضير والتسليم.</p><small>KITCHEN DISPLAY · تسجيل الدخول ←</small></a>
-          <a class="workflow-card admin" href="/login?next=/admin" style="text-decoration: none; cursor: pointer;"><span class="workflow-no">04</span><span class="workflow-icon" aria-hidden="true">◫</span><h3>لوحة الإدارة</h3><p>إدارة الفروع والمنيو والموظفين ونقاط الخدمة ومراجعة الطلبات.</p><small>ADMIN · تسجيل الدخول ←</small></a>
-        </div>
-      </section>
+      </div>
 
-      <section class="next-step" aria-labelledby="next-title">
-        <div class="next-mark" aria-hidden="true">↗</div>
-        <div><p class="eyebrow">قبل تصميم الشاشات</p><h2 id="next-title">نثبت طريقة التشغيل أولاً</h2><p>تفاصيل مثل نقاط الطلب والاستلام، خيارات الإضافات، وكيفية تمييز السيارة وانتقال الطلب للمطبخ تُحسم في وثيقة المتطلبات قبل بناء تدفقات الاستخدام.</p></div>
-        <span class="next-badge">الخطوة التالية</span>
+      <!-- Main Read-Only Catalog Layout -->
+      <div class="main-content-layout customer-catalog-layout" id="main-ordering-layout">
+        <div class="products-section-container" id="products-container">
+          <!-- Dynamically populated product cards grouped by category -->
+        </div>
+      </div>
+
+      <!-- Error / Offline Screen -->
+      <section class="error-screen-view" id="error-screen-view" role="alert" style="display: none;">
+        <div class="error-icon-circle" aria-hidden="true">
+          <svg class="icon icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h2 id="error-screen-title">تعذر فتح المنيو</h2>
+        <p id="error-screen-message">يرجى التأكد من الاتصال بالإنترنت أو إعادة المحاولة.</p>
+        <button type="button" class="retry-action-btn" id="retry-load-menu-btn">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span>إعادة المحاولة</span>
+        </button>
       </section>
     </main>
 
-    <footer class="footer"><span>BOX COFFEE · ORDERING SYSTEM</span><span>أساس مرن للنمو — من فرع واحد إلى عدة فروع</span></footer>
+    <!-- Product Details Dialog (Pure Read-Only Modal) -->
+    <dialog id="product-modal" class="customization-modal read-only-modal" aria-labelledby="modal-product-title">
+      <div class="modal-content-shell">
+        <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="إغلاق النافذة">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+
+        <div class="modal-hero-header">
+          <div class="modal-thumb-box" id="modal-product-banner" style="display: none;">
+            <img id="modal-product-image" src="" alt="" />
+          </div>
+          <div class="modal-title-group">
+            <h3 id="modal-product-title">اسم الصنف</h3>
+            <p id="modal-product-desc">وصف الصنف المختصر</p>
+            <span class="modal-base-price-chip" id="modal-base-price-chip">0 د.ع</span>
+          </div>
+        </div>
+
+        <div class="modal-scrollable-body" id="modal-options-container">
+          <!-- Dynamic read-only sizes, milks, and options -->
+        </div>
+
+        <div class="modal-footer read-only-footer">
+          <button type="button" class="modal-dismiss-btn" id="modal-dismiss-btn">
+            <span>إغلاق</span>
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <footer class="customer-menu-footer">
+      <div class="footer-inner">
+        <span class="footer-brand" dir="ltr">BOX COFE</span>
+        <span class="footer-tagline">Specialty Coffee & Bakery · تجربة قهوة متقنة</span>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/vendor/supabase.umd.js"></script>
+    <script type="module" src="/js/menu-app.js?v=20260927_customer_v1"></script>
   </body>
 </html>

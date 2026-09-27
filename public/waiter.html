@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#09090e" />
+    <title>BOX COFE — لوحة الويتر</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/waiter.css" />
+  </head>
+  <body class="roadside-auth-pending">
+    <!-- Login Gate (Shows when not authenticated) -->
+    <section class="rs-login-gate" id="rs-login-gate" role="dialog" aria-modal="true" aria-labelledby="rs-login-title">
+      <form class="rs-login-card" id="rs-login-form">
+        <span class="rs-brand" dir="ltr">BOX <span>COFE</span></span>
+        <span class="rs-kicker">نقطة البيع والطلب المباشر</span>
+        <h1 id="rs-login-title">دخول الويتر</h1>
+        <p>سجّل الدخول بحساب الويتر المفعّل لفرعك.</p>
+        <label for="rs-email">البريد الإلكتروني</label>
+        <input id="rs-email" name="email" type="email" autocomplete="username" inputmode="email" dir="ltr" required placeholder="staff@boxcofe.iq" />
+        <label for="rs-password">كلمة المرور</label>
+        <input id="rs-password" name="password" type="password" autocomplete="current-password" dir="ltr" required placeholder="••••••••" />
+        <p class="rs-error" id="rs-login-error" role="alert" hidden></p>
+        <button class="rs-primary" id="rs-login-submit" type="submit">دخول إلى الطلبات <span aria-hidden="true">←</span></button>
+        <small>حسابات الويتر والموظفين يتم إنشاؤها وتفعيلها عبر لوحة الإدارة.</small>
+      </form>
+    </section>
+
+    <!-- Main Waiter POS Application -->
+    <div class="rs-app" id="rs-app" hidden>
+      <header class="rs-header">
+        <a class="rs-brand" href="/waiter" dir="ltr" aria-label="BOX COFE الويتر">BOX <span>COFE</span></a>
+        <div class="rs-branch">
+          <span class="rs-live-dot"></span>
+          <div>
+            <small>فرع الخدمة</small>
+            <strong id="rs-branch-name">جاري التحميل</strong>
+          </div>
+          <span class="rs-divider"></span>
+          <div>
+            <small>نقطة الطلب</small>
+            <strong id="rs-point-name">—</strong>
+          </div>
+        </div>
+        <div class="rs-account">
+          <span id="rs-staff-name">الويتر</span>
+          <button id="rs-signout" type="button">تسجيل الخروج</button>
+        </div>
+      </header>
+
+      <main class="rs-main">
+        <section class="rs-intro">
+          <div>
+            <span class="rs-kicker">لوحة الطلب السريع (POS)</span>
+            <h1>خذ الطلب. <em>خلّي الباقي علينا.</em></h1>
+            <p>اختر الأصناف والإضافات، حدد نوع الطلب (سيارة أو مشاة)، ثم أرسل الطلب مباشرة إلى المطبخ.</p>
+          </div>
+          <div class="rs-quick-stats">
+            <span class="rs-stat-icon" aria-hidden="true">⚡</span>
+            <div>
+              <small>نظام التشغيل</small>
+              <strong>إدخال فوري · تسعير من النظام</strong>
+            </div>
+          </div>
+        </section>
+
+        <div class="rs-status" id="rs-status" role="status" aria-live="polite" hidden></div>
+
+        <section class="rs-workspace">
+          <!-- Catalog Column -->
+          <div class="rs-catalog">
+            <div class="rs-tools">
+              <label class="rs-search">
+                <span aria-hidden="true">⌕</span>
+                <input id="rs-search" type="search" placeholder="ابحث عن صنف أو مشروب..." aria-label="ابحث عن صنف" />
+              </label>
+              <span class="rs-catalog-count" id="rs-catalog-count"></span>
+            </div>
+            <nav class="rs-categories" id="rs-categories" aria-label="فئات المنيو"></nav>
+            <div class="rs-state" id="rs-catalog-state">
+              <span class="rs-state-mark">···</span>
+              <h2>تحميل منيو الفرع</h2>
+              <p>نتحقق من الأصناف المتاحة والأسعار الحالية.</p>
+            </div>
+            <div class="rs-products" id="rs-products"></div>
+          </div>
+
+          <!-- Cart Sidebar -->
+          <aside class="rs-cart" aria-label="الطلب الحالي">
+            <div class="rs-cart-head">
+              <div>
+                <span class="rs-kicker">تجهيز الطلب</span>
+                <h2>السلة <span id="rs-cart-count">٠</span></h2>
+              </div>
+              <button class="rs-text-button" id="rs-clear-cart" type="button" hidden>تفريغ السلة</button>
+            </div>
+
+            <!-- Order Type Switcher (Car vs Walk-in) -->
+            <div class="rs-order-type-strip" role="radiogroup" aria-label="نوع الطلب">
+              <button type="button" class="rs-type-btn active" id="type-car-btn" data-type="car" aria-checked="true" role="radio">
+                <span>🚗</span>
+                <span>طلب سيارة</span>
+              </button>
+              <button type="button" class="rs-type-btn" id="type-walkin-btn" data-type="walkin" aria-checked="false" role="radio">
+                <span>🚶‍♂️</span>
+                <span>طلب مشاة / صالة</span>
+              </button>
+            </div>
+
+            <!-- Cart Items Scroll List -->
+            <div class="rs-cart-body" id="rs-cart-body">
+              <div class="rs-cart-empty">
+                <span aria-hidden="true">＋</span>
+                <strong>السلة فارغة</strong>
+                <p>اختر الأصناف المطلوبة من القائمة لتبدأ.</p>
+              </div>
+            </div>
+
+            <!-- Notes & Vehicle Details -->
+            <div class="rs-order-notes">
+              <label for="rs-vehicle-note" id="rs-vehicle-label">
+                وصف السيارة / رقم اللوحة <small>(لخدمة المسار)</small>
+              </label>
+              <input id="rs-vehicle-note" maxlength="80" placeholder="مثال: لاندكروزر أبيض، تاهو أسود 4567" />
+
+              <label for="rs-order-note">
+                ملاحظة للمطبخ <small>اختياري</small>
+              </label>
+              <input id="rs-order-note" maxlength="200" placeholder="تفاصيل تساعد في التحضير (مثال: زيادة ثلج)" />
+            </div>
+
+            <!-- Totals & Submit -->
+            <div class="rs-cart-total">
+              <span>المجموع <small>محسوب بدقة من النظام</small></span>
+              <strong id="rs-total">٠ د.ع</strong>
+            </div>
+
+            <button class="rs-primary rs-submit" id="rs-submit" type="button" disabled>
+              <span>إرسال إلى المطبخ</span>
+              <span aria-hidden="true">←</span>
+            </button>
+          </aside>
+        </section>
+      </main>
+
+      <footer class="rs-footer">
+        <span>BOX COFE <i>·</i> نقطة بيع الويتر</span>
+        <span id="rs-connection">متصل بنظام بوكس كافي</span>
+      </footer>
+    </div>
+
+    <!-- Product Customization Dialog -->
+    <dialog class="rs-dialog" id="rs-product-dialog" aria-labelledby="rs-dialog-title">
+      <form id="rs-product-form" method="dialog">
+        <header class="rs-dialog-head">
+          <div>
+            <span class="rs-kicker">تخصيص الطلب</span>
+            <h2 id="rs-dialog-title">اسم المنتج</h2>
+            <p id="rs-dialog-description">حدد الحجم والإضافات المطلوبة</p>
+          </div>
+          <button class="rs-icon-button" id="rs-dialog-close" type="button" aria-label="إغلاق">✕</button>
+        </header>
+
+        <div class="rs-option-groups" id="rs-option-groups"></div>
+
+        <footer class="rs-dialog-foot">
+          <div class="rs-quantity" aria-label="الكمية">
+            <button id="rs-qty-minus" type="button" aria-label="تقليل الكمية">−</button>
+            <strong id="rs-qty">١</strong>
+            <button id="rs-qty-plus" type="button" aria-label="زيادة الكمية">+</button>
+          </div>
+          <button class="rs-primary" id="rs-add-product" type="submit">
+            <span>إضافة إلى السلة · </span>
+            <span id="rs-dialog-price">0 د.ع</span>
+          </button>
+        </footer>
+        <p class="rs-error" id="rs-option-error" role="alert" hidden></p>
+      </form>
+    </dialog>
+
+    <!-- Success Dialog (Real Confirmation) -->
+    <dialog class="rs-success-dialog" id="rs-success-dialog" aria-labelledby="rs-success-title">
+      <div class="rs-success-mark" aria-hidden="true">✓</div>
+      <span class="rs-kicker">تم استلام الطلب بنجاح</span>
+      <h2 id="rs-success-title">وصل الطلب إلى المطبخ</h2>
+      <p>رقم الطلب:</p>
+      <strong class="rs-order-code" id="rs-order-code">—</strong>
+      <button class="rs-primary" id="rs-next-order" type="button">بدء طلب جديد</button>
+    </dialog>
+
+    <script src="/vendor/supabase.umd.js"></script>
+    <script type="module" src="/js/waiter-app.js"></script>
+  </body>
+</html>

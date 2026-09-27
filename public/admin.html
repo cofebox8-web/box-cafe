@@ -4,18 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07050C" />
-  <meta name="description" content="لوحة إدارة BOX COFE والمنيو والمطبخ وطلبات خدمة السيارات." />
-  <meta property="og:site_name" content="BOX COFE" />
-  <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://box-cofe-web.vercel.app/og-image.png?v=2" />
-    <meta property="og:image:secure_url" content="https://box-cofe-web.vercel.app/og-image.png?v=2" />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="شعار BOX COFE" />
-  <meta property="og:title" content="BOX COFE | لوحة الإدارة" />
-  <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://box-cofe-web.vercel.app/og-image.png?v=2" />
   <title>BOX COFE | لوحة الإدارة ونقطة البيع</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -193,6 +181,36 @@
               </div>
             </div>
 
+            <!-- قسم الطلبات الحية والجديدة (Live Realtime Orders Feed) -->
+            <div class="structured-box-panel live-orders-panel" style="margin-bottom: 24px;">
+              <div class="panel-box-header" style="flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <h2 class="panel-box-title" style="margin: 0;">الطلبات المباشرة</h2>
+                  <div class="live-orders-pulse" aria-label="تحديث لحظي نشط">
+                    <span class="pulse-dot" aria-hidden="true"></span>
+                    <span>مباشر</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <div class="live-orders-filter-tabs" id="hub-orders-filter-tabs" role="tablist">
+                    <button type="button" class="order-status-tab-btn active" data-status-filter="all">جميع الطلبات <span id="hub-badge-count-all" class="count-pill">0</span></button>
+                    <button type="button" class="order-status-tab-btn" data-status-filter="new">الطلبات الجديدة 🔔 <span id="hub-badge-count-new" class="count-pill">0</span></button>
+                    <button type="button" class="order-status-tab-btn" data-status-filter="preparing">قيد التحضير ⏳ <span id="hub-badge-count-prep" class="count-pill">0</span></button>
+                    <button type="button" class="order-status-tab-btn" data-status-filter="completed">المكتملة ✅ <span id="hub-badge-count-comp" class="count-pill">0</span></button>
+                  </div>
+
+                  <select id="hub-filter-order-source" class="structured-input structured-input-sm" style="width: auto;">
+                    <option value="all">كل المصادر</option>
+                    <option value="roadside">الويتر 🧑‍💼</option>
+                    <option value="qr">مسح QR 📱</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="hub-live-orders-list" class="structured-records-list live-orders-cards-grid"></div>
+            </div>
+
             <div class="structured-section-header">
               <h2 class="section-box-title">أقسام النظام المباشرة</h2>
             </div>
@@ -335,7 +353,7 @@
                   <select id="filter-order-source" class="structured-input structured-input-sm">
                     <option value="all">كل الطلبات</option>
                     <option value="qr">طلبات QR</option>
-                    <option value="roadside">طلبات موظف الشارع</option>
+                    <option value="roadside">طلبات الويتر</option>
                   </select>
                 </div>
                 <div id="orders-ledger-body" class="structured-records-list"></div>
@@ -388,6 +406,21 @@
               <div id="admin-products-grid" class="menu-control-boxes-grid"></div>
             </div>
 
+            <!-- إدارة نقاط الخدمة ورموز QR للمسارات -->
+            <div class="structured-box-panel" style="margin-top: 24px;">
+              <div class="panel-box-header">
+                <div>
+                  <h2 class="panel-box-title">نقاط الخدمة ورموز QR للمسارات</h2>
+                  <p style="margin: 4px 0 0; font-size: 0.8rem; color: var(--text-dim);">توليد وطباعة رموز QR الرسمية الخاصة بنقاط طلب السيارات</p>
+                </div>
+                <button type="button" id="btn-add-service-point" class="box-btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-weight:800;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                  <span>＋ إضافة نقطة خدمة جديدة</span>
+                </button>
+              </div>
+              <div id="service-points-grid" class="service-points-grid" aria-live="polite"></div>
+            </div>
+
           </div>
         </section>
 
@@ -399,7 +432,7 @@
 
             <div class="structured-box-panel">
               <div class="panel-box-header">
-                <h2 class="panel-box-title">حسابات طاقم العمل</h2>
+                <h2 class="panel-box-title">حسابات طاقم العمل والويتر</h2>
                 <button type="button" id="btn-open-add-staff" class="box-btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-weight:800;">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
                   <span>＋ إضافة موظف جديد</span>
@@ -519,7 +552,7 @@
           <div class="field-box">
             <label for="staff-role-select">الدور والصلاحية (شاشة العمل) <span style="color:#F43F5E;">*</span></label>
             <select id="staff-role-select" class="structured-input" required>
-              <option value="roadside">موظف الشارع والطلبات السريعة (Roadside) 🚗</option>
+              <option value="roadside">الويتر (Waiter) 🧑‍💼</option>
               <option value="kitchen">طاقم المطبخ وشاشة الطلبات (Kitchen) 👨‍🍳</option>
               <option value="admin">مدير نظام مساعد (Admin) 🛡️</option>
             </select>
