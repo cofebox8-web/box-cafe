@@ -7,6 +7,9 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/customer/:branch/:token", "destination": "/menu" },
+    { "source": "/customer/:branch", "destination": "/menu" },
+    { "source": "/customer", "destination": "/menu" },
     { "source": "/menu/:branch/:token", "destination": "/menu" },
     { "source": "/menu/:branch", "destination": "/menu" },
     { "source": "/kitchen/:branch", "destination": "/kitchen" },

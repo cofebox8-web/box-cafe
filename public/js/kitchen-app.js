@@ -397,7 +397,7 @@ function renderKDS() {
           <div class="ticket-code-group">
             <span class="ticket-order-code">${escapeHtml(order.order_code)}</span>
             <span class="ticket-status-badge ${meta.badgeClass}">${meta.badgeText}</span>
-            <span class="ticket-source-pill">${order.source === "roadside" ? "موظف الشارع" : "طلب QR"}</span>
+            <span class="ticket-source-pill">${order.order_mode === "walkin" ? "ويتر — مشاة" : order.source === "roadside" ? "ويتر — سيارة" : "طلب QR"}</span>
             </div>
             <div class="ticket-meta-right">
               <span class="ticket-pieces-pill">${totalPieces} قطع</span>

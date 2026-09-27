@@ -803,7 +803,7 @@ function renderHubLiveOrdersFeed() {
   };
 
   container.innerHTML = filteredOrders.map((order) => {
-    const isWalkIn = (order.vehicle_note || '').includes('[مشاة]');
+    const isWalkIn = order.order_mode === 'walkin' || (order.vehicle_note || '').includes('[مشاة]');
     
     let typeBadge = '';
     if (order.source === 'roadside') {

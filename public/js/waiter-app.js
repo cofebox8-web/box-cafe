@@ -381,15 +381,16 @@ async function submitOrder() {
   const rawVehicle = $("rs-vehicle-note").value.trim();
   const rawOrderNote = $("rs-order-note").value.trim();
 
-  // Prefix note with order type context for clarity in kitchen/admin
-  const typePrefix = state.orderType === "walkin" ? "[مشاة] " : "[سيارة] ";
-  const fullVehicleNote = rawVehicle ? `${typePrefix}${rawVehicle}` : (state.orderType === "walkin" ? "[مشاة]" : null);
+  // The order type is stored as a first-class database field. Keep this note
+  // for the vehicle description or walk-in customer/table reference only.
+  const fullVehicleNote = rawVehicle || null;
 
   try {
     if (!supabase) throw new Error("خدمة الطلب غير متصلة بالنظام.");
 
-    const { data, error } = await supabase.rpc("place_roadside_order", {
+    const { data, error } = await supabase.rpc("place_waiter_order", {
       p_items: items,
+      p_order_mode: state.orderType,
       p_vehicle_note: fullVehicleNote,
       p_order_note: rawOrderNote || null,
       p_idempotency_key: state.idempotencyKey
