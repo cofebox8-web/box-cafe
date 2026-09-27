@@ -23,7 +23,7 @@ function configurationError() {
   return null;
 }
 
-async function resolveProfileBranch(profile) {
+async function resolveProfileBranch(profile, client = supabase) {
   if (!profile) return null;
 
   if (profile.branch_slug && profile.branch_name) {
@@ -35,9 +35,9 @@ async function resolveProfileBranch(profile) {
     };
   }
 
-  if (profile.branch_id && supabase) {
+  if (profile.branch_id && client) {
     try {
-      const { data: branch, error } = await supabase
+      const { data: branch, error } = await client
         .from("branches")
         .select("id, name, slug, is_active")
         .eq("id", profile.branch_id)
@@ -52,13 +52,13 @@ async function resolveProfileBranch(profile) {
   return null;
 }
 
-async function loadStaffProfile(userId, userObj = null) {
+async function loadStaffProfile(userId, userObj = null, client = supabase) {
   let data = null;
 
   // 1. استرجاع الملف من Supabase (المصدر الوحيد والموثوق لصلاحيات الموظف)
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured && client) {
     try {
-      const res = await supabase
+      const res = await client
         .from("staff_profiles")
         .select(STAFF_PROFILE_FIELDS)
         .eq("user_id", userId)
@@ -71,11 +71,11 @@ async function loadStaffProfile(userId, userObj = null) {
 
   // 2. تفعيل أول مستخدم كمالك رئيسي فقط إذا لم يوجد أي مالك/مدير في النظام بعد
   //    (bootstrap_initial_owner يرفض الطلب من جهة قاعدة البيانات إن وُجد مالك مسبقاً)
-  if (!data && supabase) {
+  if (!data && client) {
     try {
-      const { data: bootRes } = await supabase.rpc("bootstrap_initial_owner");
+      const { data: bootRes } = await client.rpc("bootstrap_initial_owner");
       if (bootRes?.success) {
-        const { data: freshData } = await supabase
+        const { data: freshData } = await client
           .from("staff_profiles")
           .select(STAFF_PROFILE_FIELDS)
           .eq("user_id", userId)
@@ -88,11 +88,11 @@ async function loadStaffProfile(userId, userObj = null) {
   }
 
   if (!data || !data.is_active || !ALLOWED_ROLES.has(data.role)) {
-    if (supabase) await supabase.auth.signOut().catch(() => {});
+    if (client) await client.auth.signOut().catch(() => {});
     throw new Error("هذا الحساب غير مفعّل أو لا يملك دور موظف مصرحاً به في بوكس كافي.");
   }
 
-  const branch = await resolveProfileBranch(data);
+  const branch = await resolveProfileBranch(data, client);
   return {
     ...data,
     branch_slug: branch?.slug || data.branch_slug || "",
@@ -159,15 +159,15 @@ export function resolveStaffDestination(profile, requestedNext = "") {
   throw new Error("دور الحساب غير معروف في النظام.");
 }
 
-export async function getStaffSession() {
-  if (isSupabaseConfigured && supabase) {
+export async function getStaffSession(client = supabase) {
+  if (isSupabaseConfigured && client) {
     try {
-      const { data, error } = await supabase.auth.getSession();
+      const { data, error } = await client.auth.getSession();
       if (!error && data.session?.user) {
         return {
           session: data.session,
           user: data.session.user,
-          profile: await loadStaffProfile(data.session.user.id, data.session.user)
+          profile: await loadStaffProfile(data.session.user.id, data.session.user, client)
         };
       }
     } catch (e) {
@@ -178,7 +178,7 @@ export async function getStaffSession() {
   return null;
 }
 
-export async function signInStaff(email, password) {
+export async function signInStaff(email, password, client = supabase) {
   const cleanEmail = String(email || "").trim().toLowerCase();
   const rawPassword = String(password || "");
 
@@ -189,7 +189,7 @@ export async function signInStaff(email, password) {
   let authError = null;
 
   try {
-    const res = await supabase.auth.signInWithPassword({
+    const res = await client.auth.signInWithPassword({
       email: cleanEmail,
       password: rawPassword
     });
@@ -201,14 +201,14 @@ export async function signInStaff(email, password) {
 
   if (authData?.user && !authError) {
     try {
-      const profile = await loadStaffProfile(authData.user.id, authData.user);
+      const profile = await loadStaffProfile(authData.user.id, authData.user, client);
       return {
         session: authData.session,
         user: authData.user,
         profile
       };
     } catch (profileError) {
-      await supabase.auth.signOut().catch(() => {});
+      await client.auth.signOut().catch(() => {});
       throw profileError;
     }
   }
@@ -263,10 +263,10 @@ export async function updateStaffPassword(newPassword) {
   return getStaffSession();
 }
 
-export async function signOutStaff() {
-  if (isSupabaseConfigured && supabase) {
+export async function signOutStaff(client = supabase) {
+  if (isSupabaseConfigured && client) {
     try {
-      await supabase.auth.signOut();
+      await client.auth.signOut();
     } catch {}
   }
 }

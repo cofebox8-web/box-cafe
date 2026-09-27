@@ -1,8 +1,13 @@
 // BOX COFE — Official Waiter POS Controller
 // High-Speed Ordering Terminal with Luxury Customer Menu Aesthetics
 
-import { supabase, isSupabaseConfigured } from "./supabase-client.js";
+import { supabase as defaultSupabase, isSupabaseConfigured, createScopedSupabaseClient } from "./supabase-client.js";
 import { getStaffSession, signInStaff, signOutStaff } from "./staff-auth.js";
+
+// Keep the waiter session independent from the owner/admin session. Supabase
+// otherwise shares one browser storage key, so opening /waiter could sign the
+// administrator out of an already-open /admin tab.
+const supabase = createScopedSupabaseClient("box_cofe_waiter_auth") || defaultSupabase;
 
 const $ = (id) => document.getElementById(id);
 
@@ -68,7 +73,7 @@ async function initAuth() {
   }
 
   try {
-    const session = await getStaffSession();
+    const session = await getStaffSession(supabase);
     if (session && session.profile) {
       await enterWithProfile(session.profile);
     } else {
@@ -102,17 +107,17 @@ function showLoginError(msg) {
 async function enterWithProfile(profile) {
   // Validate Staff Role
   if (profile.role === "owner" || profile.role === "admin") {
-    await signOutStaff().catch(() => {});
+    await signOutStaff(supabase).catch(() => {});
     throw new Error("هذه الصفحة مخصصة لحساب الويتر. سجّل الدخول بحساب ويتر مستقل.");
   }
 
   if (profile.role !== "roadside") {
-    await signOutStaff().catch(() => {});
+    await signOutStaff(supabase).catch(() => {});
     throw new Error("هذه الشاشة مخصصة لحساب الويتر فقط. حساب الإدارة يستخدم صفحة /admin.");
   }
 
   if (!profile.branch_id) {
-    await signOutStaff().catch(() => {});
+    await signOutStaff(supabase).catch(() => {});
     throw new Error("حساب الويتر غير مفعّل بعد. فعّل الحساب من الإدارة ثم أعد تسجيل الدخول.");
   }
 
@@ -828,7 +833,7 @@ function setupEventListeners() {
     }
 
     try {
-      const result = await signInStaff(email, password);
+      const result = await signInStaff(email, password, supabase);
       await enterWithProfile(result.profile);
     } catch (err) {
       showLoginError(err.message || "تعذر تسجيل الدخول. تأكد من البيانات.");
@@ -843,7 +848,7 @@ function setupEventListeners() {
   // Logout
   $("waiter-signout-btn")?.addEventListener("click", async () => {
     try {
-      await signOutStaff();
+      await signOutStaff(supabase);
     } catch (err) {
       console.warn("Signout error:", err);
     }
