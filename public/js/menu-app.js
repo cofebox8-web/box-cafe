@@ -47,10 +47,13 @@ function getOptionIcon(groupName = "", optName = "") {
 }
 
 // Format Iraqi Dinar / currency
-function formatMoney(amount, currency = "IQD") {
+function formatAmountOnly(amount) {
   const num = Number(amount) || 0;
-  const formatted = new Intl.NumberFormat("ar-IQ", { maximumFractionDigits: 0 }).format(num);
-  return `${formatted} د.ع`;
+  return new Intl.NumberFormat("ar-IQ", { maximumFractionDigits: 0 }).format(num);
+}
+
+function formatMoney(amount, currency = "IQD") {
+  return `${formatAmountOnly(amount)} د.ع`;
 }
 
 function escapeHtml(str) {
@@ -191,15 +194,18 @@ function renderHeaderInfo() {
   const branchName = state.menuData.branch?.name || "BOX COFE";
   const pointLabel = state.menuData.service_point?.label || "";
 
+  const branchCard = document.getElementById("header-branch-card");
   const branchEl = document.getElementById("header-branch-name");
+  const pointCard = document.getElementById("header-point-card");
   const pointEl = document.getElementById("header-point-tag");
-  if (branchEl) {
+
+  if (branchEl && branchCard) {
     branchEl.textContent = branchName;
-    branchEl.style.display = "inline-block";
+    branchCard.style.display = "inline-flex";
   }
-  if (pointEl) {
+  if (pointEl && pointCard) {
     pointEl.textContent = pointLabel;
-    pointEl.style.display = pointLabel ? "inline-block" : "none";
+    pointCard.style.display = pointLabel ? "inline-flex" : "none";
   }
 }
 
@@ -249,14 +255,53 @@ function renderCategories() {
   });
 }
 
+// Helper to render a single read-only product card
+function renderProductCardHtml(p, currency = "IQD") {
+  const isAvailable = p.is_available !== false;
+  const hasOptions = Array.isArray(p.option_groups) && p.option_groups.length > 0;
+  const priceFormatted = formatAmountOnly(p.price);
+
+  return `
+    <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="عرض تفاصيل ${escapeHtml(p.name)}">
+      <div class="product-card-media">
+        ${!isAvailable ? `<span class="product-soldout-badge">غير متوفر حالياً</span>` : ""}
+        ${p.image_url
+          ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" />`
+          : `<div class="product-image-fallback">
+              <svg class="placeholder-coffee-svg icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+              <span class="placeholder-brand-text">BOX COFE</span>
+            </div>`
+        }
+      </div>
+      <div class="product-card-body">
+        <div class="product-card-top-info">
+          <h3 class="product-name">${escapeHtml(p.name)}</h3>
+          ${hasOptions ? `<span class="product-custom-hint">متاح تخصيصه</span>` : ""}
+          ${p.description ? `<p class="product-desc">${escapeHtml(p.description)}</p>` : ""}
+        </div>
+        <div class="product-card-footer">
+          <div class="product-price-row">
+            <span class="price-amount">${priceFormatted}</span>
+            <span class="price-currency">د.ع</span>
+          </div>
+          <button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}" aria-label="عرض تفاصيل ${escapeHtml(p.name)}">
+            <span>تفاصيل الصنف</span>
+            <svg class="btn-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
 // Render Read-Only Product Cards
 function renderProducts() {
   const container = document.getElementById("products-container");
   if (!container) return;
 
-  const categories = state.menuData.categories || [];
-  const products = state.menuData.products || [];
-  const currency = state.menuData.restaurant?.currency_code || "IQD";
+  const categories = state.menuData?.categories || [];
+  const products = state.menuData?.products || [];
+  const currency = state.menuData?.restaurant?.currency_code || "IQD";
 
   const query = state.searchQuery.trim().toLowerCase();
   const filteredProducts = products.filter(p => {
@@ -306,51 +351,14 @@ function renderProducts() {
     html += `
       <section class="category-block" id="cat-section-${cat.id}">
         <div class="category-header">
-          <h2 class="category-title">${escapeHtml(cat.name)}</h2>
+          <div class="category-title-wrap">
+            <span class="category-accent-bar" aria-hidden="true"></span>
+            <h2 class="category-title">${escapeHtml(cat.name)}</h2>
+          </div>
           ${cat.description ? `<p class="category-desc">${escapeHtml(cat.description)}</p>` : ""}
         </div>
         <div class="products-grid">
-    `;
-
-    for (const p of catProducts) {
-      const isAvailable = p.is_available !== false;
-      const badgeHtml = p.badge ? `<span class="product-badge">${escapeHtml(p.badge)}</span>` : "";
-
-      html += `
-        <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="عرض تفاصيل ${escapeHtml(p.name)}">
-          <div class="product-card-media">
-            ${badgeHtml}
-            ${p.image_url
-              ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" />`
-              : `<div class="product-image-fallback">${ICONS.coffee}</div>`
-            }
-          </div>
-          <div class="product-card-body">
-            <div class="product-card-header">
-              <h3 class="product-name">${escapeHtml(p.name)}</h3>
-              ${p.description ? `<p class="product-desc">${escapeHtml(p.description)}</p>` : ""}
-            </div>
-            <div class="product-card-bottom">
-              <div class="price-container">
-                <span class="price-value">${formatMoney(p.price, currency)}</span>
-                ${p.option_groups?.length ? `<span class="price-addon-hint">خيارات متعددة</span>` : ""}
-              </div>
-              <div class="card-action-slot">
-                ${!isAvailable
-                  ? `<span class="out-of-stock-badge">غير متوفر حالياً</span>`
-                  : `<button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}">
-                      <span>تفاصيل الصنف</span>
-                      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>`
-                }
-              </div>
-            </div>
-          </div>
-        </article>
-      `;
-    }
-
-    html += `
+          ${catProducts.map(p => renderProductCardHtml(p, currency)).join("")}
         </div>
       </section>
     `;
@@ -362,54 +370,23 @@ function renderProducts() {
     html += `
       <section class="category-block">
         <div class="category-header">
-          <h2 class="category-title">أصناف مميزة</h2>
+          <div class="category-title-wrap">
+            <span class="category-accent-bar" aria-hidden="true"></span>
+            <h2 class="category-title">أصناف مميزة</h2>
+          </div>
         </div>
         <div class="products-grid">
+          ${uncategorized.map(p => renderProductCardHtml(p, currency)).join("")}
+        </div>
+      </section>
     `;
-    for (const p of uncategorized) {
-      const isAvailable = p.is_available !== false;
-      const badgeHtml = p.badge ? `<span class="product-badge">${escapeHtml(p.badge)}</span>` : "";
-
-      html += `
-        <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="عرض تفاصيل ${escapeHtml(p.name)}">
-          <div class="product-card-media">
-            ${badgeHtml}
-            ${p.image_url
-              ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" />`
-              : `<div class="product-image-fallback">${ICONS.coffee}</div>`
-            }
-          </div>
-          <div class="product-card-body">
-            <div class="product-card-header">
-              <h3 class="product-name">${escapeHtml(p.name)}</h3>
-              ${p.description ? `<p class="product-desc">${escapeHtml(p.description)}</p>` : ""}
-            </div>
-            <div class="product-card-bottom">
-              <div class="price-container">
-                <span class="price-value">${formatMoney(p.price, currency)}</span>
-              </div>
-              <div class="card-action-slot">
-                ${!isAvailable
-                  ? `<span class="out-of-stock-badge">غير متوفر حالياً</span>`
-                  : `<button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}">
-                      <span>تفاصيل الصنف</span>
-                      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>`
-                }
-              </div>
-            </div>
-          </div>
-        </article>
-      `;
-    }
-    html += `</div></section>`;
   }
 
   container.innerHTML = html;
 
   // Bind click on card or details button to open details modal
   container.querySelectorAll(".product-card").forEach(card => {
-    card.addEventListener("click", (e) => {
+    card.addEventListener("click", () => {
       const prodId = card.dataset.productId;
       if (prodId) openProductDetailsModal(prodId);
     });
@@ -451,7 +428,7 @@ function renderModalContent() {
   const p = state.selectedProductForModal;
   if (!p) return;
 
-  const currency = state.menuData.restaurant?.currency_code || "IQD";
+  const currency = state.menuData?.restaurant?.currency_code || "IQD";
 
   // Product Thumbnail
   const bannerEl = document.getElementById("modal-product-banner");
@@ -466,7 +443,9 @@ function renderModalContent() {
     }
   }
 
-  document.getElementById("modal-product-title").textContent = p.name;
+  const titleEl = document.getElementById("modal-product-title");
+  if (titleEl) titleEl.textContent = p.name;
+
   const descEl = document.getElementById("modal-product-desc");
   if (descEl) descEl.textContent = p.description || "قهوة مختصة محضرة بعناية من بوكس كافي.";
 
@@ -476,31 +455,35 @@ function renderModalContent() {
   }
 
   const optionsContainer = document.getElementById("modal-options-container");
+  if (!optionsContainer) return;
+
   let optionsHtml = "";
 
   if (p.option_groups && p.option_groups.length > 0) {
     for (const group of p.option_groups) {
-      const isRequired = group.is_required;
+      const isRequired = Boolean(group.is_required);
       optionsHtml += `
         <div class="modal-read-group">
           <div class="group-title-row">
             <h4 class="group-name-title">${escapeHtml(group.name)}</h4>
-            <span class="group-requirement-pill ${isRequired ? 'required' : 'optional'}">
-              ${isRequired ? 'أساسي' : 'إضافي'}
+            <span class="group-badge ${isRequired ? 'required' : 'optional'}">
+              ${isRequired ? 'إلزامي' : 'اختياري'}
             </span>
           </div>
           <div class="read-options-list">
       `;
 
-      for (const opt of group.options) {
-        const isFree = !opt.price_modifier || opt.price_modifier === 0;
-        const modifierText = isFree ? "مشمول مع الطلب" : `+${formatMoney(opt.price_modifier, currency)}`;
+      const options = group.options || [];
+      for (const opt of options) {
+        const modifier = Number(opt.price_modifier) || 0;
+        const isFree = modifier === 0;
+        const modifierText = isFree ? "مشمول مع الصنف" : `+${formatMoney(modifier, currency)}`;
         const iconSvg = getOptionIcon(group.name, opt.name);
 
         optionsHtml += `
           <div class="read-option-card">
             <div class="read-option-main">
-              <span class="read-option-icon">${iconSvg}</span>
+              <span class="read-option-icon" aria-hidden="true">${iconSvg}</span>
               <span class="read-option-name">${escapeHtml(opt.name)}</span>
             </div>
             <span class="read-option-badge ${isFree ? 'included' : 'extra'}">${modifierText}</span>
@@ -516,8 +499,8 @@ function renderModalContent() {
   } else {
     optionsHtml = `
       <div class="modal-info-note">
-        <span class="modal-info-icon">${ICONS.info}</span>
-        <p>هذا الصنف يقدم بالطريقة القياسية الفاخرة المعتمدة لدى باريستا بوكس كافي.</p>
+        <span class="icon" aria-hidden="true">${ICONS.info}</span>
+        <p>هذا الصنف يقدم بالطريقة القياسية المعتمدة لدى باريستا بوكس كافي دون خيارات تخصيص إضافية.</p>
       </div>
     `;
   }
@@ -561,8 +544,8 @@ function unlockBodyScroll() {
 function showSkeletonLoading(show) {
   const skeleton = document.getElementById("skeleton-loading-container");
   const mainLayout = document.getElementById("main-ordering-layout");
-  if (skeleton) skeleton.style.display = show ? "block" : "none";
-  if (mainLayout) mainLayout.style.opacity = show ? "0.3" : "1";
+  if (skeleton) skeleton.style.display = show ? "flex" : "none";
+  if (mainLayout) mainLayout.style.display = show ? "none" : "block";
 }
 
 function showErrorScreen(title, message) {

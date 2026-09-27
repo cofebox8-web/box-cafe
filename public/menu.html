@@ -3,27 +3,35 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#F6F3ED" />
+    <meta name="theme-color" content="#F8F5EE" />
     <title>BOX COFE — قائمة المنيو</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles/menu.css?v=20260927_customer_v1" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/menu.css?v=20260927_customer_v2" />
   </head>
   <body class="customer-menu-body">
     <!-- Pure Typographic Brand Header -->
     <header class="menu-header">
       <div class="header-container">
-        <a href="/" class="brand-signature-lockup" aria-label="BOX COFE" dir="ltr">
-          <span class="logo-word-box">BOX</span>
-          <span class="logo-word-cofe">COFE</span>
-        </a>
-        <div class="header-context-tags">
-          <span class="context-pill" id="header-branch-name" style="display: none;">فرع طريق المطار</span>
-          <span class="context-pill highlight" id="header-point-tag" style="display: none;">قائمة المنيو</span>
+        <div class="header-brand-wrap">
+          <a href="/" class="brand-signature-lockup" aria-label="BOX COFE" dir="ltr">
+            <span class="logo-word-box">BOX</span>
+            <span class="logo-word-cofe">COFE</span>
+          </a>
+        </div>
+        <div class="header-meta-row" id="header-meta-row">
+          <div class="meta-badge-card" id="header-branch-card" style="display: none;">
+            <svg class="meta-badge-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="header-branch-name">فرع طريق المطار</span>
+          </div>
+          <div class="meta-badge-card highlight" id="header-point-card" style="display: none;">
+            <svg class="meta-badge-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <span id="header-point-tag">خدمة السيارات</span>
+          </div>
         </div>
       </div>
     </header>
@@ -32,6 +40,7 @@
       <!-- Search & Category Filters -->
       <section class="search-filter-section" id="search-filter-section" aria-label="البحث وفئات المنيو">
         <div class="search-box-wrapper">
+          <label for="search-input" class="sr-only">البحث في قائمة الطعام</label>
           <span class="search-icon-pos" aria-hidden="true">
             <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </span>
@@ -39,8 +48,9 @@
             type="search"
             id="search-input"
             class="search-input"
-            placeholder="ابحث عن مشروب، صنف، أو إضافة..."
-            aria-label="البحث في المنيو"
+            placeholder="ابحث عن مشروب، صنف، أو نكهة..."
+            aria-label="البحث في قائمة الطعام"
+            autocomplete="off"
           />
           <button type="button" id="search-clear-btn" class="search-clear-btn" style="display: none;" aria-label="مسح البحث">
             <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -89,18 +99,20 @@
     <!-- Product Details Dialog (Pure Read-Only Modal) -->
     <dialog id="product-modal" class="customization-modal read-only-modal" aria-labelledby="modal-product-title">
       <div class="modal-content-shell">
-        <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="إغلاق النافذة">
-          <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+        <div class="modal-top-bar">
+          <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="إغلاق تفاصيل الصنف">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
 
         <div class="modal-hero-header">
           <div class="modal-thumb-box" id="modal-product-banner" style="display: none;">
-            <img id="modal-product-image" src="" alt="" />
+            <img id="modal-product-image" src="" alt="" loading="lazy" />
           </div>
           <div class="modal-title-group">
-            <h3 id="modal-product-title">اسم الصنف</h3>
-            <p id="modal-product-desc">وصف الصنف المختصر</p>
-            <span class="modal-base-price-chip" id="modal-base-price-chip">0 د.ع</span>
+            <h3 id="modal-product-title" class="modal-product-name">اسم الصنف</h3>
+            <p id="modal-product-desc" class="modal-product-desc">وصف الصنف المختصر</p>
+            <div class="modal-price-pill" id="modal-base-price-chip">0 د.ع</div>
           </div>
         </div>
 
@@ -125,6 +137,6 @@
 
     <!-- Scripts -->
     <script src="/vendor/supabase.umd.js"></script>
-    <script type="module" src="/js/menu-app.js?v=20260927_customer_v1"></script>
+    <script type="module" src="/js/menu-app.js?v=20260927_customer_v2"></script>
   </body>
 </html>
