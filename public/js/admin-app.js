@@ -1524,7 +1524,7 @@ function renderStaffAccountsBoxes() {
   }).join('');
 }
 
-function openStaffModal(staff = null) {
+async function openStaffModal(staff = null) {
   const modal = document.getElementById('modal-staff-account');
   const title = document.getElementById('modal-staff-title');
   const idInput = document.getElementById('staff-account-id');
@@ -1547,9 +1547,28 @@ function openStaffModal(staff = null) {
     errorEl.hidden = true;
   }
 
-  const branches = servicePointBranches || [];
+  let branches = servicePointBranches || [];
+  // Staff creation only needs active branches. Fetch them directly as a
+  // fallback when the service-point RPC is still loading or unavailable.
+  if (!branches.length && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('branches')
+        .select('id, name, slug')
+        .eq('is_active', true)
+        .order('name');
+      if (!error && Array.isArray(data)) {
+        branches = data;
+        servicePointBranches = data;
+      }
+    } catch (error) {
+      console.warn('Active branch fallback failed:', error);
+    }
+  }
+
   if (!branches.length) {
-    branchSelect.innerHTML = '<option value="">لا توجد فروع مسجلة</option>';
+    showToast('لا يوجد فرع فعال حالياً. فعّل فرعاً أولاً ثم أعد المحاولة.');
+    return;
   } else {
     branchSelect.innerHTML = branches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join('');
   }
