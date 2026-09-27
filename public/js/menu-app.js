@@ -191,22 +191,7 @@ function renderApp() {
 }
 
 function renderHeaderInfo() {
-  const branchName = state.menuData.branch?.name || "BOX COFE";
-  const pointLabel = state.menuData.service_point?.label || "";
-
-  const branchCard = document.getElementById("header-branch-card");
-  const branchEl = document.getElementById("header-branch-name");
-  const pointCard = document.getElementById("header-point-card");
-  const pointEl = document.getElementById("header-point-tag");
-
-  if (branchEl && branchCard) {
-    branchEl.textContent = branchName;
-    branchCard.style.display = "inline-flex";
-  }
-  if (pointEl && pointCard) {
-    pointEl.textContent = pointLabel;
-    pointCard.style.display = pointLabel ? "inline-flex" : "none";
-  }
+  // Top bar is kept clean and minimalist with only the official brand signature lockup
 }
 
 // Render Category Filter Pills

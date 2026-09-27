@@ -125,9 +125,7 @@ body.customer-menu-body {
   margin-inline: auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .header-brand-wrap {
@@ -203,20 +201,8 @@ body.customer-menu-body {
   }
 
   .header-container {
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .header-meta-row {
-    width: 100%;
     justify-content: center;
-    gap: 6px;
-  }
-
-  .meta-badge-card {
-    padding: 5px 10px;
-    font-size: 0.76rem;
+    align-items: center;
   }
 }
 
