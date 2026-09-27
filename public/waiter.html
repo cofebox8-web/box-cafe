@@ -38,19 +38,14 @@
     <!-- Main Waiter POS Application -->
     <div class="waiter-app" id="waiter-app" style="display: none;">
       <!-- Header -->
+      <!-- Pure Typographic Brand Header (Exact Match with Menu) -->
       <header class="waiter-header">
         <div class="header-container">
-          <a href="/waiter" class="brand-signature-lockup" aria-label="BOX COFE الويتر" dir="ltr">
-            <span class="logo-word-box">BOX</span>
-            <span class="logo-word-cofe">COFE</span>
-          </a>
-          <div class="header-meta-group">
-            <div class="waiter-badge-info">
-              <span class="badge-dot" aria-hidden="true"></span>
-              <span id="waiter-name-badge">الويتر</span>
-            </div>
-            <span class="waiter-branch-quiet" id="waiter-branch-quiet"></span>
-            <button class="waiter-signout-btn" id="waiter-signout-btn" type="button">تسجيل الخروج</button>
+          <div class="header-brand-wrap">
+            <a href="/waiter" class="brand-signature-lockup" aria-label="BOX COFE" dir="ltr">
+              <span class="logo-word-box">BOX</span>
+              <span class="logo-word-cofe">COFE</span>
+            </a>
           </div>
         </div>
       </header>
@@ -97,6 +92,7 @@
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <button type="button" class="cart-clear-btn" id="cart-clear-btn" style="display: none;">تفريغ</button>
+                <button type="button" class="waiter-signout-btn" id="waiter-signout-btn" title="تسجيل الخروج">خروج</button>
                 <button type="button" class="cart-mobile-close-btn" id="cart-mobile-close-btn" aria-label="إغلاق السلة">✕</button>
               </div>
             </div>

@@ -244,11 +244,11 @@ button, input {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(248, 245, 238, 0.95);
+  background: rgba(248, 245, 238, 0.94);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
-  padding: 10px 18px;
+  padding: 12px 16px;
 }
 
 .header-container {
@@ -256,8 +256,13 @@ button, input {
   margin-inline: auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+}
+
+.header-brand-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-meta-group {
