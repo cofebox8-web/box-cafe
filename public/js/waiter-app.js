@@ -102,8 +102,8 @@ function showLoginError(msg) {
 async function enterWithProfile(profile) {
   // Validate Staff Role
   if (profile.role === "owner" || profile.role === "admin") {
-    window.location.replace("/admin");
-    return;
+    await signOutStaff().catch(() => {});
+    throw new Error("هذه الصفحة مخصصة لحساب الويتر. سجّل الدخول بحساب ويتر مستقل.");
   }
 
   if (profile.role !== "roadside") {
