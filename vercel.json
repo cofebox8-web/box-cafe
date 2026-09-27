@@ -6,6 +6,17 @@
   "outputDirectory": "public",
   "cleanUrls": true,
   "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/customer/:branch/:token", "destination": "/menu" },
     { "source": "/customer/:branch", "destination": "/menu" },
