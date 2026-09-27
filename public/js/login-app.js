@@ -26,10 +26,27 @@ const state = {
 // unified login is opened for /waiter, use the same isolated storage namespace
 // as waiter-app.js so the redirect and refresh keep the session alive.
 const waiterSupabase = createScopedSupabaseClient("box_cofe_waiter_auth") || supabase;
+// Use a short-lived isolated client to identify the role before persisting the
+// session. This prevents a roadside login from being written to the admin
+// storage key just because the old URL contains `next=/admin`.
+const loginProbeSupabase = createScopedSupabaseClient("box_cofe_login_probe") || supabase;
 
 function getAuthClient() {
   const next = state.nextParam || "";
   return next.startsWith("/waiter") || next.startsWith("/roadside") ? waiterSupabase : supabase;
+}
+
+async function persistRoleSession(context, sourceClient) {
+  const targetClient = context?.profile?.role === "roadside" ? waiterSupabase : supabase;
+  if (context?.session && targetClient !== sourceClient) {
+    const { error } = await targetClient.auth.setSession({
+      access_token: context.session.access_token,
+      refresh_token: context.session.refresh_token
+    });
+    if (error) throw error;
+    await sourceClient.auth.signOut({ scope: "local" }).catch(() => {});
+  }
+  return targetClient;
 }
 
 // ============================================================================
@@ -164,10 +181,21 @@ async function checkExistingSession() {
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get("signed_out") === "1") return;
 
-    const sessionPromise = getStaffSession(getAuthClient());
+    const preferredClient = getAuthClient();
+    const sessionPromise = getStaffSession(preferredClient);
     const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
-    const context = await Promise.race([sessionPromise, timeoutPromise]);
+    let context = await Promise.race([sessionPromise, timeoutPromise]);
+    let sourceClient = preferredClient;
+    // Migrate a legacy roadside session that was saved under the shared key
+    // before waiter storage isolation was introduced.
+    if (!context?.profile) {
+      const fallbackClient = preferredClient === waiterSupabase ? supabase : waiterSupabase;
+      context = await getStaffSession(fallbackClient);
+      sourceClient = fallbackClient;
+    }
     if (!context || !context.profile) return;
+
+    await persistRoleSession(context, sourceClient);
 
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
     window.location.replace(targetUrl);
@@ -209,7 +237,8 @@ async function handleSignInSubmit(event) {
   if (spinner) spinner.hidden = false;
 
   try {
-    const context = await signInStaff(emailVal, passwordVal, getAuthClient());
+    const context = await signInStaff(emailVal, passwordVal, loginProbeSupabase);
+    await persistRoleSession(context, loginProbeSupabase);
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
     window.location.replace(targetUrl);
   } catch (error) {
