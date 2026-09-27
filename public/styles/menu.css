@@ -1,7 +1,7 @@
 /* ==========================================================================
    BOX COFE — Official Customer Menu Stylesheet
    Drive-Thru Luxury Experience · Pure Read-Only Menu
-   Fonts: IBM Plex Sans Arabic (400, 500, 600, 700) + Montserrat (800, 900)
+   Fonts: Alexandria (Modern Geometric Companion to Montserrat, 300-900) + Montserrat (800, 900)
    Color Palette: Warm Milk (#F8F5EE) & Roasted Coffee (#4A3525, #231F1C)
    ========================================================================== */
 
@@ -12,7 +12,7 @@
   color-scheme: light;
 
   /* Typography */
-  --font-arabic: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+  --font-arabic: 'Alexandria', 'Tajawal', system-ui, -apple-system, sans-serif;
   --font-brand: 'Montserrat', sans-serif;
 
   /* Warm Coffee Palette */
