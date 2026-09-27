@@ -95,8 +95,8 @@ async function loadStaffProfile(userId, userObj = null) {
   const branch = await resolveProfileBranch(data);
   return {
     ...data,
-    branch_slug: branch?.slug || data.branch_slug || "airport",
-    branch_name: branch?.name || data.branch_name || "فرع طريق المطار"
+    branch_slug: branch?.slug || data.branch_slug || "",
+    branch_name: branch?.name || data.branch_name || ""
   };
 }
 
@@ -145,13 +145,13 @@ export function resolveStaffDestination(profile, requestedNext = "") {
   }
   if (role === "roadside") {
     if (!profile.branch_id) {
-      throw new Error("حساب الويتر غير مربوط بفرع فعّال.");
+      throw new Error("حساب الويتر غير مفعّل لهذه الشاشة.");
     }
     return "/waiter";
   }
   if (role === "kitchen") {
     if (!defaultKitchenPath) {
-      throw new Error("حساب المطبخ غير مربوط بفرع فعّال.");
+      throw new Error("حساب المطبخ غير مفعّل لهذه الشاشة.");
     }
     return defaultKitchenPath;
   }

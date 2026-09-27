@@ -110,12 +110,12 @@ async function reloadAdminOrders() {
 function servicePointErrorMessage(code) {
   return {
     NOT_AUTHORIZED: 'لا تملك صلاحية إدارة نقاط الخدمة.',
-    BRANCH_NOT_ALLOWED: 'لا تملك صلاحية على هذا الفرع.',
+    BRANCH_NOT_ALLOWED: 'لا تملك صلاحية تنفيذ هذه العملية.',
     INVALID_LABEL: 'اسم نقطة الخدمة غير صالح (بين 1 و80 حرفاً).',
     INVALID_KIND: 'نوع نقطة الخدمة غير صالح.',
-    BRANCH_NOT_FOUND: 'الفرع المحدد غير موجود أو غير مفعّل.',
+    BRANCH_NOT_FOUND: 'الإعداد المحدد غير موجود أو غير مفعّل.',
     SERVICE_POINT_NOT_FOUND: 'تعذر إيجاد نقطة الخدمة.',
-    DUPLICATE_LABEL: 'يوجد بالفعل نقطة خدمة بنفس الاسم في هذا الفرع.'
+    DUPLICATE_LABEL: 'يوجد بالفعل إعداد بنفس الاسم.'
   }[code] || 'تعذر تنفيذ العملية. حاول مرة أخرى.';
 }
 
@@ -155,7 +155,7 @@ function renderServicePoints() {
   grid.innerHTML = servicePoints.map((point) => `
     <article class="service-point-card">
       <div class="service-point-card-top">
-        <div><strong>${escapeHtml(point.label)}</strong><small>${escapeHtml(point.branch_name)} · ${point.kind === 'pickup_point' ? 'نقطة استلام' : 'مسار طلب سيارات'}</small></div>
+        <div><strong>${escapeHtml(point.label)}</strong><small>${point.kind === 'pickup_point' ? 'نقطة استلام' : 'مسار طلب سيارات'}</small></div>
         <span class="service-point-status ${point.is_active ? 'is-active' : ''}">${point.is_active ? 'مفعلة' : 'متوقفة'}</span>
       </div>
       <div class="service-point-card-actions">
@@ -204,7 +204,7 @@ function openServicePointModal(point = null) {
   const modal = document.getElementById('modal-service-point');
   const branchSelect = document.getElementById('service-point-branch');
   if (!servicePointBranches.length) {
-    showToast('لا يوجد فرع متاح لهذا الحساب. تحقق من تفعيل الفرع وصلاحية الحساب.');
+    showToast('لا توجد إعدادات متاحة حالياً. تحقق من تفعيل النظام ثم أعد المحاولة.');
     return;
   }
   branchSelect.innerHTML = servicePointBranches.map((branch) => `<option value="${escapeHtml(branch.id)}">${escapeHtml(branch.name)}</option>`).join('');
@@ -855,7 +855,7 @@ function renderHubLiveOrdersFeed() {
         <div class="invoice-items-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;">${itemsChips}</div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding-top:8px;border-top:1px solid var(--border-subtle);">
-          <small style="font-size:0.72rem;color:var(--text-dim);">وقت الطلب: ${timeStr} • ${escapeHtml(order.branch_name || 'فرع المطعم')}</small>
+          <small style="font-size:0.72rem;color:var(--text-dim);">وقت الطلب: ${timeStr}</small>
           <button type="button" class="box-btn-secondary" data-print-inv="${escapeHtml(order.order_code)}" style="height:28px;padding:0 12px;font-size:0.72rem;cursor:pointer;">🖨️ طباعة الفاتورة</button>
         </div>
       </div>
@@ -1038,7 +1038,7 @@ function showThermalReceiptModal(orderObj, receivedAmount = 0, changeAmount = 0)
     <div style="text-align:center;border-bottom:1px dashed #64748B;padding-bottom:8px;margin-bottom:8px;">
       <strong style="font-size:1.15rem;letter-spacing:0.15em;">BOX COFE</strong>
       <div>فاتورة كاشير رسمية • رقم ${orderObj.order_code}</div>
-      <small>${new Date(orderObj.created_at || Date.now()).toLocaleTimeString('ar-IQ')} | ${orderObj.vehicle_note || 'فرع المطار'}</small>
+      <small>${new Date(orderObj.created_at || Date.now()).toLocaleTimeString('ar-IQ')} | ${orderObj.vehicle_note || 'تفاصيل الطلب'}</small>
     </div>
     <div style="display:flex;flex-direction:column;gap:4px;border-bottom:1px dashed #64748B;padding-bottom:8px;margin-bottom:8px;">
       ${(orderObj.items || []).map((item) => {
@@ -1117,7 +1117,7 @@ function renderAccountingBoxes() {
         <div class="invoice-card-box">
           <div class="invoice-card-head">
             <span class="invoice-code-badge">${escapeHtml(order.order_code)}</span>
-            <span class="invoice-customer-name">${escapeHtml(order.vehicle_note || order.branch_name || 'فرع المطعم')} • ${sourceLabel}</span>
+            <span class="invoice-customer-name">${escapeHtml(order.vehicle_note || 'تفاصيل الطلب')} • ${sourceLabel}</span>
             <strong class="invoice-total-badge">${formatIQD(order.total || order.total_iqd)}</strong>
             <button type="button" class="box-btn-secondary" data-print-inv="${escapeHtml(order.order_code)}" style="height:26px;padding:0 8px;font-size:0.7rem;">طباعة</button>
           </div>
@@ -1414,8 +1414,8 @@ function staffErrorMessage(code) {
     INVALID_ROLE: 'الدور المحدد غير صالح.',
     ONLY_OWNER_CAN_CREATE_ADMIN: 'صلاحية إنشاء حساب مدير نظام مقتصرة على المالك.',
     ONLY_OWNER_CAN_ASSIGN_ADMIN: 'صلاحية تعيين دور مدير نظام مقتصرة على المالك.',
-    BRANCH_REQUIRED: 'يرجى تحديد الفرع.',
-    BRANCH_NOT_FOUND: 'الفرع المحدد غير صالح.',
+    BRANCH_REQUIRED: 'تعذر حفظ الإعداد.',
+    BRANCH_NOT_FOUND: 'الإعداد المحدد غير صالح.',
     EMAIL_ALREADY_EXISTS: 'هذا البريد الإلكتروني مسجل مسبقاً بحساب آخر.',
     STAFF_NOT_FOUND: 'تعذر إيجاد حساب الموظف.',
     CANNOT_MODIFY_OWNER: 'لا يمكن تعديل حساب المالك من هنا.',
@@ -1500,10 +1500,6 @@ function renderStaffAccountsBoxes() {
             <span>الدور الوظيفي:</span>
             <strong style="color:${meta.badgeColor};">${meta.label}</strong>
           </div>
-          <div style="display:flex; justify-content:space-between;">
-            <span>الفرع:</span>
-            <strong style="color:var(--text-white);">${escapeHtml(staff.branch_name || 'جميع الفروع')}</strong>
-          </div>
         </div>
 
         ${isOwner ? '' : `
@@ -1567,7 +1563,7 @@ async function openStaffModal(staff = null) {
   }
 
   if (!branches.length) {
-    showToast('لا يوجد فرع فعال حالياً. فعّل فرعاً أولاً ثم أعد المحاولة.');
+    showToast('لا توجد إعدادات فعالة حالياً. فعّل الإعداد المطلوب ثم أعد المحاولة.');
     return;
   } else {
     branchSelect.innerHTML = branches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join('');

@@ -24,7 +24,7 @@ function setState(title, description, mark = "···") {
 async function enterWithProfile(profile) {
   if (profile.role !== "roadside" || !profile.branch_id) {
     await signOutStaff().catch(() => {});
-    throw new Error("هذه الصفحة لموظف الشارع فقط. استخدم حساب موظف شارع مربوطاً بفرع.");
+    throw new Error("هذه الصفحة لموظف الشارع فقط. استخدم حساباً مفعّلاً.");
   }
   state.profile = profile;
   $("rs-login-gate").hidden = true;
@@ -37,7 +37,7 @@ async function enterWithProfile(profile) {
 
 async function loadMenu({ silent = false } = {}) {
   const previousMenu = state.menu;
-  if (!silent) setState("تحميل منيو الفرع", "نتحقق من الأصناف المتاحة والأسعار الحالية.");
+  if (!silent) setState("تحميل المنيو", "نتحقق من الأصناف المتاحة والأسعار الحالية.");
   $("rs-connection").textContent = "جاري الاتصال…";
   try {
     const { data: points, error: pointError } = await supabase.from("car_service_points")
@@ -45,13 +45,13 @@ async function loadMenu({ silent = false } = {}) {
       .order("created_at", { ascending: true }).limit(1);
     if (pointError) throw pointError;
     const point = points?.[0];
-    if (!point) throw new Error("لا توجد نقطة طلب مفعّلة لهذا الفرع. اطلب من المدير تفعيل نقطة الخدمة.");
+    if (!point) throw new Error("لا توجد نقطة طلب مفعّلة حالياً. اطلب من المدير تفعيل نقطة الخدمة.");
     const { data: branch, error: branchError } = await supabase.from("branches")
       .select("name,slug,is_active").eq("id", state.profile.branch_id).maybeSingle();
     if (branchError) throw branchError;
-    if (!branch?.is_active) throw new Error("فرع حسابك متوقف حالياً.");
+    if (!branch?.is_active) throw new Error("الخدمة متوقفة حالياً.");
     const { data, error } = await supabase.rpc("get_customer_menu", { p_branch_slug: branch.slug, p_qr_token: point.qr_token });
-    if (error || !data || data.success !== true) throw new Error(data?.message || error?.message || "تعذر تحميل منيو الفرع.");
+    if (error || !data || data.success !== true) throw new Error(data?.message || error?.message || "تعذر تحميل المنيو.");
     state.menu = data;
     $("rs-branch-name").textContent = data.branch?.name || branch.name;
     $("rs-point-name").textContent = data.service_point?.label || point.label;
@@ -66,8 +66,8 @@ async function loadMenu({ silent = false } = {}) {
     }
     state.menu = null;
     $("rs-connection").textContent = "غير متصل بالنظام";
-    setState("تعذر تحميل منيو الفرع", "لم نعرض بيانات محلية حتى لا يتم إنشاء طلب خارج قاعدة البيانات. تحقق من الاتصال أو راجع مدير النظام.", "!");
-    notify(error.message || "تعذر تحميل منيو الفرع من قاعدة البيانات.", "error");
+    setState("تعذر تحميل المنيو", "لم نعرض بيانات محلية حتى لا يتم إنشاء طلب خارج قاعدة البيانات. تحقق من الاتصال أو راجع مدير النظام.", "!");
+    notify(error.message || "تعذر تحميل المنيو من قاعدة البيانات.", "error");
   }
 }
 

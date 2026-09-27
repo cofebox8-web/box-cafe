@@ -8,9 +8,9 @@ export const DEMO_MENU_DATA = {
     currency_code: "IQD"
   },
   branch: {
-    id: "branch-airport",
-    name: "فرع طريق المطار",
-    slug: "airport",
+    id: "branch-main",
+    name: "الموقع الرئيسي",
+    slug: "main",
     is_active: true,
     accepting_orders: true
   },
@@ -380,7 +380,7 @@ export function simulateDemoOrder(params) {
     vehicle_note: params.vehicle_note || "سيارة في المسار 1",
     order_note: params.order_note || "",
     service_point_label: DEMO_MENU_DATA.service_point.label,
-    branch_name: DEMO_MENU_DATA.branch.name,
+    branch_name: "",
     tracking_token: `demo-track-${nextNum}`,
     status: "new",
     items: detailedItems

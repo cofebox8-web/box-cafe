@@ -85,7 +85,7 @@
       </nav>
 
       <!-- روابط الشاشات الأخرى -->
-      <div class="sidebar-section-heading">شاشات الفرع المرتبطة</div>
+      <div class="sidebar-section-heading">شاشات العمل المرتبطة</div>
       <div class="sidebar-external-grid">
         <a href="/kitchen" target="_blank" class="sidebar-ext-box">
           <strong>شاشة المطبخ KDS</strong>
@@ -547,7 +547,7 @@
           <small class="field-hint" id="staff-password-hint">يستخدمها الموظف لتسجيل الدخول إلى شاشة عمله من صفحة الدخول الموحدة (/login).</small>
         </div>
 
-        <!-- القسم 2: الدور والفرع وحالة الحساب -->
+        <!-- القسم 2: الدور وحالة الحساب -->
         <div class="form-two-boxes">
           <div class="field-box">
             <label for="staff-role-select">الدور والصلاحية (شاشة العمل) <span style="color:#F43F5E;">*</span></label>
@@ -557,10 +557,9 @@
               <option value="admin">مدير نظام مساعد (Admin) 🛡️</option>
             </select>
           </div>
-          <div class="field-box" id="staff-branch-field-box">
-            <label for="staff-branch-select">الفرع المخصص <span style="color:#F43F5E;">*</span></label>
+          <div class="field-box" id="staff-branch-field-box" hidden aria-hidden="true">
+            <label for="staff-branch-select">الإعداد الداخلي</label>
             <select id="staff-branch-select" class="structured-input" required></select>
-            <small id="staff-branch-hint" class="field-hint" style="display:none;color:var(--text-dim);">مدير النظام يمتلك صلاحية شاملة لكل الفروع تلقائياً.</small>
           </div>
         </div>
 
@@ -721,8 +720,8 @@
       </div>
       <form id="form-service-point" class="structured-form">
         <input type="hidden" id="service-point-id" />
-        <div class="field-box">
-          <label for="service-point-branch">الفرع</label>
+        <div class="field-box" hidden aria-hidden="true">
+          <label for="service-point-branch">الإعداد الداخلي</label>
           <select id="service-point-branch" class="structured-input" required></select>
         </div>
         <div class="field-box">
@@ -754,7 +753,7 @@
       <div id="qr-printable-card" class="qr-printable-card">
         <div class="pure-text-logo" dir="ltr"><span class="logo-word-box">BOX</span><span class="logo-word-cofe">COFE</span></div>
         <h4 id="qr-point-title"></h4>
-        <p id="qr-point-branch"></p>
+        <p id="qr-point-branch" hidden aria-hidden="true"></p>
         <div id="service-point-qr" class="service-point-qr" aria-label="رمز QR للمنيو"></div>
         <p class="qr-scan-caption">امسح الرمز لفتح المنيو وطلبك يصلنا مباشرة</p>
         <a id="qr-menu-link" class="qr-menu-link" href="#" target="_blank" rel="noopener"></a>
@@ -771,7 +770,7 @@
   <div id="modal-expense" class="erp-modal-backdrop" hidden>
     <div class="erp-modal-box">
       <div class="modal-box-top">
-        <h3>تسجيل مصروف أو مشتريات للفرع</h3>
+        <h3>تسجيل مصروف أو مشتريات</h3>
         <button type="button" class="modal-close-x" data-close-modal="modal-expense">✕</button>
       </div>
       <form id="form-expense" class="structured-form">

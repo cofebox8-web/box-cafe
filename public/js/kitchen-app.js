@@ -96,7 +96,7 @@ async function loadKitchenOrders() {
   if (!kdsState.branchSlug) {
     kdsState.orders = [];
     renderKDS();
-    showLiveToast("رابط شاشة المطبخ لا يحدد الفرع. افتح رابط الفرع الصحيح.");
+    showLiveToast("رابط شاشة المطبخ غير مكتمل. افتح رابط الشاشة الصحيح.");
     return false;
   }
 

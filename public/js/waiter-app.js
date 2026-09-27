@@ -113,16 +113,14 @@ async function enterWithProfile(profile) {
 
   if (!profile.branch_id) {
     await signOutStaff().catch(() => {});
-    throw new Error("حساب الويتر غير مربوط بفرع فعال. اربطه بفرع طريق المطار من الإدارة ثم أعد تسجيل الدخول.");
+    throw new Error("حساب الويتر غير مفعّل بعد. فعّل الحساب من الإدارة ثم أعد تسجيل الدخول.");
   }
 
   state.profile = profile;
 
   // Set Header Information
   const nameEl = $("waiter-name-badge");
-  const branchEl = $("waiter-branch-quiet");
   if (nameEl) nameEl.textContent = profile.full_name || "الويتر";
-  if (branchEl) branchEl.textContent = profile.branch_name ? `· ${profile.branch_name}` : "";
 
   await loadMenuData();
   showLoginGate(false);
@@ -135,14 +133,14 @@ async function loadMenuData({ silent = false } = {}) {
   if (!silent && container) {
     container.innerHTML = `
       <div style="padding: 40px 16px; text-align: center; color: var(--text-muted);">
-        <p style="margin: 0; font-weight: 600;">جاري تحميل منيو الفرع…</p>
+        <p style="margin: 0; font-weight: 600;">جاري تحميل المنيو…</p>
       </div>
     `;
   }
 
   try {
     const branchId = state.profile?.branch_id;
-    if (!branchId) throw new Error("حساب الويتر غير مربوط بفرع فعّال. يرجى مراجعة الإدارة.");
+    if (!branchId) throw new Error("حساب الويتر غير مفعّل بعد. يرجى مراجعة الإدارة.");
 
     // Fetch active branch
     const { data: branch, error: branchErr } = await supabase
@@ -152,7 +150,7 @@ async function loadMenuData({ silent = false } = {}) {
       .maybeSingle();
 
     if (branchErr || !branch || !branch.is_active) {
-      throw new Error("فرع حسابك متوقف حالياً أو غير متوفر.");
+      throw new Error("الخدمة متوقفة حالياً أو غير متوفرة.");
     }
 
     // Attempt to fetch service point
@@ -178,7 +176,7 @@ async function loadMenuData({ silent = false } = {}) {
     }
 
     if (res.error || !res.data || res.data.success !== true) {
-      throw new Error(res.data?.message || res.error?.message || "تعذر تحميل المنيو لهذا الفرع.");
+      throw new Error(res.data?.message || res.error?.message || "تعذر تحميل المنيو حالياً.");
     }
 
     state.menuData = res.data;
