@@ -11,203 +11,299 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles/waiter.css?v=20260927_v5" />
+    <link rel="stylesheet" href="/styles/waiter.css?v=20260928_v6" />
   </head>
-  <body class="waiter-body">
-    <!-- Login Gate (Shows only when not authenticated) -->
-    <section class="waiter-login-gate" id="waiter-login-gate" role="dialog" aria-modal="true" aria-labelledby="waiter-login-title">
-      <form class="waiter-login-card" id="waiter-login-form">
-        <a href="/" class="brand-signature-lockup" aria-label="BOX COFE" dir="ltr">
-          <span class="logo-word-box">BOX</span>
-          <span class="logo-word-cofe">COFE</span>
-        </a>
-        <h1 id="waiter-login-title">تسجيل دخول الويتر</h1>
-        <div class="login-form-group">
-          <label for="waiter-email">البريد الإلكتروني</label>
-          <input id="waiter-email" name="email" type="email" autocomplete="username" inputmode="email" dir="ltr" required placeholder="name@boxcofe.iq" />
+  <body class="waiter-pos-body">
+    <!-- Pure Typographic Brand Header (Exact Match with Menu) -->
+    <header class="menu-header">
+      <div class="header-container">
+        <div class="header-brand-wrap">
+          <a href="/waiter" class="brand-signature-lockup" aria-label="BOX COFE" dir="ltr">
+            <span class="logo-word-box">BOX</span>
+            <span class="logo-word-cofe">COFE</span>
+          </a>
         </div>
-        <div class="login-form-group">
-          <label for="waiter-password">كلمة المرور</label>
-          <input id="waiter-password" name="password" type="password" autocomplete="current-password" dir="ltr" required placeholder="••••••••" />
+      </div>
+    </header>
+
+    <main class="waiter-main-view">
+      <!-- Search & Category Filters (Exact Match with Menu) -->
+      <section class="search-filter-section" id="search-filter-section" aria-label="البحث وفئات المنيو">
+        <div class="search-box-wrapper">
+          <label for="search-input" class="sr-only">البحث في قائمة الطعام</label>
+          <span class="search-icon-pos" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input
+            type="search"
+            id="search-input"
+            class="search-input"
+            placeholder="ابحث عن مشروب، صنف، أو نكهة..."
+            aria-label="البحث في قائمة الطعام"
+            autocomplete="off"
+          />
+          <button type="button" id="search-clear-btn" class="search-clear-btn" style="display: none;" aria-label="مسح البحث">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-        <p class="login-error-alert" id="waiter-login-error" role="alert" style="display: none;"></p>
-        <button class="waiter-login-btn" id="waiter-login-submit" type="submit">دخول</button>
-      </form>
-    </section>
 
-    <!-- Main Waiter POS Application -->
-    <div class="waiter-app" id="waiter-app" style="display: none;">
-      <!-- Header -->
-      <!-- Pure Typographic Brand Header (Exact Match with Menu) -->
-      <header class="waiter-header">
-        <div class="header-container">
-          <div class="header-brand-wrap">
-            <a href="/waiter" class="brand-signature-lockup" aria-label="BOX COFE" dir="ltr">
-              <span class="logo-word-box">BOX</span>
-              <span class="logo-word-cofe">COFE</span>
-            </a>
-          </div>
+        <nav class="categories-nav" id="categories-nav-section" aria-label="فئات الأصناف">
+          <ul class="categories-list" id="categories-list">
+            <!-- Populated dynamically with category pills -->
+          </ul>
+        </nav>
+      </section>
+
+      <!-- Skeleton Loading State -->
+      <div class="skeleton-loading-container" id="skeleton-loading-container">
+        <div class="skeleton-box skeleton-bar"></div>
+        <div class="skeleton-cards-grid">
+          <div class="skeleton-box skeleton-card"></div>
+          <div class="skeleton-box skeleton-card"></div>
+          <div class="skeleton-box skeleton-card"></div>
+          <div class="skeleton-box skeleton-card"></div>
         </div>
-      </header>
+      </div>
 
-      <!-- Toast Feedback Message -->
-      <div class="waiter-toast" id="waiter-toast" role="status" aria-live="polite" style="display: none;"></div>
+      <!-- Main Workspace (Catalog + Sticky Desktop Cart) -->
+      <div class="pos-workspace-split" id="pos-workspace" style="display: none;">
+        <!-- Catalog of Products (Exact 2 columns mobile, 3 tablet, 4 desktop) -->
+        <div class="products-section-container" id="waiter-products-container">
+          <!-- Dynamically populated product cards grouped by category -->
+        </div>
 
-      <!-- Main Workspace: Catalog + Cart -->
-      <main class="waiter-workspace">
-        <!-- Catalog Section -->
-        <section class="waiter-catalog" aria-label="منيو الأصناف">
-          <div class="search-box-wrapper">
-            <label for="waiter-search" class="sr-only">البحث في الأصناف</label>
-            <span class="search-icon-pos" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            <input
-              type="search"
-              id="waiter-search"
-              class="search-input"
-              placeholder="ابحث عن صنف أو مشروب..."
-              autocomplete="off"
-            />
+        <!-- Sticky Cart Panel for Desktop/Tablet (>= 1024px) -->
+        <aside class="waiter-cart-panel" id="desktop-cart-panel" aria-label="سلة الطلب">
+          <!-- Header -->
+          <div class="cart-header-row">
+            <div class="cart-title-group">
+              <h2>سلة الطلب</h2>
+              <span class="cart-total-badge" id="desktop-cart-count">0</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div id="waiter-auth-badge" class="waiter-status-pill" style="display: none;">
+                <span class="waiter-status-dot"></span>
+                <span id="waiter-name-text">الويتر</span>
+                <button type="button" class="waiter-signout-link" id="desktop-signout-btn">خروج</button>
+              </div>
+              <button type="button" class="waiter-login-trigger-btn" id="desktop-login-trigger" style="display: none;">دخول الويتر</button>
+              <button type="button" class="cart-clear-action-btn" id="desktop-cart-clear" style="display: none;">تفريغ</button>
+            </div>
           </div>
 
-          <nav class="categories-nav" aria-label="فئات المنيو">
-            <ul class="categories-list" id="waiter-categories-list">
-              <!-- Dynamically populated category pills -->
-            </ul>
-          </nav>
-
-          <div id="waiter-products-container">
-            <!-- Dynamically populated category sections & product cards -->
+          <!-- Order Mode Selector -->
+          <div class="order-mode-selector">
+            <button type="button" class="mode-tab-btn active" data-mode="car" id="mode-car-btn">
+              <span>🚗 خدمة سيارات</span>
+            </button>
+            <button type="button" class="mode-tab-btn" data-mode="walkin" id="mode-walkin-btn">
+              <span>🚶 صالة / استلام</span>
+            </button>
           </div>
-        </section>
 
-        <!-- Cart Panel / Sidebar -->
-        <aside class="waiter-cart-panel" id="waiter-cart-panel" aria-label="سلة الطلب الحالي">
-          <div class="waiter-cart-panel-inner">
-            <div class="cart-header">
-              <div class="cart-title-wrap">
-                <h2>السلة</h2>
-                <span class="cart-count-badge" id="cart-count-badge">0</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <button type="button" class="cart-clear-btn" id="cart-clear-btn" style="display: none;">تفريغ</button>
-                <button type="button" class="waiter-signout-btn" id="waiter-signout-btn" title="تسجيل الخروج">خروج</button>
-                <button type="button" class="cart-mobile-close-btn" id="cart-mobile-close-btn" aria-label="إغلاق السلة">✕</button>
-              </div>
+          <!-- Context Input (Vehicle or Table/Customer) -->
+          <div class="order-context-wrap">
+            <div class="pos-input-group" id="group-vehicle-note">
+              <label for="input-vehicle-note">بيانات السيارة (النوع / اللون / الرقم) *</label>
+              <input type="text" id="input-vehicle-note" class="pos-text-input" placeholder="مثال: تويوتا كورولا بيضاء 1234 بغداد" autocomplete="off" />
             </div>
+            <div class="pos-input-group" id="group-walkin-note" style="display: none;">
+              <label for="input-walkin-note">اسم الزبون أو رقم الطاولة *</label>
+              <input type="text" id="input-walkin-note" class="pos-text-input" placeholder="مثال: طاولة 4 أو مصطفى" autocomplete="off" />
+            </div>
+            <div class="pos-input-group">
+              <label for="input-order-note">ملاحظات الطلب (اختياري)</label>
+              <input type="text" id="input-order-note" class="pos-text-input" placeholder="مثال: بدون سكر، ساخن جداً..." autocomplete="off" />
+            </div>
+          </div>
 
-            <!-- Order Mode: Car vs Walkin -->
-            <div class="order-mode-toggle" role="radiogroup" aria-label="نوع الطلب">
-              <button type="button" class="mode-btn active" id="mode-car-btn" data-mode="car" aria-checked="true" role="radio">
-                <span>🚗</span>
-                <span>سيارة</span>
-              </button>
-              <button type="button" class="mode-btn" id="mode-walkin-btn" data-mode="walkin" aria-checked="false" role="radio">
-                <span>🚶‍♂️</span>
-                <span>مشاة / صالة</span>
-              </button>
-            </div>
+          <!-- Items List -->
+          <div class="cart-items-scroll-area" id="desktop-cart-items">
+            <!-- Dynamically populated or empty message -->
+          </div>
 
-            <!-- Cart Items List -->
-            <div class="cart-items-scroll" id="cart-items-container">
-              <div class="cart-empty-view" id="cart-empty-view">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3" stroke-width="1.8"/></svg>
-                <span>السلة فارغة</span>
-              </div>
+          <!-- Summary & Submit -->
+          <div class="cart-footer-summary">
+            <div class="cart-totals-row">
+              <span class="cart-total-label">المجموع الكلي</span>
+              <span class="cart-total-amount" id="desktop-cart-total">0 <small>د.ع</small></span>
             </div>
-
-            <!-- Order Context Inputs -->
-            <div class="cart-inputs-area">
-              <input
-                type="text"
-                id="order-vehicle-input"
-                class="cart-input-field"
-                maxlength="80"
-                placeholder="وصف السيارة أو رقم اللوحة (مثال: لاندكروزر أبيض)"
-              />
-              <input
-                type="text"
-                id="order-walkin-input"
-                class="cart-input-field"
-                maxlength="80"
-                placeholder="اسم الزبون أو رقم الطاولة (مثال: طاولة 4)"
-                style="display: none;"
-              />
-              <input
-                type="text"
-                id="order-kitchen-note"
-                class="cart-input-field"
-                maxlength="150"
-                placeholder="ملاحظة للمطبخ (اختياري)"
-              />
-            </div>
-
-            <!-- Cart Footer -->
-            <div class="cart-footer">
-              <div class="cart-total-row">
-                <span class="cart-total-label">المجموع</span>
-                <span class="cart-total-amount" id="cart-total-amount">0 د.ع</span>
-              </div>
-              <button type="button" class="cart-submit-btn" id="cart-submit-btn" disabled>
-                <span>إنشاء الطلب</span>
-                <span aria-hidden="true">←</span>
-              </button>
-            </div>
+            <button type="button" class="cart-submit-btn" id="desktop-submit-btn" disabled>
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>تأكيد وإرسال الطلب للمطبخ</span>
+            </button>
           </div>
         </aside>
-      </main>
+      </div>
 
-      <!-- Mobile Fixed Bottom Cart Bar -->
-      <div class="mobile-cart-bar" id="mobile-cart-bar">
-        <div class="mobile-cart-summary">
-          <span class="mobile-cart-items-count" id="mobile-cart-items-count">0 أصناف</span>
-          <span class="mobile-cart-total-price" id="mobile-cart-total-price">0 د.ع</span>
+      <!-- Error Screen -->
+      <section class="error-screen-view" id="error-screen-view" role="alert" style="display: none;">
+        <div class="error-icon-circle" aria-hidden="true">
+          <svg class="icon icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         </div>
-        <button type="button" class="mobile-cart-open-btn" id="mobile-cart-open-btn">
-          <span>مراجعة الطلب</span>
-          <span aria-hidden="true">←</span>
+        <h2 id="error-screen-title">تعذر تحميل المنيو</h2>
+        <p id="error-screen-message">يرجى التأكد من الاتصال بالإنترنت أو إعادة المحاولة.</p>
+        <button type="button" class="retry-action-btn" id="retry-load-menu-btn">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span>إعادة المحاولة</span>
         </button>
+      </section>
+    </main>
+
+    <!-- Mobile Floating Checkout Bar (< 1024px) -->
+    <div class="waiter-floating-bar" id="mobile-floating-bar" style="display: none;">
+      <div class="floating-bar-info">
+        <svg class="floating-cart-icon" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="floating-count-pill" id="mobile-floating-count">0</span>
+        <span class="floating-total-text" id="mobile-floating-total">0 د.ع</span>
+      </div>
+      <div class="floating-bar-action">
+        <span>مراجعة الطلب</span>
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       </div>
     </div>
 
-    <!-- Product Customization Dialog (Only for items with options) -->
-    <dialog class="customization-dialog" id="product-dialog" aria-labelledby="dialog-product-name">
-      <div class="dialog-shell">
-        <div class="dialog-header">
-          <h3 id="dialog-product-name">اسم الصنف</h3>
-          <button type="button" class="dialog-close-btn" id="dialog-close-btn" aria-label="إغلاق">✕</button>
-        </div>
-        <div class="dialog-body" id="dialog-options-container">
-          <!-- Dynamically populated option groups -->
-        </div>
-        <p class="login-error-alert" id="dialog-option-error" style="display: none; margin: 0 18px 8px;"></p>
-        <div class="dialog-footer">
-          <div class="dialog-stepper">
-            <button type="button" id="dialog-qty-minus" aria-label="تقليل الكمية">−</button>
-            <span id="dialog-qty">1</span>
-            <button type="button" id="dialog-qty-plus" aria-label="زيادة الكمية">+</button>
+    <!-- Mobile Slide-Up Cart Drawer Dialog -->
+    <dialog class="cart-drawer-dialog" id="mobile-cart-drawer">
+      <div class="drawer-shell">
+        <div class="drawer-drag-handle" aria-hidden="true"></div>
+        <div class="cart-header-row">
+          <div class="cart-title-group">
+            <h2>سلة الطلب</h2>
+            <span class="cart-total-badge" id="mobile-cart-count">0</span>
           </div>
-          <button type="button" class="dialog-add-btn" id="dialog-add-btn">
-            <span>إضافة إلى السلة · </span>
-            <span id="dialog-total-price">0 د.ع</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="cart-clear-action-btn" id="mobile-cart-clear" style="display: none;">تفريغ</button>
+            <button type="button" class="modal-close-btn" id="mobile-drawer-close" aria-label="إغلاق السلة">
+              <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="order-mode-selector">
+          <button type="button" class="mode-tab-btn active" data-mode="car" id="drawer-mode-car-btn">
+            <span>🚗 خدمة سيارات</span>
+          </button>
+          <button type="button" class="mode-tab-btn" data-mode="walkin" id="drawer-mode-walkin-btn">
+            <span>🚶 صالة / استلام</span>
+          </button>
+        </div>
+
+        <div class="order-context-wrap">
+          <div class="pos-input-group" id="drawer-group-vehicle">
+            <label for="drawer-vehicle-note">بيانات السيارة (النوع / اللون / الرقم) *</label>
+            <input type="text" id="drawer-vehicle-note" class="pos-text-input" placeholder="مثال: تويوتا كورولا بيضاء 1234 بغداد" autocomplete="off" />
+          </div>
+          <div class="pos-input-group" id="drawer-group-walkin" style="display: none;">
+            <label for="drawer-walkin-note">اسم الزبون أو رقم الطاولة *</label>
+            <input type="text" id="drawer-walkin-note" class="pos-text-input" placeholder="مثال: طاولة 4 أو مصطفى" autocomplete="off" />
+          </div>
+          <div class="pos-input-group">
+            <label for="drawer-order-note">ملاحظات الطلب (اختياري)</label>
+            <input type="text" id="drawer-order-note" class="pos-text-input" placeholder="مثال: بدون سكر، ساخن جداً..." autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="cart-items-scroll-area" id="mobile-cart-items">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="cart-footer-summary">
+          <div class="cart-totals-row">
+            <span class="cart-total-label">المجموع الكلي</span>
+            <span class="cart-total-amount" id="mobile-cart-total">0 <small>د.ع</small></span>
+          </div>
+          <button type="button" class="cart-submit-btn" id="mobile-submit-btn" disabled>
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>تأكيد وإرسال الطلب للمطبخ</span>
           </button>
         </div>
       </div>
     </dialog>
 
-    <!-- Order Created Success Dialog -->
-    <dialog class="success-dialog" id="success-dialog" aria-labelledby="success-dialog-title">
-      <div class="success-icon-circle" aria-hidden="true">✓</div>
-      <h3 id="success-dialog-title">تم إنشاء الطلب بنجاح</h3>
-      <div>رقم الطلب:</div>
-      <div class="success-order-code" id="success-order-code">#—</div>
-      <p class="success-total-hint" id="success-order-total">المجموع: 0 د.ع</p>
-      <button type="button" class="success-new-order-btn" id="success-new-order-btn">طلب جديد</button>
+    <!-- Product Customization Dialog -->
+    <dialog class="customization-modal" id="customization-modal" aria-labelledby="pos-modal-title">
+      <div class="modal-content-shell">
+        <div class="modal-top-bar">
+          <button type="button" class="modal-close-btn" id="pos-modal-close" aria-label="إغلاق النافذة">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="modal-hero-header">
+          <div class="modal-thumb-box" id="pos-modal-thumb-box" style="display: none;">
+            <img id="pos-modal-image" src="" alt="" loading="lazy" />
+          </div>
+          <div class="modal-title-group">
+            <h3 id="pos-modal-title" class="modal-product-name">اسم الصنف</h3>
+            <p id="pos-modal-desc" class="modal-product-desc">وصف الصنف</p>
+            <div class="modal-price-pill" id="pos-modal-base-price">0 د.ع</div>
+          </div>
+        </div>
+
+        <div class="modal-scrollable-body" id="pos-modal-options-body">
+          <!-- Dynamically populated options groups -->
+        </div>
+
+        <div class="modal-pos-footer">
+          <div class="modal-stepper">
+            <button type="button" class="modal-stepper-btn" id="modal-qty-minus" aria-label="تقليل الكمية">−</button>
+            <span class="modal-stepper-count" id="modal-qty-val">1</span>
+            <button type="button" class="modal-stepper-btn" id="modal-qty-plus" aria-label="زيادة الكمية">+</button>
+          </div>
+          <button type="button" class="modal-add-to-order-btn" id="modal-confirm-add-btn">
+            <span>إضافة للطلب</span> • <span id="modal-calc-price">0 د.ع</span>
+          </button>
+        </div>
+      </div>
     </dialog>
+
+    <!-- Waiter Login Modal (Clean, Non-Blocking) -->
+    <dialog class="waiter-login-modal" id="waiter-login-modal" aria-labelledby="login-modal-title">
+      <div class="waiter-login-box">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <a href="/waiter" class="brand-signature-lockup" aria-label="BOX COFE" dir="ltr">
+            <span class="logo-word-box">BOX</span>
+            <span class="logo-word-cofe">COFE</span>
+          </a>
+          <button type="button" class="modal-close-btn" id="login-modal-close" aria-label="إغلاق">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div>
+          <h3 id="login-modal-title">تسجيل دخول الويتر</h3>
+          <p>سجّل الدخول بحساب الويتر لإرسال الطلبات إلى شاشة المطبخ</p>
+        </div>
+        <form id="waiter-login-form" style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="login-field">
+            <label for="login-email">البريد الإلكتروني</label>
+            <input type="email" id="login-email" required placeholder="name@boxcofe.iq" dir="ltr" autocomplete="username" />
+          </div>
+          <div class="login-field">
+            <label for="login-password">كلمة المرور</label>
+            <input type="password" id="login-password" required placeholder="••••••••" dir="ltr" autocomplete="current-password" />
+          </div>
+          <p class="login-error-text" id="login-error-alert" style="display: none;"></p>
+          <button type="submit" class="login-submit-btn" id="login-submit-btn">دخول</button>
+        </form>
+      </div>
+    </dialog>
+
+    <!-- Order Created Success Dialog -->
+    <dialog class="success-dialog" id="success-dialog" aria-labelledby="success-title">
+      <div class="success-icon-badge" aria-hidden="true">✓</div>
+      <h3 id="success-title">تم إرسال الطلب بنجاح</h3>
+      <p class="success-details-hint" id="success-subtitle">تم توجيه الطلب لشاشة المطبخ والتحضير</p>
+      <div class="success-order-code-display" id="success-order-code">#—</div>
+      <p class="success-details-hint" id="success-mode-and-total">—</p>
+      <button type="button" class="success-new-order-btn" id="success-new-order-btn">بدء طلب جديد</button>
+    </dialog>
+
+    <!-- Toast Alerts Container -->
+    <div id="toast-container" aria-live="polite"></div>
 
     <!-- Scripts -->
     <script src="/vendor/supabase.umd.js"></script>
-    <script type="module" src="/js/waiter-app.js?v=20260928_v7"></script>
+    <script type="module" src="/js/waiter-app.js?v=20260928_v6"></script>
   </body>
 </html>

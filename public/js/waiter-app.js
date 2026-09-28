@@ -1,42 +1,51 @@
 // BOX COFE — Official Waiter POS Controller
-// High-Speed Ordering Terminal with Luxury Customer Menu Aesthetics
+// Vanilla JS ES Module — Pure Static, High-Performance, Luxury POS Terminal
 
-import { isSupabaseConfigured, createScopedSupabaseClient } from "./supabase-scoped-client.js";
+import { supabase, isSupabaseConfigured } from "./supabase-client.js";
 import { getStaffSession, signInStaff, signOutStaff } from "./staff-auth.js";
-
-// Keep the waiter session independent from the owner/admin session. Supabase
-// otherwise shares one browser storage key, so opening /waiter could sign the
-// administrator out of an already-open /admin tab.
-const supabase = createScopedSupabaseClient("box_cofe_waiter_auth");
-
-const $ = (id) => document.getElementById(id);
 
 // Application State
 const state = {
   profile: null,
   menuData: null,
-  cartItems: [],
   activeCategoryId: "all",
   searchQuery: "",
-  activeProductForModal: null,
-  dialogPicks: {},
-  dialogQuantity: 1,
-  orderMode: "car", // 'car' or 'walkin'
-  idempotencyKey: null,
-  submitting: false,
-  menuRealtimeChannel: null,
-  menuRefreshTimer: null,
-  menuRefreshInFlight: false,
-  menuRefreshQueued: false,
-  toastTimer: null
+  selectedProductForModal: null,
+  modalSelectedOptions: {}, // { groupId: [optionId, ...] }
+  modalQuantity: 1,
+  cart: [],
+  orderMode: "car", // 'car' | 'walkin'
+  vehicleNote: "",
+  walkinNote: "",
+  orderNote: "",
+  isSubmitting: false,
+  pendingSubmitAfterLogin: false,
+  realtimeChannel: null,
+  refreshTimer: null,
+  refreshInFlight: false
 };
 
-// Number and currency formatters
-const digitFormat = new Intl.NumberFormat("ar-IQ", { maximumFractionDigits: 0 });
+// SVG Icons Dictionary (Matching menu-app.js)
+const ICONS = {
+  coffee: `<svg class="icon" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>`,
+  search: `<svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  trash: `<svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+  check: `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
+  cupRegular: `<svg class="icon" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>`,
+  cupLarge: `<svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M19 6h1a4 4 0 0 1 0 8h-1M2 6h17v11a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6zM6 1v2M10 1v2M14 1v2"/></svg>`,
+  sparkle: `<svg class="icon" viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>`,
+  milk: `<svg class="icon" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`,
+  flame: `<svg class="icon" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+  heat: `<svg class="icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-9.33-5M15 15a6 6 0 0 0-9.33-5M12 22a6 6 0 0 0-9.33-5"/></svg>`,
+  star: `<svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+};
+
 function formatAmount(amount) {
-  return digitFormat.format(Math.round(Number(amount) || 0));
+  const num = Number(amount) || 0;
+  return new Intl.NumberFormat("ar-IQ", { maximumFractionDigits: 0 }).format(num);
 }
-function formatMoney(amount) {
+
+function formatMoney(amount, currency = "IQD") {
   return `${formatAmount(amount)} د.ع`;
 }
 
@@ -50,168 +59,117 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-// Toast Feedback Notification
-function showToast(message, type = "info") {
-  const toast = $("waiter-toast");
-  if (!toast) return;
-
-  window.clearTimeout(state.toastTimer);
-  toast.textContent = message;
-  toast.className = `waiter-toast ${type}`;
-  toast.style.display = "inline-flex";
-
-  state.toastTimer = window.setTimeout(() => {
-    toast.style.display = "none";
-  }, 3200);
+function $(id) {
+  return document.getElementById(id);
 }
 
-// Auth State Management
-async function initAuth() {
-  if (!isSupabaseConfigured || !supabase) {
-    showLoginError("تعذر الاتصال بقاعدة البيانات. يرجى التحقق من الاتصال بالإنترنت.");
-    showLoginGate(true);
-    return;
-  }
+// --------------------------------------------------------------------------
+// 1. Initialization & Session Check
+// --------------------------------------------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  initPOS();
+});
 
+async function initPOS() {
+  loadSavedCart();
+  setupEventListeners();
+
+  // Check Staff Auth Session silently
   try {
-    const session = await getStaffSession(supabase);
-    if (session && session.profile) {
-      await enterWithProfile(session.profile);
+    const staffSession = await getStaffSession(supabase);
+    if (staffSession?.profile) {
+      state.profile = staffSession.profile;
+      updateAuthUI(staffSession.profile);
     } else {
-      showLoginGate(true);
+      updateAuthUI(null);
     }
   } catch (err) {
-    console.warn("Session check fallback:", err);
-    showLoginError(err.message || "تعذر التحقق من صلاحية حساب الويتر.");
-    showLoginGate(true);
-  }
-}
-
-function showLoginGate(show) {
-  const gate = $("waiter-login-gate");
-  const app = $("waiter-app");
-  if (gate) gate.style.display = show ? "flex" : "none";
-  if (app) app.style.display = show ? "none" : "block";
-}
-
-function showLoginError(msg) {
-  const el = $("waiter-login-error");
-  if (!el) return;
-  if (msg) {
-    el.textContent = msg;
-    el.style.display = "block";
-  } else {
-    el.style.display = "none";
-  }
-}
-
-async function enterWithProfile(profile) {
-  // Validate Staff Role
-  if (profile.role === "owner" || profile.role === "admin") {
-    await signOutStaff(supabase).catch(() => {});
-    throw new Error("هذه الصفحة مخصصة لحساب الويتر. سجّل الدخول بحساب ويتر مستقل.");
+    console.debug("Silent staff session check:", err?.message);
+    updateAuthUI(null);
   }
 
-  if (profile.role !== "roadside") {
-    await signOutStaff(supabase).catch(() => {});
-    throw new Error("هذه الشاشة مخصصة لحساب الويتر فقط. حساب الإدارة يستخدم صفحة /admin.");
-  }
-
-  if (!profile.branch_id) {
-    await signOutStaff(supabase).catch(() => {});
-    throw new Error("حساب الويتر غير مفعّل بعد. فعّل الحساب من الإدارة ثم أعد تسجيل الدخول.");
-  }
-
-  state.profile = profile;
-
-  // Set Header Information
-  const nameEl = $("waiter-name-badge");
-  if (nameEl) nameEl.textContent = profile.full_name || "الويتر";
-
+  // Load Menu Data immediately (No blocking screen!)
   await loadMenuData();
-  showLoginGate(false);
-  setupWaiterRealtime();
+  setupRealtime();
 }
 
-// Fetch Branch Menu
+function updateAuthUI(profile) {
+  const authBadge = $("waiter-auth-badge");
+  const loginTrigger = $("desktop-login-trigger");
+  const nameText = $("waiter-name-text");
+
+  if (profile) {
+    if (authBadge) authBadge.style.display = "inline-flex";
+    if (loginTrigger) loginTrigger.style.display = "none";
+    if (nameText) {
+      const roleStr = profile.role === "roadside" ? "الويتر" : "إدارة";
+      nameText.textContent = `${roleStr}: ${profile.full_name || profile.email || "موظف"}`;
+    }
+  } else {
+    if (authBadge) authBadge.style.display = "none";
+    if (loginTrigger) loginTrigger.style.display = "inline-block";
+  }
+}
+
+// --------------------------------------------------------------------------
+// 2. Menu Catalog Loading & Realtime
+// --------------------------------------------------------------------------
 async function loadMenuData({ silent = false } = {}) {
-  const container = $("waiter-products-container");
-  if (!silent && container) {
-    container.innerHTML = `
-      <div style="padding: 40px 16px; text-align: center; color: var(--text-muted);">
-        <p style="margin: 0; font-weight: 600;">جاري تحميل المنيو…</p>
-      </div>
-    `;
+  const skeleton = $("skeleton-loading-container");
+  const workspace = $("pos-workspace");
+  const errorScreen = $("error-screen-view");
+
+  if (!silent) {
+    if (skeleton) skeleton.style.display = "block";
+    if (workspace) workspace.style.display = "none";
+    if (errorScreen) errorScreen.style.display = "none";
   }
 
   try {
-    const branchId = state.profile?.branch_id;
-    if (!branchId) throw new Error("حساب الويتر غير مفعّل بعد. يرجى مراجعة الإدارة.");
-
-    // Fetch active branch
-    const { data: branch, error: branchErr } = await supabase
-      .from("branches")
-      .select("id, name, slug, is_active")
-      .eq("id", branchId)
-      .maybeSingle();
-
-    if (branchErr || !branch || !branch.is_active) {
-      throw new Error("الخدمة متوقفة حالياً أو غير متوفرة.");
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error("تعذر الاتصال بقاعدة البيانات. يرجى التحقق من الاتصال بالإنترنت.");
     }
 
-    // Attempt to fetch service point
-    const { data: points } = await supabase
-      .from("car_service_points")
-      .select("qr_token, label, is_active")
-      .eq("branch_id", branchId)
-      .eq("is_active", true)
-      .limit(1);
-
-    const point = points?.[0];
     let res;
-
-    if (point?.qr_token) {
-      res = await supabase.rpc("get_customer_menu", {
-        p_branch_slug: branch.slug,
-        p_qr_token: point.qr_token
+    // If waiter profile has branch, fetch customer menu for that branch
+    if (state.profile?.branch_slug) {
+      res = await supabase.rpc("get_public_customer_menu", {
+        p_branch_slug: state.profile.branch_slug
       });
     } else {
-      res = await supabase.rpc("get_public_customer_menu", {
-        p_branch_slug: branch.slug
-      });
+      res = await supabase.rpc("get_public_customer_menu", {});
     }
 
     if (res.error || !res.data || res.data.success !== true) {
-      throw new Error(res.data?.message || res.error?.message || "تعذر تحميل المنيو حالياً.");
+      throw new Error(res.data?.message || res.error?.message || "تعذر جلب أصناف المنيو من الخادم.");
     }
 
     state.menuData = res.data;
     renderCategories();
-    renderCatalog();
+    renderProducts();
+    renderCart();
+
+    if (skeleton) skeleton.style.display = "none";
+    if (workspace) workspace.style.display = "grid";
+    if (errorScreen) errorScreen.style.display = "none";
   } catch (err) {
-    console.error("Waiter loadMenu error:", err);
+    console.error("loadMenuData error:", err);
     if (!silent) {
-      if (container) {
-        container.innerHTML = `
-          <div style="padding: 40px 16px; text-align: center; color: var(--status-error-text);">
-            <p style="margin: 0 0 12px; font-weight: 700;">تعذر تحميل قائمة المنيو</p>
-            <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">${escapeHtml(err.message || "")}</p>
-          </div>
-        `;
+      if (skeleton) skeleton.style.display = "none";
+      if (workspace) workspace.style.display = "none";
+      if (errorScreen) {
+        errorScreen.style.display = "flex";
+        const msg = $("error-screen-message");
+        if (msg) msg.textContent = err.message || "حدث خطأ أثناء تحميل الأصناف.";
       }
-      showToast(err.message || "تعذر تحميل المنيو", "error");
-      throw err;
     }
   }
 }
 
-// Realtime Listener for Instant Catalog & Price Updates
-function setupWaiterRealtime() {
-  if (!isSupabaseConfigured || !supabase || state.menuRealtimeChannel) return;
-  const branchId = state.profile?.branch_id;
-  if (!branchId) return;
+function setupRealtime() {
+  if (!isSupabaseConfigured || !supabase || state.realtimeChannel) return;
 
-  state.menuRealtimeChannel = supabase.channel(`waiter-pos-menu-${branchId}`)
+  state.realtimeChannel = supabase.channel("waiter-pos-live-menu")
     .on("postgres_changes", { event: "*", schema: "public", table: "menu_categories" }, scheduleRefresh)
     .on("postgres_changes", { event: "*", schema: "public", table: "menu_products" }, scheduleRefresh)
     .on("postgres_changes", { event: "*", schema: "public", table: "product_option_groups" }, scheduleRefresh)
@@ -224,34 +182,29 @@ function setupWaiterRealtime() {
 }
 
 function scheduleRefresh() {
-  window.clearTimeout(state.menuRefreshTimer);
-  state.menuRefreshTimer = window.setTimeout(async () => {
-    if (state.menuRefreshInFlight) {
-      state.menuRefreshQueued = true;
-      return;
-    }
-    state.menuRefreshInFlight = true;
+  window.clearTimeout(state.refreshTimer);
+  state.refreshTimer = window.setTimeout(async () => {
+    if (state.refreshInFlight) return;
+    state.refreshInFlight = true;
     try {
       await loadMenuData({ silent: true });
     } finally {
-      state.menuRefreshInFlight = false;
-      if (state.menuRefreshQueued) {
-        state.menuRefreshQueued = false;
-        scheduleRefresh();
-      }
+      state.refreshInFlight = false;
     }
   }, 400);
 }
 
-// Render Categories Bar
+// --------------------------------------------------------------------------
+// 3. Category Navigation & Search
+// --------------------------------------------------------------------------
 function renderCategories() {
-  const list = $("waiter-categories-list");
+  const list = $("categories-list");
   if (!list) return;
 
   const categories = state.menuData?.categories || [];
   let html = `
-    <li>
-      <button type="button" class="category-pill-btn ${state.activeCategoryId === 'all' ? 'active' : ''}" data-category="all">
+    <li class="category-item">
+      <button type="button" class="category-pill-btn ${state.activeCategoryId === 'all' ? 'active' : ''}" data-cat-id="all">
         الكل
       </button>
     </li>
@@ -260,8 +213,8 @@ function renderCategories() {
   for (const cat of categories) {
     const isActive = state.activeCategoryId === cat.id;
     html += `
-      <li>
-        <button type="button" class="category-pill-btn ${isActive ? 'active' : ''}" data-category="${escapeHtml(cat.id)}">
+      <li class="category-item">
+        <button type="button" class="category-pill-btn ${isActive ? 'active' : ''}" data-cat-id="${cat.id}">
           ${escapeHtml(cat.name)}
         </button>
       </li>
@@ -269,90 +222,51 @@ function renderCategories() {
   }
 
   list.innerHTML = html;
-}
 
-// Render Product Cards grouped by Category
-function renderCatalog() {
-  const container = $("waiter-products-container");
-  if (!container) return;
+  list.querySelectorAll(".category-pill-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const catId = btn.dataset.catId;
+      state.activeCategoryId = catId;
+      list.querySelectorAll(".category-pill-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
 
-  const categories = state.menuData?.categories || [];
-  const products = state.menuData?.products || [];
-
-  const query = state.searchQuery.trim().toLowerCase();
-  const filtered = products.filter(p => {
-    const matchCategory = state.activeCategoryId === "all" || p.category_id === state.activeCategoryId;
-    const matchSearch = !query ||
-      p.name.toLowerCase().includes(query) ||
-      (p.description && p.description.toLowerCase().includes(query));
-    return matchCategory && matchSearch;
+      if (catId === "all") {
+        renderProducts();
+      } else {
+        renderProducts();
+        const section = $(`cat-section-${catId}`);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    });
   });
-
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div style="padding: 48px 16px; text-align: center; color: var(--text-muted);">
-        <p style="font-size: 1.05rem; font-weight: 700; margin: 0 0 6px;">لا توجد أصناف مطابقة</p>
-        <p style="font-size: 0.84rem; margin: 0;">جرّب كلمة بحث أخرى أو اختر قسماً آخر.</p>
-      </div>
-    `;
-    return;
-  }
-
-  let html = "";
-
-  for (const cat of categories) {
-    const catProducts = filtered.filter(p => p.category_id === cat.id);
-    if (catProducts.length === 0) continue;
-
-    html += `
-      <section class="category-block" id="cat-sec-${cat.id}">
-        <div class="category-header">
-          <div class="category-title-wrap">
-            <span class="category-accent-bar" aria-hidden="true"></span>
-            <h2 class="category-title">${escapeHtml(cat.name)}</h2>
-          </div>
-        </div>
-        <div class="products-grid">
-          ${catProducts.map(renderProductCardHtml).join("")}
-        </div>
-      </section>
-    `;
-  }
-
-  // Uncategorized items
-  const uncategorized = filtered.filter(p => !categories.some(c => c.id === p.category_id));
-  if (uncategorized.length > 0) {
-    html += `
-      <section class="category-block">
-        <div class="category-header">
-          <div class="category-title-wrap">
-            <span class="category-accent-bar" aria-hidden="true"></span>
-            <h2 class="category-title">أصناف مميزة</h2>
-          </div>
-        </div>
-        <div class="products-grid">
-          ${uncategorized.map(renderProductCardHtml).join("")}
-        </div>
-      </section>
-    `;
-  }
-
-  container.innerHTML = html;
 }
 
-function renderProductCardHtml(p) {
-  const isAvailable = p.is_available !== false;
+// --------------------------------------------------------------------------
+// 4. Products Rendering (Exact 2-Col Mobile Cards with POS Add)
+// --------------------------------------------------------------------------
+function getProductQuantityInCart(productId) {
+  return state.cart
+    .filter(item => item.productId === productId)
+    .reduce((sum, item) => sum + item.quantity, 0);
+}
+
+function renderProductCardHtml(p, currency = "IQD") {
+  const isAvailable = Boolean(p.is_available);
   const hasOptions = Array.isArray(p.option_groups) && p.option_groups.length > 0;
+  const cartQty = getProductQuantityInCart(p.id);
   const priceFormatted = formatAmount(p.price);
 
   return `
-    <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${escapeHtml(p.id)}">
+    <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="${escapeHtml(p.name)}">
       <div class="product-card-media">
-        ${!isAvailable ? `<span class="product-soldout-badge">غير متوفر</span>` : ""}
+        ${!isAvailable ? `<span class="product-soldout-badge">غير متوفر حالياً</span>` : ""}
+        ${cartQty > 0 ? `<span class="card-cart-qty-badge" title="في السلة">${cartQty}</span>` : ""}
         ${p.image_url
           ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" />`
           : `<div class="product-image-fallback">
-              <svg class="placeholder-coffee-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+              <svg class="placeholder-coffee-svg icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
               <span class="placeholder-brand-text">BOX COFE</span>
             </div>`
         }
@@ -368,9 +282,11 @@ function renderProductCardHtml(p) {
             <span class="price-amount">${priceFormatted}</span>
             <span class="price-currency">د.ع</span>
           </div>
-          <button type="button" class="waiter-add-btn" data-action="add-product" data-product-id="${escapeHtml(p.id)}" ${!isAvailable ? 'disabled' : ''}>
-            <span>إضافة</span>
-            <span aria-hidden="true">+</span>
+          <button type="button" class="pos-add-btn ${hasOptions ? 'btn-customize' : 'btn-direct-add'}" data-action="pos-add" data-product-id="${p.id}" ${!isAvailable ? 'disabled' : ''}>
+            ${hasOptions
+              ? `<span>تخصيص +</span>`
+              : `<svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>إضافة</span>`
+            }
           </button>
         </div>
       </div>
@@ -378,574 +294,891 @@ function renderProductCardHtml(p) {
   `;
 }
 
-// Product Action (Fast 1-tap add vs Modal for options)
-function onProductClick(productId) {
-  const product = state.menuData?.products?.find(p => p.id === productId);
-  if (!product || product.is_available === false) return;
-
-  const hasOptions = Array.isArray(product.option_groups) && product.option_groups.length > 0;
-
-  if (!hasOptions) {
-    // 1-tap immediate add
-    addToCart(product, [], 1);
-  } else {
-    // Open clean options dialog
-    openCustomizationDialog(product);
-  }
-}
-
-// Option Customization Dialog
-function openCustomizationDialog(product) {
-  state.activeProductForModal = product;
-  state.dialogQuantity = 1;
-  state.dialogPicks = {};
-
-  // Initialize defaults
-  for (const group of product.option_groups || []) {
-    const defaults = (group.options || []).filter(o => o.is_default).map(o => o.id);
-    if (defaults.length > 0) {
-      state.dialogPicks[group.id] = group.selection_type === "single" ? [defaults[0]] : defaults;
-    } else {
-      state.dialogPicks[group.id] = [];
-    }
-  }
-
-  $("dialog-product-name").textContent = product.name;
-  $("dialog-qty").textContent = "1";
-  $("dialog-option-error").style.display = "none";
-
-  renderDialogOptions();
-  updateDialogTotalPrice();
-
-  const dialog = $("product-dialog");
-  if (dialog) dialog.showModal();
-}
-
-function renderDialogOptions() {
-  const container = $("dialog-options-container");
-  if (!container || !state.activeProductForModal) return;
-
-  const groups = state.activeProductForModal.option_groups || [];
-  let html = "";
-
-  for (const group of groups) {
-    const isRequired = Boolean(group.is_required);
-    const isSingle = group.selection_type === "single";
-    const selectedIds = state.dialogPicks[group.id] || [];
-
-    html += `
-      <div class="option-group-card">
-        <div class="option-group-title-row">
-          <h4 class="option-group-name">${escapeHtml(group.name)}</h4>
-          <span class="group-badge ${isRequired ? 'required' : 'optional'}">
-            ${isRequired ? 'إلزامي' : 'اختياري'}
-          </span>
-        </div>
-        <div class="options-choice-list">
-    `;
-
-    for (const opt of group.options || []) {
-      const modifier = Number(opt.price_modifier) || 0;
-      const isSelected = selectedIds.includes(opt.id);
-      const priceText = modifier > 0 ? `+${formatMoney(modifier)}` : "مشمول مع الصنف";
-
-      html += `
-        <label class="option-choice-item ${isSelected ? 'selected' : ''}">
-          <div class="choice-label-wrap">
-            <input
-              type="${isSingle ? 'radio' : 'checkbox'}"
-              name="opt_group_${escapeHtml(group.id)}"
-              value="${escapeHtml(opt.id)}"
-              data-group-id="${escapeHtml(group.id)}"
-              ${isSelected ? 'checked' : ''}
-            />
-            <span>${escapeHtml(opt.name)}</span>
-          </div>
-          <span class="choice-price-tag">${priceText}</span>
-        </label>
-      `;
-    }
-
-    html += `
-        </div>
-      </div>
-    `;
-  }
-
-  container.innerHTML = html;
-
-  // Bind change events
-  container.querySelectorAll("input").forEach(input => {
-    input.addEventListener("change", () => {
-      const groupId = input.dataset.groupId;
-      const group = state.activeProductForModal?.option_groups?.find(g => g.id === groupId);
-      if (!group) return;
-
-      const isSingle = group.selection_type === "single";
-      let picks = [...(state.dialogPicks[groupId] || [])];
-
-      if (isSingle) {
-        picks = [input.value];
-      } else {
-        if (input.checked) {
-          const max = Number(group.max_selections || 99);
-          if (picks.length >= max) {
-            input.checked = false;
-            showDialogOptionError(`الحد الأقصى لاختيارات ${group.name} هو ${max}`);
-            return;
-          }
-          picks.push(input.value);
-        } else {
-          picks = picks.filter(id => id !== input.value);
-        }
-      }
-
-      state.dialogPicks[groupId] = picks;
-      showDialogOptionError(null);
-      renderDialogOptions();
-      updateDialogTotalPrice();
-    });
-  });
-}
-
-function showDialogOptionError(msg) {
-  const el = $("dialog-option-error");
-  if (!el) return;
-  if (msg) {
-    el.textContent = msg;
-    el.style.display = "block";
-  } else {
-    el.style.display = "none";
-  }
-}
-
-function calculateProductUnitPrice(product, selectedOptionIds = []) {
-  let unit = Number(product.price || 0);
-  const groups = product.option_groups || [];
-
-  for (const group of groups) {
-    for (const opt of group.options || []) {
-      if (selectedOptionIds.includes(opt.id)) {
-        unit += Number(opt.price_modifier || 0);
-      }
-    }
-  }
-  return unit;
-}
-
-function updateDialogTotalPrice() {
-  if (!state.activeProductForModal) return;
-  const selectedIds = Object.values(state.dialogPicks).flat();
-  const unit = calculateProductUnitPrice(state.activeProductForModal, selectedIds);
-  const total = unit * state.dialogQuantity;
-  $("dialog-total-price").textContent = formatMoney(total);
-}
-
-function validateDialogSelections() {
-  if (!state.activeProductForModal) return false;
-  const groups = state.activeProductForModal.option_groups || [];
-
-  for (const group of groups) {
-    const picks = state.dialogPicks[group.id] || [];
-    const min = Math.max(Number(group.min_selections || 0), group.is_required ? 1 : 0);
-    const max = Number(group.max_selections || (group.selection_type === "multiple" ? 99 : 1));
-
-    if (picks.length < min) {
-      showDialogOptionError(`يرجى تحديد خيار في "${group.name}".`);
-      return false;
-    }
-    if (picks.length > max) {
-      showDialogOptionError(`الحد الأقصى لخيارات "${group.name}" هو ${max}.`);
-      return false;
-    }
-  }
-  return true;
-}
-
-// Cart Management
-function addToCart(product, selectedOptionIds = [], quantity = 1) {
-  // Check if identical item (same product & same options) exists in cart
-  const sortedNew = [...selectedOptionIds].sort().join(",");
-  const existing = state.cartItems.find(item => {
-    const sortedExisting = [...item.selectedOptionIds].sort().join(",");
-    return item.product.id === product.id && sortedExisting === sortedNew;
-  });
-
-  if (existing) {
-    existing.quantity += quantity;
-  } else {
-    state.cartItems.push({
-      product,
-      selectedOptionIds,
-      quantity
-    });
-  }
-
-  state.idempotencyKey = null;
-  renderCart();
-  showToast(`تمت إضافة "${product.name}" إلى السلة`, "success");
-}
-
-function renderCart() {
-  const container = $("cart-items-container");
-  const emptyView = $("cart-empty-view");
-  const countBadge = $("cart-count-badge");
-  const clearBtn = $("cart-clear-btn");
-  const submitBtn = $("cart-submit-btn");
-  const totalPriceEl = $("cart-total-amount");
-
-  const mobileCount = $("mobile-cart-items-count");
-  const mobileTotal = $("mobile-cart-total-price");
-
-  const totalItemsCount = state.cartItems.reduce((acc, i) => acc + i.quantity, 0);
-
-  let grandTotal = 0;
-  for (const item of state.cartItems) {
-    const unitPrice = calculateProductUnitPrice(item.product, item.selectedOptionIds);
-    grandTotal += unitPrice * item.quantity;
-  }
-
-  // Update counts & total
-  if (countBadge) countBadge.textContent = String(totalItemsCount);
-  if (clearBtn) clearBtn.style.display = state.cartItems.length > 0 ? "inline-block" : "none";
-  if (submitBtn) submitBtn.disabled = state.cartItems.length === 0 || state.submitting;
-  if (totalPriceEl) totalPriceEl.textContent = formatMoney(grandTotal);
-
-  if (mobileCount) mobileCount.textContent = `${totalItemsCount} أصناف`;
-  if (mobileTotal) mobileTotal.textContent = formatMoney(grandTotal);
-
+function renderProducts() {
+  const container = $("waiter-products-container");
   if (!container) return;
 
-  if (state.cartItems.length === 0) {
-    container.innerHTML = `
-      <div class="cart-empty-view" id="cart-empty-view">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3" stroke-width="1.8"/></svg>
-        <span>السلة فارغة</span>
-      </div>
-    `;
+  const categories = state.menuData?.categories || [];
+  const products = state.menuData?.products || [];
+  const currency = state.menuData?.restaurant?.currency_code || "IQD";
+
+  const query = state.searchQuery.trim().toLowerCase();
+  const filtered = products.filter(p => {
+    const matchCategory = state.activeCategoryId === "all" || p.category_id === state.activeCategoryId;
+    const matchSearch = !query ||
+      p.name.toLowerCase().includes(query) ||
+      (p.description && p.description.toLowerCase().includes(query));
+    return matchCategory && matchSearch;
+  });
+
+  if (filtered.length === 0) {
+    if (query) {
+      container.innerHTML = `
+        <div class="menu-empty-view">
+          <div class="empty-icon-circle">${ICONS.search}</div>
+          <h3>لا توجد نتائج بحث مطابقة</h3>
+          <p>لم نجد أي صنف يطابق "<strong>${escapeHtml(query)}</strong>".</p>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `
+        <div class="menu-empty-view">
+          <div class="empty-icon-circle">${ICONS.coffee}</div>
+          <h3>لا توجد أصناف في هذا القسم حالياً</h3>
+          <p>اختر قسماً آخر أو اختر "الكل" لعرض كافة الأصناف المتاحة.</p>
+        </div>
+      `;
+    }
     return;
   }
 
   let html = "";
-  state.cartItems.forEach((item, index) => {
-    const unitPrice = calculateProductUnitPrice(item.product, item.selectedOptionIds);
-    const lineTotal = unitPrice * item.quantity;
-
-    // Collect names of selected options
-    const optionNames = [];
-    for (const group of item.product.option_groups || []) {
-      for (const opt of group.options || []) {
-        if (item.selectedOptionIds.includes(opt.id)) {
-          optionNames.push(opt.name);
-        }
-      }
-    }
+  for (const cat of categories) {
+    const catProducts = filtered.filter(p => p.category_id === cat.id);
+    if (catProducts.length === 0) continue;
 
     html += `
-      <div class="cart-item-row" data-cart-index="${index}">
-        <div class="cart-item-top">
-          <div class="cart-item-info">
-            <span class="cart-item-name">${escapeHtml(item.product.name)}</span>
-            ${optionNames.length > 0
-              ? `<span class="cart-item-options">${escapeHtml(optionNames.join(" · "))}</span>`
-              : ""
-            }
+      <section class="category-block" id="cat-section-${cat.id}">
+        <div class="category-header">
+          <div class="category-title-wrap">
+            <span class="category-accent-bar" aria-hidden="true"></span>
+            <h2 class="category-title">${escapeHtml(cat.name)}</h2>
           </div>
-          <span class="cart-item-price">${formatMoney(lineTotal)}</span>
+          ${cat.description ? `<p class="category-desc">${escapeHtml(cat.description)}</p>` : ""}
         </div>
-        <div class="cart-item-actions">
-          <div class="cart-stepper">
-            <button type="button" data-action="decrease-qty" data-index="${index}" aria-label="تقليل الكمية">−</button>
-            <span>${item.quantity}</span>
-            <button type="button" data-action="increase-qty" data-index="${index}" aria-label="زيادة الكمية">+</button>
-          </div>
-          <button type="button" class="cart-item-remove-btn" data-action="remove-item" data-index="${index}">حذف</button>
+        <div class="products-grid">
+          ${catProducts.map(p => renderProductCardHtml(p, currency)).join("")}
         </div>
-      </div>
+      </section>
     `;
-  });
+  }
+
+  const uncategorized = filtered.filter(p => !categories.some(c => c.id === p.category_id));
+  if (uncategorized.length > 0) {
+    html += `
+      <section class="category-block">
+        <div class="category-header">
+          <div class="category-title-wrap">
+            <span class="category-accent-bar" aria-hidden="true"></span>
+            <h2 class="category-title">أصناف مميزة</h2>
+          </div>
+        </div>
+        <div class="products-grid">
+          ${uncategorized.map(p => renderProductCardHtml(p, currency)).join("")}
+        </div>
+      </section>
+    `;
+  }
 
   container.innerHTML = html;
 
-  // Bind actions
-  container.querySelectorAll("[data-action='decrease-qty']").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const idx = Number(btn.dataset.index);
-      if (state.cartItems[idx]) {
-        if (state.cartItems[idx].quantity > 1) {
-          state.cartItems[idx].quantity--;
-        } else {
-          state.cartItems.splice(idx, 1);
-        }
-        renderCart();
-      }
-    });
-  });
+  // Bind Card Click Events
+  container.querySelectorAll(".product-card").forEach(card => {
+    const productId = card.dataset.productId;
+    const p = products.find(x => x.id === productId);
+    if (!p || !p.is_available) return;
 
-  container.querySelectorAll("[data-action='increase-qty']").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const idx = Number(btn.dataset.index);
-      if (state.cartItems[idx] && state.cartItems[idx].quantity < 50) {
-        state.cartItems[idx].quantity++;
-        renderCart();
-      }
+    card.addEventListener("click", (e) => {
+      // Prevent double trigger if clicked on the button directly
+      if (e.target.closest(".pos-add-btn")) return;
+      handleProductCardAction(p);
     });
-  });
 
-  container.querySelectorAll("[data-action='remove-item']").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const idx = Number(btn.dataset.index);
-      if (state.cartItems[idx]) {
-        state.cartItems.splice(idx, 1);
-        renderCart();
-      }
-    });
+    const addBtn = card.querySelector(".pos-add-btn");
+    if (addBtn) {
+      addBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        handleProductCardAction(p);
+      });
+    }
   });
 }
 
-// Order Mode Switcher
-function setOrderMode(mode) {
-  state.orderMode = mode;
-
-  const carBtn = $("mode-car-btn");
-  const walkinBtn = $("mode-walkin-btn");
-  const vehicleInput = $("order-vehicle-input");
-  const walkinInput = $("order-walkin-input");
-
-  if (carBtn) {
-    carBtn.classList.toggle("active", mode === "car");
-    carBtn.setAttribute("aria-checked", mode === "car");
-  }
-  if (walkinBtn) {
-    walkinBtn.classList.toggle("active", mode === "walkin");
-    walkinBtn.setAttribute("aria-checked", mode === "walkin");
-  }
-
-  if (mode === "car") {
-    if (vehicleInput) vehicleInput.style.display = "block";
-    if (walkinInput) walkinInput.style.display = "none";
+function handleProductCardAction(product) {
+  const hasOptions = Array.isArray(product.option_groups) && product.option_groups.length > 0;
+  if (hasOptions) {
+    openCustomizationModal(product);
   } else {
-    if (vehicleInput) vehicleInput.style.display = "none";
-    if (walkinInput) walkinInput.style.display = "block";
+    // 1-Tap Direct Add
+    addToCart(product, [], 1);
+    showToast(`تمت إضافة ${product.name} إلى السلة ✓`, "success");
+    renderProducts(); // Refresh card qty badge
+    renderCart();
   }
 }
 
-// Place Order RPC
-async function submitOrder() {
-  if (state.submitting || state.cartItems.length === 0) return;
-  state.submitting = true;
+// --------------------------------------------------------------------------
+// 5. Customization Modal Handling
+// --------------------------------------------------------------------------
+function openCustomizationModal(product) {
+  state.selectedProductForModal = product;
+  state.modalQuantity = 1;
+  state.modalSelectedOptions = {};
 
-  const submitBtn = $("cart-submit-btn");
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span>جارٍ إرسال الطلب…</span>`;
+  // Pre-select default options
+  if (Array.isArray(product.option_groups)) {
+    for (const group of product.option_groups) {
+      state.modalSelectedOptions[group.id] = [];
+      const opts = group.options || [];
+      const defaultOpt = opts.find(o => o.is_default && o.is_available);
+      if (defaultOpt) {
+        state.modalSelectedOptions[group.id].push(defaultOpt.id);
+      } else if (group.is_required && opts.length > 0) {
+        const firstAvail = opts.find(o => o.is_available);
+        if (firstAvail) state.modalSelectedOptions[group.id].push(firstAvail.id);
+      }
+    }
   }
 
-  if (!state.idempotencyKey) {
-    state.idempotencyKey = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  renderModalContent();
+
+  const modal = $("customization-modal");
+  if (modal) {
+    document.body.style.overflow = "hidden";
+    modal.showModal();
+  }
+}
+
+function closeCustomizationModal() {
+  const modal = $("customization-modal");
+  if (modal && modal.open) {
+    modal.close();
+    document.body.style.overflow = "";
+  }
+}
+
+function calculateModalTotalPrice() {
+  const p = state.selectedProductForModal;
+  if (!p) return 0;
+
+  let unitPrice = Number(p.price) || 0;
+  if (Array.isArray(p.option_groups)) {
+    for (const group of p.option_groups) {
+      const selectedIds = state.modalSelectedOptions[group.id] || [];
+      for (const optId of selectedIds) {
+        const opt = (group.options || []).find(o => o.id === optId);
+        if (opt) unitPrice += Number(opt.price_modifier) || 0;
+      }
+    }
+  }
+  return unitPrice * state.modalQuantity;
+}
+
+function updateModalPriceDisplay() {
+  const total = calculateModalTotalPrice();
+  const label = $("modal-calc-price");
+  if (label) label.textContent = formatMoney(total);
+  const qtyVal = $("modal-qty-val");
+  if (qtyVal) qtyVal.textContent = state.modalQuantity;
+}
+
+function renderModalContent() {
+  const p = state.selectedProductForModal;
+  if (!p) return;
+
+  const thumbBox = $("pos-modal-thumb-box");
+  const imgEl = $("pos-modal-image");
+  if (thumbBox && imgEl) {
+    if (p.image_url) {
+      imgEl.src = p.image_url;
+      imgEl.alt = p.name;
+      thumbBox.style.display = "block";
+    } else {
+      thumbBox.style.display = "none";
+    }
   }
 
-  const itemsPayload = state.cartItems.map(item => ({
-    product_id: item.product.id,
+  const titleEl = $("pos-modal-title");
+  if (titleEl) titleEl.textContent = p.name;
+
+  const descEl = $("pos-modal-desc");
+  if (descEl) descEl.textContent = p.description || "قهوة مختصة محضرة بعناية من بوكس كافي.";
+
+  const basePriceEl = $("pos-modal-base-price");
+  if (basePriceEl) basePriceEl.textContent = `السعر الأساسي: ${formatMoney(p.price)}`;
+
+  const bodyEl = $("pos-modal-options-body");
+  if (!bodyEl) return;
+
+  let html = "";
+  if (Array.isArray(p.option_groups) && p.option_groups.length > 0) {
+    for (const group of p.option_groups) {
+      const isSingle = group.selection_type === "single" || group.max_selections === 1;
+      const isReq = Boolean(group.is_required);
+      const selectedIds = state.modalSelectedOptions[group.id] || [];
+
+      html += `
+        <div class="pos-options-group" data-group-id="${group.id}">
+          <div class="pos-group-title-row">
+            <h4 class="pos-group-title">${escapeHtml(group.name)}</h4>
+            <span class="pos-group-badge ${isReq ? 'required' : 'optional'}">
+              ${isReq ? 'إجباري' : 'اختياري'}
+            </span>
+          </div>
+          <div class="pos-options-grid">
+            ${(group.options || []).map(opt => {
+              const isSelected = selectedIds.includes(opt.id);
+              const mod = Number(opt.price_modifier) || 0;
+              const priceText = mod > 0 ? `+${formatAmount(mod)} د.ع` : (mod < 0 ? `${formatAmount(mod)} د.ع` : "مشمول");
+              return `
+                <div class="pos-option-selectable-card ${isSelected ? 'selected' : ''}" data-group-id="${group.id}" data-option-id="${opt.id}" data-single="${isSingle ? 'true' : 'false'}">
+                  <div class="pos-option-info">
+                    <span class="pos-opt-name">${escapeHtml(opt.name)}</span>
+                    <span class="pos-opt-price">${priceText}</span>
+                  </div>
+                  <div class="pos-opt-check-indicator" aria-hidden="true">${ICONS.check}</div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  bodyEl.innerHTML = html;
+
+  // Bind selectable cards
+  bodyEl.querySelectorAll(".pos-option-selectable-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const groupId = card.dataset.groupId;
+      const optionId = card.dataset.optionId;
+      const isSingle = card.dataset.single === "true";
+
+      if (!state.modalSelectedOptions[groupId]) {
+        state.modalSelectedOptions[groupId] = [];
+      }
+
+      if (isSingle) {
+        state.modalSelectedOptions[groupId] = [optionId];
+        card.closest(".pos-options-grid").querySelectorAll(".pos-option-selectable-card").forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+      } else {
+        const idx = state.modalSelectedOptions[groupId].indexOf(optionId);
+        if (idx >= 0) {
+          state.modalSelectedOptions[groupId].splice(idx, 1);
+          card.classList.remove("selected");
+        } else {
+          state.modalSelectedOptions[groupId].push(optionId);
+          card.classList.add("selected");
+        }
+      }
+
+      updateModalPriceDisplay();
+    });
+  });
+
+  updateModalPriceDisplay();
+}
+
+// --------------------------------------------------------------------------
+// 6. Cart Management (Operations & Persistence)
+// --------------------------------------------------------------------------
+function loadSavedCart() {
+  try {
+    const raw = sessionStorage.getItem("box_cofe_waiter_cart_v2");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) state.cart = parsed;
+    }
+    const savedMode = sessionStorage.getItem("box_cofe_waiter_mode");
+    if (savedMode === "car" || savedMode === "walkin") state.orderMode = savedMode;
+  } catch {}
+}
+
+function saveCart() {
+  try {
+    sessionStorage.setItem("box_cofe_waiter_cart_v2", JSON.stringify(state.cart));
+    sessionStorage.setItem("box_cofe_waiter_mode", state.orderMode);
+  } catch {}
+}
+
+function addToCart(product, selectedOptions = [], quantity = 1) {
+  let unitPrice = Number(product.price) || 0;
+  for (const opt of selectedOptions) {
+    unitPrice += Number(opt.priceModifier) || 0;
+  }
+
+  // Create a signature to group identical items with identical options
+  const optionSignature = selectedOptions
+    .map(o => o.optionId)
+    .sort()
+    .join("|");
+
+  const existingIndex = state.cart.findIndex(
+    item => item.productId === product.id && item.optionSignature === optionSignature
+  );
+
+  if (existingIndex >= 0) {
+    state.cart[existingIndex].quantity += quantity;
+  } else {
+    state.cart.push({
+      cartItemId: `cart_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      productId: product.id,
+      productName: product.name,
+      basePrice: Number(product.price) || 0,
+      unitPrice,
+      quantity,
+      optionSignature,
+      options: selectedOptions,
+      image_url: product.image_url || ""
+    });
+  }
+
+  saveCart();
+}
+
+function updateCartQuantity(cartItemId, delta) {
+  const item = state.cart.find(x => x.cartItemId === cartItemId);
+  if (!item) return;
+
+  item.quantity += delta;
+  if (item.quantity <= 0) {
+    state.cart = state.cart.filter(x => x.cartItemId !== cartItemId);
+  }
+
+  saveCart();
+  renderProducts(); // Refresh badges
+  renderCart();
+}
+
+function removeCartItem(cartItemId) {
+  state.cart = state.cart.filter(x => x.cartItemId !== cartItemId);
+  saveCart();
+  renderProducts();
+  renderCart();
+}
+
+function clearCart() {
+  if (state.cart.length === 0) return;
+  state.cart = [];
+  saveCart();
+  renderProducts();
+  renderCart();
+  showToast("تم تفريغ السلة", "success");
+}
+
+function getCartTotals() {
+  const count = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+  const total = state.cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  return { count, total };
+}
+
+// --------------------------------------------------------------------------
+// 7. Cart Rendering (Desktop & Mobile Drawer Sync)
+// --------------------------------------------------------------------------
+function renderCart() {
+  const { count, total } = getCartTotals();
+  const formattedTotal = `${formatAmount(total)} د.ع`;
+
+  // 1. Desktop Panel Elements
+  const dCount = $("desktop-cart-count");
+  if (dCount) dCount.textContent = count;
+  const dTotal = $("desktop-cart-total");
+  if (dTotal) dTotal.innerHTML = `${formatAmount(total)} <small>د.ع</small>`;
+  const dClear = $("desktop-cart-clear");
+  if (dClear) dClear.style.display = count > 0 ? "inline-block" : "none";
+  const dSubmit = $("desktop-submit-btn");
+  if (dSubmit) dSubmit.disabled = count === 0 || state.isSubmitting;
+
+  // 2. Mobile Floating Bar & Drawer Elements
+  const mFloatBar = $("mobile-floating-bar");
+  if (mFloatBar) mFloatBar.style.display = count > 0 ? "flex" : "none";
+  const mFloatCount = $("mobile-floating-count");
+  if (mFloatCount) mFloatCount.textContent = count;
+  const mFloatTotal = $("mobile-floating-total");
+  if (mFloatTotal) mFloatTotal.textContent = formattedTotal;
+
+  const mCount = $("mobile-cart-count");
+  if (mCount) mCount.textContent = count;
+  const mTotal = $("mobile-cart-total");
+  if (mTotal) mTotal.innerHTML = `${formatAmount(total)} <small>د.ع</small>`;
+  const mClear = $("mobile-cart-clear");
+  if (mClear) mClear.style.display = count > 0 ? "inline-block" : "none";
+  const mSubmit = $("mobile-submit-btn");
+  if (mSubmit) mSubmit.disabled = count === 0 || state.isSubmitting;
+
+  // 3. Render Items in both containers
+  const desktopContainer = $("desktop-cart-items");
+  const mobileContainer = $("mobile-cart-items");
+
+  const itemsHtml = state.cart.length === 0
+    ? `
+      <div class="cart-empty-message">
+        ${ICONS.coffee}
+        <p>السلة فارغة حالياً</p>
+        <span style="font-size:0.75rem; color:var(--text-muted);">انقر على الأصناف لإضافتها للطلب</span>
+      </div>
+    `
+    : state.cart.map(item => `
+      <div class="cart-item-card" data-cart-id="${item.cartItemId}">
+        <div class="cart-item-header">
+          <h4 class="cart-item-name">${escapeHtml(item.productName)}</h4>
+          <button type="button" class="cart-item-remove-btn" data-action="remove" data-cart-id="${item.cartItemId}" aria-label="حذف">
+            ${ICONS.trash}
+          </button>
+        </div>
+        ${item.options && item.options.length > 0 ? `
+          <div class="cart-item-options-row">
+            ${item.options.map(o => `<span class="cart-option-chip">${escapeHtml(o.optionName)}</span>`).join("")}
+          </div>
+        ` : ""}
+        <div class="cart-item-footer">
+          <div class="cart-stepper">
+            <button type="button" class="stepper-btn" data-action="decrease" data-cart-id="${item.cartItemId}" aria-label="تقليل">−</button>
+            <span class="stepper-qty">${item.quantity}</span>
+            <button type="button" class="stepper-btn" data-action="increase" data-cart-id="${item.cartItemId}" aria-label="زيادة">+</button>
+          </div>
+          <span class="cart-item-price">${formatAmount(item.unitPrice * item.quantity)} د.ع</span>
+        </div>
+      </div>
+    `).join("");
+
+  if (desktopContainer) desktopContainer.innerHTML = itemsHtml;
+  if (mobileContainer) mobileContainer.innerHTML = itemsHtml;
+
+  // Bind Steppers and Remove Buttons for both
+  [desktopContainer, mobileContainer].forEach(container => {
+    if (!container) return;
+    container.querySelectorAll("[data-action='increase']").forEach(btn => {
+      btn.addEventListener("click", () => updateCartQuantity(btn.dataset.cartId, 1));
+    });
+    container.querySelectorAll("[data-action='decrease']").forEach(btn => {
+      btn.addEventListener("click", () => updateCartQuantity(btn.dataset.cartId, -1));
+    });
+    container.querySelectorAll("[data-action='remove']").forEach(btn => {
+      btn.addEventListener("click", () => removeCartItem(btn.dataset.cartId));
+    });
+  });
+
+  // 4. Sync Order Mode Switchers & Context Inputs
+  syncOrderModeUI();
+}
+
+function syncOrderModeUI() {
+  const isCar = state.orderMode === "car";
+
+  // Desktop Tabs
+  const dCarBtn = $("mode-car-btn");
+  const dWalkBtn = $("mode-walkin-btn");
+  if (dCarBtn) dCarBtn.classList.toggle("active", isCar);
+  if (dWalkBtn) dWalkBtn.classList.toggle("active", !isCar);
+
+  const dGroupVehicle = $("group-vehicle-note");
+  const dGroupWalkin = $("group-walkin-note");
+  if (dGroupVehicle) dGroupVehicle.style.display = isCar ? "flex" : "none";
+  if (dGroupWalkin) dGroupWalkin.style.display = isCar ? "none" : "flex";
+
+  // Mobile Drawer Tabs
+  const mCarBtn = $("drawer-mode-car-btn");
+  const mWalkBtn = $("drawer-mode-walkin-btn");
+  if (mCarBtn) mCarBtn.classList.toggle("active", isCar);
+  if (mWalkBtn) mWalkBtn.classList.toggle("active", !isCar);
+
+  const mGroupVehicle = $("drawer-group-vehicle");
+  const mGroupWalkin = $("drawer-group-walkin");
+  if (mGroupVehicle) mGroupVehicle.style.display = isCar ? "flex" : "none";
+  if (mGroupWalkin) mGroupWalkin.style.display = isCar ? "none" : "flex";
+
+  // Sync inputs
+  const dVeh = $("input-vehicle-note");
+  const mVeh = $("drawer-vehicle-note");
+  if (dVeh && dVeh.value !== state.vehicleNote) dVeh.value = state.vehicleNote;
+  if (mVeh && mVeh.value !== state.vehicleNote) mVeh.value = state.vehicleNote;
+
+  const dWalk = $("input-walkin-note");
+  const mWalk = $("drawer-walkin-note");
+  if (dWalk && dWalk.value !== state.walkinNote) dWalk.value = state.walkinNote;
+  if (mWalk && mWalk.value !== state.walkinNote) mWalk.value = state.walkinNote;
+
+  const dNote = $("input-order-note");
+  const mNote = $("drawer-order-note");
+  if (dNote && dNote.value !== state.orderNote) dNote.value = state.orderNote;
+  if (mNote && mNote.value !== state.orderNote) mNote.value = state.orderNote;
+}
+
+// --------------------------------------------------------------------------
+// 8. Order Placement Flow (RPC: place_waiter_order)
+// --------------------------------------------------------------------------
+async function handleCheckoutSubmit() {
+  if (state.cart.length === 0 || state.isSubmitting) return;
+
+  // Validate Context
+  if (state.orderMode === "car") {
+    if (!state.vehicleNote.trim()) {
+      showToast("يرجى كتابة رقم أو نوع السيارة لتمييز الطلب", "error");
+      const dVeh = $("input-vehicle-note");
+      const mVeh = $("drawer-vehicle-note");
+      if (dVeh) { dVeh.classList.add("has-error"); dVeh.focus(); }
+      if (mVeh) { mVeh.classList.add("has-error"); mVeh.focus(); }
+      return;
+    }
+  } else {
+    if (!state.walkinNote.trim()) {
+      showToast("يرجى كتابة اسم الزبون أو رقم الطاولة", "error");
+      const dWalk = $("input-walkin-note");
+      const mWalk = $("drawer-walkin-note");
+      if (dWalk) { dWalk.classList.add("has-error"); dWalk.focus(); }
+      if (mWalk) { mWalk.classList.add("has-error"); mWalk.focus(); }
+      return;
+    }
+  }
+
+  // Check Staff Authentication
+  if (!state.profile || state.profile.role !== "roadside") {
+    state.pendingSubmitAfterLogin = true;
+    openLoginModal("سجّل الدخول بحساب الويتر لإرسال هذا الطلب للمطبخ");
+    return;
+  }
+
+  // Build Payload
+  const itemsPayload = state.cart.map(item => ({
+    product_id: item.productId,
     quantity: item.quantity,
-    selected_option_ids: item.selectedOptionIds,
-    note: ""
+    option_item_ids: item.options.map(o => o.optionId)
   }));
 
-  const vehicleVal = $("order-vehicle-input")?.value?.trim() || "";
-  const walkinVal = $("order-walkin-input")?.value?.trim() || "";
-  const orderNoteVal = $("order-kitchen-note")?.value?.trim() || "";
+  const vehicleNote = state.orderMode === "car" ? state.vehicleNote.trim() : state.walkinNote.trim();
+  const orderNote = state.orderNote.trim() || null;
 
-  const finalContextNote = state.orderMode === "car" ? vehicleVal : walkinVal;
+  setSubmitting(true);
 
   try {
-    if (!supabase) throw new Error("خدمة الاتصال بالنظام غير متوفرة.");
-
-    const { data, error } = await supabase.rpc("place_waiter_order", {
+    const res = await supabase.rpc("place_waiter_order", {
       p_items: itemsPayload,
       p_order_mode: state.orderMode,
-      p_vehicle_note: finalContextNote || null,
-      p_order_note: orderNoteVal || null,
-      p_idempotency_key: state.idempotencyKey
+      p_vehicle_note: vehicleNote,
+      p_order_note: orderNote,
+      p_idempotency_key: crypto.randomUUID()
     });
 
-    if (error || !data || data.success !== true || !data.order_code) {
-      throw new Error(data?.message || data?.error || error?.message || "تعذر حفظ الطلب في قاعدة البيانات.");
+    if (res.error || !res.data || res.data.success !== true) {
+      throw new Error(res.data?.message || res.error?.message || "تعذر إرسال الطلب للمطبخ.");
     }
 
-    const orderCode = data.order_code;
-    const finalTotal = data.total_price || 0;
+    const orderData = res.data;
 
-    // Show Success Dialog
-    const successDialog = $("success-dialog");
-    if (successDialog) {
-      $("success-order-code").textContent = `#${orderCode}`;
-      $("success-order-total").textContent = `المجموع: ${formatMoney(finalTotal)}`;
-      successDialog.showModal();
-    }
-
-    // Reset Cart
-    state.cartItems = [];
-    state.idempotencyKey = null;
-    if ($("order-vehicle-input")) $("order-vehicle-input").value = "";
-    if ($("order-walkin-input")) $("order-walkin-input").value = "";
-    if ($("order-kitchen-note")) $("order-kitchen-note").value = "";
-
-    // Close Mobile Drawer if open
-    closeMobileCartDrawer();
+    // Success! Clear cart
+    state.cart = [];
+    state.vehicleNote = "";
+    state.walkinNote = "";
+    state.orderNote = "";
+    saveCart();
+    renderProducts();
     renderCart();
-    showToast(`تم إنشاء الطلب #${orderCode} بنجاح`, "success");
+
+    // Close mobile drawer if open
+    const drawer = $("mobile-cart-drawer");
+    if (drawer && drawer.open) drawer.close();
+
+    // Show Success Modal
+    openSuccessModal(orderData);
   } catch (err) {
-    console.error("Order submit exception:", err);
-    showToast(err.message || "فشل إرسال الطلب. يرجى المحاولة ثانية.", "error");
+    console.error("Order submit error:", err);
+    showToast(err.message || "تعذر إرسال الطلب", "error");
   } finally {
-    state.submitting = false;
-    if (submitBtn) {
-      submitBtn.innerHTML = `<span>إنشاء الطلب</span><span aria-hidden="true">←</span>`;
-    }
-    renderCart();
+    setSubmitting(false);
   }
 }
 
-// Mobile Cart Drawer Toggles
-function openMobileCartDrawer() {
-  const panel = $("waiter-cart-panel");
-  if (panel) panel.classList.add("open");
+function setSubmitting(submitting) {
+  state.isSubmitting = submitting;
+  const dSubmit = $("desktop-submit-btn");
+  const mSubmit = $("mobile-submit-btn");
+
+  const text = submitting ? "جاري الإرسال للمطبخ…" : "تأكيد وإرسال الطلب للمطبخ";
+  if (dSubmit) {
+    dSubmit.disabled = submitting;
+    dSubmit.querySelector("span").textContent = text;
+  }
+  if (mSubmit) {
+    mSubmit.disabled = submitting;
+    mSubmit.querySelector("span").textContent = text;
+  }
 }
 
-function closeMobileCartDrawer() {
-  const panel = $("waiter-cart-panel");
-  if (panel) panel.classList.remove("open");
+function openSuccessModal(orderData) {
+  const dialog = $("success-dialog");
+  if (!dialog) return;
+
+  const codeEl = $("success-order-code");
+  if (codeEl) codeEl.textContent = orderData.order_code ? `#${orderData.order_code}` : "#—";
+
+  const modeTotalEl = $("success-mode-and-total");
+  if (modeTotalEl) {
+    const modeLabel = state.orderMode === "car" ? "خدمة سيارات" : "صالة / استلام";
+    const totalLabel = formatMoney(orderData.total_amount || 0);
+    modeTotalEl.textContent = `${modeLabel} • المجموع: ${totalLabel}`;
+  }
+
+  dialog.showModal();
 }
 
-// Bind Global Event Listeners
+// --------------------------------------------------------------------------
+// 9. Login Modal Handling
+// --------------------------------------------------------------------------
+function openLoginModal(hint = "") {
+  const modal = $("waiter-login-modal");
+  if (!modal) return;
+
+  const errEl = $("login-error-alert");
+  if (errEl) {
+    if (hint) {
+      errEl.textContent = hint;
+      errEl.style.display = "block";
+      errEl.style.color = "var(--coffee-primary)";
+    } else {
+      errEl.style.display = "none";
+    }
+  }
+
+  modal.showModal();
+}
+
+function closeLoginModal() {
+  const modal = $("waiter-login-modal");
+  if (modal && modal.open) modal.close();
+}
+
+// --------------------------------------------------------------------------
+// 10. Event Listeners & Binding
+// --------------------------------------------------------------------------
 function setupEventListeners() {
-  // Login Form
-  $("waiter-login-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = $("waiter-email")?.value?.trim() || "";
-    const password = $("waiter-password")?.value || "";
-    const submitBtn = $("waiter-login-submit");
+  // Search Bar
+  const searchInput = $("search-input");
+  const clearSearchBtn = $("search-clear-btn");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      state.searchQuery = searchInput.value;
+      if (clearSearchBtn) clearSearchBtn.style.display = state.searchQuery ? "flex" : "none";
+      renderProducts();
+    });
+  }
+  if (clearSearchBtn) {
+    clearSearchBtn.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      state.searchQuery = "";
+      clearSearchBtn.style.display = "none";
+      renderProducts();
+    });
+  }
 
-    showLoginError(null);
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = "جاري الدخول…";
-    }
+  // Retry Button
+  const retryBtn = $("retry-load-menu-btn");
+  if (retryBtn) {
+    retryBtn.addEventListener("click", () => loadMenuData());
+  }
 
-    try {
-      const result = await signInStaff(email, password, supabase);
-      await enterWithProfile(result.profile);
-    } catch (err) {
-      showLoginError(err.message || "تعذر تسجيل الدخول. تأكد من البيانات.");
-    } finally {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "دخول";
+  // Customization Modal Controls
+  const modalCloseBtn = $("pos-modal-close");
+  if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeCustomizationModal);
+
+  const minusBtn = $("modal-qty-minus");
+  if (minusBtn) {
+    minusBtn.addEventListener("click", () => {
+      if (state.modalQuantity > 1) {
+        state.modalQuantity--;
+        updateModalPriceDisplay();
       }
-    }
+    });
+  }
+
+  const plusBtn = $("modal-qty-plus");
+  if (plusBtn) {
+    plusBtn.addEventListener("click", () => {
+      state.modalQuantity++;
+      updateModalPriceDisplay();
+    });
+  }
+
+  const confirmAddBtn = $("modal-confirm-add-btn");
+  if (confirmAddBtn) {
+    confirmAddBtn.addEventListener("click", () => {
+      const p = state.selectedProductForModal;
+      if (!p) return;
+
+      // Extract chosen options with details
+      const selectedOptsList = [];
+      if (Array.isArray(p.option_groups)) {
+        for (const group of p.option_groups) {
+          const ids = state.modalSelectedOptions[group.id] || [];
+          for (const optId of ids) {
+            const opt = (group.options || []).find(o => o.id === optId);
+            if (opt) {
+              selectedOptsList.push({
+                groupId: group.id,
+                groupName: group.name,
+                optionId: opt.id,
+                optionName: opt.name,
+                priceModifier: Number(opt.price_modifier) || 0
+              });
+            }
+          }
+        }
+      }
+
+      addToCart(p, selectedOptsList, state.modalQuantity);
+      closeCustomizationModal();
+      showToast(`تمت إضافة ${p.name} إلى السلة ✓`, "success");
+      renderProducts();
+      renderCart();
+    });
+  }
+
+  // Desktop Order Mode Selector
+  $("mode-car-btn")?.addEventListener("click", () => {
+    state.orderMode = "car";
+    saveCart();
+    syncOrderModeUI();
+  });
+  $("mode-walkin-btn")?.addEventListener("click", () => {
+    state.orderMode = "walkin";
+    saveCart();
+    syncOrderModeUI();
   });
 
-  // Logout
-  $("waiter-signout-btn")?.addEventListener("click", async () => {
-    try {
-      await signOutStaff(supabase);
-    } catch (err) {
-      console.warn("Signout error:", err);
-    }
-    state.profile = null;
-    state.menuData = null;
-    state.cartItems = [];
-    showLoginGate(true);
+  // Mobile Drawer Order Mode Selector
+  $("drawer-mode-car-btn")?.addEventListener("click", () => {
+    state.orderMode = "car";
+    saveCart();
+    syncOrderModeUI();
+  });
+  $("drawer-mode-walkin-btn")?.addEventListener("click", () => {
+    state.orderMode = "walkin";
+    saveCart();
+    syncOrderModeUI();
   });
 
-  // Search Input
-  $("waiter-search")?.addEventListener("input", (e) => {
-    state.searchQuery = e.target.value;
-    renderCatalog();
+  // Context Inputs Sync
+  const dVeh = $("input-vehicle-note");
+  const mVeh = $("drawer-vehicle-note");
+  [dVeh, mVeh].forEach(input => {
+    input?.addEventListener("input", (e) => {
+      state.vehicleNote = e.target.value;
+      if (dVeh && dVeh !== e.target) dVeh.value = state.vehicleNote;
+      if (mVeh && mVeh !== e.target) mVeh.value = state.vehicleNote;
+      dVeh?.classList.remove("has-error");
+      mVeh?.classList.remove("has-error");
+    });
   });
 
-  // Category Pills delegation
-  $("waiter-categories-list")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-category]");
-    if (!btn) return;
-
-    state.activeCategoryId = btn.dataset.category;
-    renderCategories();
-    renderCatalog();
-
-    if (state.activeCategoryId !== "all") {
-      const section = $(`cat-sec-${state.activeCategoryId}`);
-      if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+  const dWalk = $("input-walkin-note");
+  const mWalk = $("drawer-walkin-note");
+  [dWalk, mWalk].forEach(input => {
+    input?.addEventListener("input", (e) => {
+      state.walkinNote = e.target.value;
+      if (dWalk && dWalk !== e.target) dWalk.value = state.walkinNote;
+      if (mWalk && mWalk !== e.target) mWalk.value = state.walkinNote;
+      dWalk?.classList.remove("has-error");
+      mWalk?.classList.remove("has-error");
+    });
   });
 
-  // Catalog Click delegation (Card or Add button)
-  $("waiter-products-container")?.addEventListener("click", (e) => {
-    const addBtn = e.target.closest("[data-action='add-product']");
-    const card = e.target.closest(".product-card");
-    const productId = addBtn?.dataset.productId || card?.dataset.productId;
-
-    if (productId) {
-      onProductClick(productId);
-    }
+  const dNote = $("input-order-note");
+  const mNote = $("drawer-order-note");
+  [dNote, mNote].forEach(input => {
+    input?.addEventListener("input", (e) => {
+      state.orderNote = e.target.value;
+      if (dNote && dNote !== e.target) dNote.value = state.orderNote;
+      if (mNote && mNote !== e.target) mNote.value = state.orderNote;
+    });
   });
 
-  // Dialog Stepper & Add
-  $("dialog-qty-minus")?.addEventListener("click", () => {
-    if (state.dialogQuantity > 1) {
-      state.dialogQuantity--;
-      $("dialog-qty").textContent = String(state.dialogQuantity);
-      updateDialogTotalPrice();
-    }
+  // Clear Cart Buttons
+  $("desktop-cart-clear")?.addEventListener("click", clearCart);
+  $("mobile-cart-clear")?.addEventListener("click", clearCart);
+
+  // Submit Buttons
+  $("desktop-submit-btn")?.addEventListener("click", handleCheckoutSubmit);
+  $("mobile-submit-btn")?.addEventListener("click", handleCheckoutSubmit);
+
+  // Mobile Floating Bar Click (Opens Drawer)
+  $("mobile-floating-bar")?.addEventListener("click", () => {
+    const drawer = $("mobile-cart-drawer");
+    if (drawer) drawer.showModal();
+  });
+  $("mobile-drawer-close")?.addEventListener("click", () => {
+    const drawer = $("mobile-cart-drawer");
+    if (drawer) drawer.close();
   });
 
-  $("dialog-qty-plus")?.addEventListener("click", () => {
-    if (state.dialogQuantity < 50) {
-      state.dialogQuantity++;
-      $("dialog-qty").textContent = String(state.dialogQuantity);
-      updateDialogTotalPrice();
-    }
-  });
-
-  $("dialog-close-btn")?.addEventListener("click", () => {
-    $("product-dialog")?.close();
-  });
-
-  $("dialog-add-btn")?.addEventListener("click", () => {
-    if (!validateDialogSelections()) return;
-    const selectedIds = Object.values(state.dialogPicks).flat();
-    addToCart(state.activeProductForModal, selectedIds, state.dialogQuantity);
-    $("product-dialog")?.close();
-  });
-
-  // Cart Clear
-  $("cart-clear-btn")?.addEventListener("click", () => {
-    state.cartItems = [];
-    state.idempotencyKey = null;
-    renderCart();
-  });
-
-  // Order Mode Toggles
-  $("mode-car-btn")?.addEventListener("click", () => setOrderMode("car"));
-  $("mode-walkin-btn")?.addEventListener("click", () => setOrderMode("walkin"));
-
-  // Submit Order
-  $("cart-submit-btn")?.addEventListener("click", submitOrder);
-
-  // Mobile Drawer Controls
-  $("mobile-cart-open-btn")?.addEventListener("click", openMobileCartDrawer);
-  $("cart-mobile-close-btn")?.addEventListener("click", closeMobileCartDrawer);
-
-  // Success Dialog - New Order Button
+  // New Order Button (in Success Modal)
   $("success-new-order-btn")?.addEventListener("click", () => {
-    $("success-dialog")?.close();
+    const dialog = $("success-dialog");
+    if (dialog && dialog.open) dialog.close();
+    // Scroll to top
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
+
+  // Login Modal Events
+  $("desktop-login-trigger")?.addEventListener("click", () => openLoginModal());
+  $("login-modal-close")?.addEventListener("click", closeLoginModal);
+
+  const loginForm = $("waiter-login-form");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = $("login-email")?.value;
+      const pass = $("login-password")?.value;
+      const errEl = $("login-error-alert");
+      const submitBtn = $("login-submit-btn");
+
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "جاري التحقق…"; }
+      if (errEl) errEl.style.display = "none";
+
+      try {
+        const { profile } = await signInStaff(email, pass, supabase);
+        if (profile.role !== "roadside" && profile.role !== "owner" && profile.role !== "admin") {
+          throw new Error("هذا الحساب ليس لديه صلاحية استخدام نقطة البيع.");
+        }
+
+        state.profile = profile;
+        updateAuthUI(profile);
+        closeLoginModal();
+        showToast(`مرحباً بك، ${profile.full_name || "الويتر"} 👋`, "success");
+
+        // If there was a pending order waiting for login, submit it now!
+        if (state.pendingSubmitAfterLogin) {
+          state.pendingSubmitAfterLogin = false;
+          handleCheckoutSubmit();
+        }
+      } catch (err) {
+        if (errEl) {
+          errEl.textContent = err.message || "البريد أو كلمة المرور غير صحيحة.";
+          errEl.style.display = "block";
+          errEl.style.color = "#B91C1C";
+        }
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "دخول"; }
+      }
+    });
+  }
+
+  // Sign out
+  $("desktop-signout-btn")?.addEventListener("click", async () => {
+    await signOutStaff(supabase).catch(() => {});
+    state.profile = null;
+    updateAuthUI(null);
+    showToast("تم تسجيل الخروج بنجاح", "success");
+  });
 }
 
-// App Entrypoint
-document.addEventListener("DOMContentLoaded", () => {
-  setupEventListeners();
-  initAuth();
-});
+// --------------------------------------------------------------------------
+// 11. Toast Notifications
+// --------------------------------------------------------------------------
+let toastTimeout = null;
+function showToast(message, type = "success") {
+  const container = $("toast-container");
+  if (!container) return;
+
+  window.clearTimeout(toastTimeout);
+  container.innerHTML = `
+    <div class="pos-toast ${type}">
+      <span>${escapeHtml(message)}</span>
+    </div>
+  `;
+
+  toastTimeout = window.setTimeout(() => {
+    container.innerHTML = "";
+  }, 2400);
+}
