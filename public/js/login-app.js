@@ -11,8 +11,7 @@ import {
   sanitizeNextPath,
   roleLabel
 } from "./staff-auth.js";
-import { isSupabaseConfigured, createScopedSupabaseClient } from "./supabase-scoped-client.js";
-import { SUPABASE_URL } from "./config.js";
+import { supabase, isSupabaseConfigured } from "./supabase-client.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -21,49 +20,6 @@ const state = {
   nextParam: "",
   isRecoveryFlow: false
 };
-
-const DEFAULT_AUTH_STORAGE_KEY = `sb-${new URL(SUPABASE_URL).hostname.split(".")[0]}-auth-token`;
-const LOGIN_STAGING_STORAGE_KEY = "box_cofe_login_staging";
-const initialNext = sanitizeNextPath(new URLSearchParams(window.location.search).get("next"));
-let activeAuthStorageKey = initialNext.startsWith("/waiter") || initialNext.startsWith("/roadside")
-  ? "box_cofe_waiter_auth"
-  : DEFAULT_AUTH_STORAGE_KEY;
-
-// One Auth client handles login and changes only the backing storage key after
-// staff_profiles confirms the role. This avoids creating probe/default/waiter
-// Auth clients together, while keeping waiter and admin sessions isolated.
-const loginStorage = {
-  async getItem() {
-    return localStorage.getItem(activeAuthStorageKey);
-  },
-  async setItem(_key, value) {
-    localStorage.setItem(activeAuthStorageKey, value);
-  },
-  async removeItem() {
-    localStorage.removeItem(activeAuthStorageKey);
-  }
-};
-
-const supabase = await createScopedSupabaseClient(LOGIN_STAGING_STORAGE_KEY, loginStorage, {
-  detectSessionInUrl: true
-});
-
-async function persistRoleSession(context) {
-  if (!context?.profile || !context.session || !supabase) return;
-  const targetKey = context.profile.role === "roadside"
-    ? "box_cofe_waiter_auth"
-    : DEFAULT_AUTH_STORAGE_KEY;
-
-  if (activeAuthStorageKey !== targetKey) {
-    const serializedSession = localStorage.getItem(activeAuthStorageKey);
-    if (!serializedSession) throw new Error("تعذر حفظ جلسة الدخول. أعد المحاولة.");
-    localStorage.setItem(targetKey, serializedSession);
-    localStorage.removeItem(activeAuthStorageKey);
-    activeAuthStorageKey = targetKey;
-  }
-
-  await Promise.resolve(supabase.auth.stopAutoRefresh?.()).catch(() => {});
-}
 
 // ============================================================================
 // UI Helper Functions
@@ -177,9 +133,6 @@ function checkUrlParams() {
 
   const rawNext = searchParams.get("next");
   state.nextParam = sanitizeNextPath(rawNext);
-  activeAuthStorageKey = state.nextParam.startsWith("/waiter") || state.nextParam.startsWith("/roadside")
-    ? "box_cofe_waiter_auth"
-    : DEFAULT_AUTH_STORAGE_KEY;
 
   // Check if arriving from Supabase password recovery email
   const type = searchParams.get("type") || hashParams.get("type");
@@ -206,8 +159,6 @@ async function checkExistingSession() {
 
     const context = await getStaffSession(supabase);
     if (!context || !context.profile) return;
-
-    await persistRoleSession(context, supabase);
 
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
     window.location.replace(targetUrl);
@@ -249,9 +200,7 @@ async function handleSignInSubmit(event) {
   if (spinner) spinner.hidden = false;
 
   try {
-    activeAuthStorageKey = LOGIN_STAGING_STORAGE_KEY;
     const context = await signInStaff(emailVal, passwordVal, supabase);
-    await persistRoleSession(context, supabase);
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
     window.location.replace(targetUrl);
   } catch (error) {
