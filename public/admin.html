@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles/admin.css?v=20260928_v12" />
+  <link rel="stylesheet" href="/styles/admin.css?v=20260928_v15" />
   <script src="/vendor/qrcode.min.js"></script>
 </head>
 <body class="erp-locked-body auth-pending">
@@ -644,25 +644,37 @@
           </div>
           <div class="field-box">
             <label for="item-description-input">وصف المنتج ومكوناته <span class="optional-mark">اختياري</span></label>
-            <textarea id="item-description-input" class="structured-input" rows="2" maxlength="500" placeholder="مكونات المشروب، الحجم القياسي، أو أي ملاحظة تظهر للزبون..."></textarea>
+            <textarea id="item-description-input" class="structured-input structured-textarea" rows="3" maxlength="500" placeholder="اكتب وصفاً جذاباً للمنتج ومكوناته، مثل: إسبريسو مزدوج مع حليب مبخر وصوص الكراميل المملح..."></textarea>
+            <small class="field-help">يظهر هذا الوصف للزبون في صفحة المنيو تحت اسم المنتج مباشرة.</small>
           </div>
           <div class="field-box">
             <div class="field-label-row">
               <label>صورة المنتج</label>
-              <button type="button" id="btn-remove-item-image" class="box-btn-danger-sm image-remove-btn" style="display:none;">🗑️ إزالة الصورة</button>
+              <button type="button" id="btn-remove-item-image" class="box-btn-danger-sm image-remove-btn" style="display:none;">إزالة الصورة ✕</button>
             </div>
             <input type="file" id="item-image-file" accept="image/*" style="display:none;" />
             <input type="hidden" id="item-image-input" />
 
-            <div class="image-single-picker-card" id="item-image-picker-zone" role="button" tabindex="0" title="اضغط لفتح استوديو الصور بالهاتف">
+            <div class="image-single-picker-card" id="item-image-picker-zone" role="button" tabindex="0" title="اضغط لاختيار صورة من جهازك">
               <div id="item-image-preview-wrap" class="picker-preview-wrap" style="display:none;">
                 <img id="item-image-preview" src="" alt="معاينة المنتج" />
-                <div class="picker-change-overlay"><span>🔄 تغيير الصورة من الهاتف</span></div>
+                <div class="picker-change-overlay">
+                  <span class="picker-change-btn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    تغيير الصورة
+                  </span>
+                </div>
               </div>
               <div id="item-image-placeholder" class="picker-empty-placeholder">
-                <div class="picker-icon-circle">📷</div>
-                <strong class="picker-prompt-title">اضغط هنا لاختيار صورة المنتج من الهاتف</strong>
-                <small id="item-image-status" class="picker-prompt-sub">يفتح معرض الصور والألبوم مباشرة (JPG, PNG, WebP)</small>
+                <div class="picker-icon-circle">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </div>
+                <strong class="picker-prompt-title">إضافة صورة المنتج</strong>
+                <span id="item-image-status" class="picker-prompt-sub">اضغط لاختيار صورة من الاستوديو أو اسحبها هنا</span>
+                <span class="picker-specs-pill">JPG • PNG • WebP (حتى 5MB)</span>
               </div>
             </div>
           </div>
@@ -820,6 +832,6 @@
   <div id="admin-toast" class="erp-toast" role="status" aria-live="polite" hidden></div>
 
   <script src="/vendor/supabase.umd.js"></script>
-  <script type="module" src="/js/admin-app.js?v=20260928_v12"></script>
+  <script type="module" src="/js/admin-app.js?v=20260928_v15"></script>
 </body>
 </html>

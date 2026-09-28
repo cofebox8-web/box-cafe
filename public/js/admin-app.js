@@ -357,7 +357,13 @@ function renderOptionGroupsEditor(groups = []) {
   if (!groups.length) {
     const empty = document.createElement('div');
     empty.className = 'option-groups-empty';
-    empty.innerHTML = '<span class="option-empty-icon">＋</span><strong>لا توجد إضافات لهذا المنتج</strong><small>أضف مجموعة خيارات إذا كان للمنتج أحجام أو نكهات أو إضافات بسعر مختلف.</small>';
+    empty.innerHTML = `
+      <div class="option-empty-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+      <strong>لا توجد مجموعات خيارات لهذا المنتج</strong>
+      <small>أضف مجموعة خيارات إذا كان للمنتج أحجام (صغير / وسط / كبير) أو خيارات مخصصة كنوع الحليب والإضافات.</small>
+    `;
     root.append(empty);
     updateOptionGroupsMeta(0);
     return;
@@ -368,17 +374,50 @@ function renderOptionGroupsEditor(groups = []) {
     card.dataset.groupIndex = String(groupIndex);
     card.innerHTML = `
       <div class="option-group-editor-head">
-        <div class="option-group-title-wrap"><span class="option-group-number">${String(groupIndex + 1).padStart(2, '0')}</span><div><strong>مجموعة الخيارات ${groupIndex + 1}</strong><small>حدد طريقة الاختيار ثم أضف الخيارات</small></div></div>
-        <button type="button" class="option-remove-btn" data-remove-group aria-label="حذف المجموعة">حذف المجموعة</button>
+        <div class="option-group-title-wrap">
+          <span class="option-group-number">${String(groupIndex + 1).padStart(2, '0')}</span>
+          <div>
+            <strong>مجموعة الخيارات ${groupIndex + 1}</strong>
+            <small>حدد طريقة الاختيار ثم أضف الخيارات وأسعارها</small>
+          </div>
+        </div>
+        <button type="button" class="group-remove-pill" data-remove-group aria-label="حذف المجموعة" title="حذف هذه المجموعة">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span>حذف المجموعة</span>
+        </button>
       </div>
       <div class="form-two-boxes">
-        <div class="field-box"><label>اسم المجموعة</label><input type="text" class="structured-input" data-group-name maxlength="80" placeholder="مثال: حجم المشروب" /><small class="field-help">يظهر كعنوان للخيارات عند الطلب.</small></div>
-        <div class="field-box"><label>طريقة الاختيار</label><select class="structured-input" data-group-type><option value="single">اختيار واحد</option><option value="multiple">اختيارات متعددة</option></select><small class="field-help">اختيار واحد للحجم، ومتعددة للإضافات.</small></div>
+        <div class="field-box">
+          <label>اسم المجموعة <span class="required-mark">*</span></label>
+          <input type="text" class="structured-input" data-group-name maxlength="80" placeholder="مثال: الحجم، نوع الحليب" />
+          <small class="field-help">يظهر كعنوان للمجموعة عند الطلب.</small>
+        </div>
+        <div class="field-box">
+          <label>طريقة الاختيار <span class="required-mark">*</span></label>
+          <select class="structured-input" data-group-type>
+            <option value="single">اختيار واحد فقط (كالحجم)</option>
+            <option value="multiple">اختيارات متعددة (كالإضافات)</option>
+          </select>
+          <small class="field-help">واحد للحجم، ومتعدد للإضافات والنكهات.</small>
+        </div>
       </div>
-      <label class="option-required-toggle"><input type="checkbox" data-group-required /> <span>إلزام اختيار من هذه المجموعة</span><small>لن يكتمل الطلب بدون تحديد خيار.</small></label>
-      <div class="option-rows-heading"><span>اسم الخيار</span><span>السعر الإضافي</span><span class="sr-only">إجراء</span></div>
+      <label class="option-required-card">
+        <input type="checkbox" data-group-required />
+        <div class="required-card-info">
+          <strong>إلزام الزبون بالاختيار من هذه المجموعة</strong>
+          <small>لن يكتمل الطلب في المنيو بدون تحديد أحد الخيارات</small>
+        </div>
+      </label>
+      <div class="option-rows-heading">
+        <span>اسم الخيار</span>
+        <span>السعر الإضافي</span>
+        <span class="sr-spacer" aria-hidden="true"></span>
+      </div>
       <div class="option-rows" data-option-rows></div>
-      <button type="button" class="option-add-row" data-add-option>＋ إضافة خيار جديد</button>`;
+      <button type="button" class="option-add-row-btn" data-add-option>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        <span>إضافة خيار جديد للمجموعة</span>
+      </button>`;
     card.querySelector('[data-group-name]').value = group.name || '';
     card.querySelector('[data-group-type]').value = group.selection_type === 'multiple' ? 'multiple' : 'single';
     card.querySelector('[data-group-required]').checked = Boolean(group.is_required);
@@ -399,9 +438,16 @@ function appendOptionRow(container, option = {}) {
   const row = document.createElement('div');
   row.className = 'option-editor-row';
   row.innerHTML = `
-    <div class="option-name-cell"><input type="text" class="structured-input" data-option-name maxlength="80" placeholder="مثال: حليب قليل الدسم" aria-label="اسم الخيار" /></div>
-    <div class="option-price-cell"><input type="number" class="structured-input" data-option-price min="0" max="1000000" step="250" value="0" placeholder="0" aria-label="السعر الإضافي بالدينار" /><span>د.ع</span></div>
-    <button type="button" class="option-remove-btn" data-remove-option aria-label="حذف الخيار">حذف</button>`;
+    <div class="option-name-cell">
+      <input type="text" class="structured-input" data-option-name maxlength="80" placeholder="مثال: حليب لوز" aria-label="اسم الخيار" />
+    </div>
+    <div class="option-price-cell">
+      <input type="number" class="structured-input" data-option-price min="0" max="1000000" step="250" value="0" placeholder="0" aria-label="السعر الإضافي بالدينار" />
+      <span>د.ع</span>
+    </div>
+    <button type="button" class="option-row-delete-btn option-remove-btn" data-remove-option aria-label="حذف الخيار" title="حذف الخيار">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+    </button>`;
   row.querySelector('[data-option-name]').value = option.name || '';
   row.querySelector('[data-option-price]').value = Number(option.price_modifier) || 0;
   container.append(row);
@@ -1270,7 +1316,7 @@ function openMenuItemModal(itemId = null) {
     if (previewImg) previewImg.src = '';
     if (previewWrap) previewWrap.style.display = 'none';
     if (placeholder) placeholder.style.display = 'flex';
-    if (statusEl) statusEl.textContent = 'يفتح معرض الصور والألبوم مباشرة (JPG, PNG, WebP)';
+    if (statusEl) statusEl.textContent = 'اضغط لاختيار صورة من الاستوديو أو اسحبها هنا';
   }
 
   renderOptionGroupsEditor(item?.option_groups || []);
@@ -1938,7 +1984,7 @@ async function initAdminERP() {
     } else {
       const existingUrl = document.getElementById('item-image-input')?.value.trim();
       if (!existingUrl) {
-        updateImageLivePreview('', 'يفتح معرض الصور والألبوم مباشرة (JPG, PNG, WebP)');
+        updateImageLivePreview('', 'اضغط لاختيار صورة من الاستوديو أو اسحبها هنا');
         if (removeBtn) removeBtn.style.display = 'none';
       }
     }
