@@ -431,8 +431,41 @@ function handleQuickAdd(product) {
 }
 
 // --------------------------------------------------------------------------
-// 5. Customization Modal Handling
+// 5. Customization Modal Handling & Bulletproof Scroll Lock
 // --------------------------------------------------------------------------
+let activeModalCount = 0;
+let savedWindowScrollY = 0;
+
+function lockBodyScroll() {
+  if (activeModalCount === 0) {
+    savedWindowScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${savedWindowScrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.classList.add("modal-open");
+  }
+  activeModalCount++;
+}
+
+function unlockBodyScroll() {
+  if (activeModalCount > 0) activeModalCount--;
+  if (activeModalCount === 0) {
+    document.body.classList.remove("modal-open");
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+    window.scrollTo(0, savedWindowScrollY);
+  }
+}
+
 function openCustomizationModal(product) {
   state.selectedProductForModal = product;
   state.modalQuantity = 1;
@@ -457,7 +490,7 @@ function openCustomizationModal(product) {
 
   const modal = $("customization-modal");
   if (modal) {
-    document.body.style.overflow = "hidden";
+    lockBodyScroll();
     modal.showModal();
   }
 }
@@ -466,7 +499,6 @@ function closeCustomizationModal() {
   const modal = $("customization-modal");
   if (modal && modal.open) {
     modal.close();
-    document.body.style.overflow = "";
   }
 }
 
@@ -939,6 +971,7 @@ function openSuccessModal(orderData) {
     modeTotalEl.textContent = `${modeLabel} • المجموع: ${totalLabel}`;
   }
 
+  lockBodyScroll();
   dialog.showModal();
 }
 
@@ -960,6 +993,7 @@ function openLoginModal(hint = "") {
     }
   }
 
+  lockBodyScroll();
   modal.showModal();
 }
 
@@ -997,7 +1031,26 @@ function setupEventListeners() {
     retryBtn.addEventListener("click", () => loadMenuData());
   }
 
-  // Customization Modal Controls
+  // Customization Modal Controls & Backdrop / Touch Containment
+  const customModal = $("customization-modal");
+  if (customModal) {
+    customModal.addEventListener("close", () => unlockBodyScroll());
+    customModal.addEventListener("click", (e) => {
+      const rect = customModal.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
+        && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        closeCustomizationModal();
+      }
+    });
+    // Prevent touch scrolling outside the scrollable body from moving background
+    customModal.addEventListener("touchmove", (e) => {
+      if (!e.target.closest(".modal-scrollable-body")) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
+
   const modalCloseBtn = $("pos-modal-close");
   if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeCustomizationModal);
 
@@ -1120,25 +1173,65 @@ function setupEventListeners() {
   $("desktop-submit-btn")?.addEventListener("click", handleCheckoutSubmit);
   $("mobile-submit-btn")?.addEventListener("click", handleCheckoutSubmit);
 
+  // Mobile Drawer Dialog & Touch Containment
+  const drawer = $("mobile-cart-drawer");
+  if (drawer) {
+    drawer.addEventListener("close", () => unlockBodyScroll());
+    drawer.addEventListener("click", (e) => {
+      const rect = drawer.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
+        && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        drawer.close();
+      }
+    });
+    drawer.addEventListener("touchmove", (e) => {
+      if (!e.target.closest(".cart-items-scroll-area")) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
+
   // Mobile Floating Bar Click (Opens Drawer)
   $("mobile-floating-bar")?.addEventListener("click", () => {
-    const drawer = $("mobile-cart-drawer");
-    if (drawer) drawer.showModal();
+    if (drawer) {
+      lockBodyScroll();
+      drawer.showModal();
+    }
   });
   $("mobile-drawer-close")?.addEventListener("click", () => {
-    const drawer = $("mobile-cart-drawer");
     if (drawer) drawer.close();
   });
 
   // New Order Button (in Success Modal)
+  const successDialog = $("success-dialog");
+  if (successDialog) {
+    successDialog.addEventListener("close", () => unlockBodyScroll());
+  }
   $("success-new-order-btn")?.addEventListener("click", () => {
-    const dialog = $("success-dialog");
-    if (dialog && dialog.open) dialog.close();
+    if (successDialog && successDialog.open) successDialog.close();
     // Scroll to top
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
-  // Login Modal Events
+  // Login Modal Events & Touch Containment
+  const loginModal = $("waiter-login-modal");
+  if (loginModal) {
+    loginModal.addEventListener("close", () => unlockBodyScroll());
+    loginModal.addEventListener("click", (e) => {
+      const rect = loginModal.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
+        && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        closeLoginModal();
+      }
+    });
+    loginModal.addEventListener("touchmove", (e) => {
+      if (!e.target.closest(".waiter-login-box")) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
   $("desktop-login-trigger")?.addEventListener("click", () => openLoginModal());
   $("login-modal-close")?.addEventListener("click", closeLoginModal);
 
