@@ -282,17 +282,10 @@ function renderProductCardHtml(p, currency = "IQD") {
             <span class="price-amount">${priceFormatted}</span>
             <span class="price-currency">د.ع</span>
           </div>
-          <div class="pos-card-actions">
-            ${hasOptions ? `
-              <button type="button" class="pos-btn-customize" data-action="customize" data-product-id="${p.id}" title="تخصيص الحجم والإضافات">
-                <span>تخصيص</span>
-              </button>
-            ` : ""}
-            <button type="button" class="pos-btn-quick-add" data-action="quick-add" data-product-id="${p.id}" title="${hasOptions ? 'إضافة سريعة بالخيارات الافتراضية' : 'إضافة للطلب'}" ${!isAvailable ? 'disabled' : ''}>
-              <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>إضافة</span>
-            </button>
-          </div>
+          <button type="button" class="pos-full-add-btn" data-action="pos-add" data-product-id="${p.id}" ${!isAvailable ? 'disabled' : ''} aria-label="إضافة ${escapeHtml(p.name)} للطلب">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>إضافة للطلب</span>
+          </button>
         </div>
       </div>
     </article>
@@ -377,40 +370,38 @@ function renderProducts() {
 
   container.innerHTML = html;
 
-  // Bind Card Click Events
+  // Bind Card & Single Full-Width Add Button Events
   container.querySelectorAll(".product-card").forEach(card => {
     const productId = card.dataset.productId;
     const p = products.find(x => x.id === productId);
     if (!p || !p.is_available) return;
 
-    // Card body click
-    card.addEventListener("click", (e) => {
-      if (e.target.closest(".pos-card-actions")) return;
+    const triggerAction = (e) => {
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
       const hasOptions = Array.isArray(p.option_groups) && p.option_groups.length > 0;
       if (hasOptions) {
         openCustomizationModal(p);
       } else {
         handleQuickAdd(p);
       }
+    };
+
+    // Full card tap/click
+    card.addEventListener("click", triggerAction);
+
+    // Full-width add button tap/click
+    const addBtn = card.querySelector(".pos-full-add-btn");
+    if (addBtn) {
+      addBtn.addEventListener("click", triggerAction);
+    }
+
+    // Keyboard support (Enter / Space)
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        triggerAction(e);
+      }
     });
-
-    // Quick Add button
-    const quickAddBtn = card.querySelector(".pos-btn-quick-add");
-    if (quickAddBtn) {
-      quickAddBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        handleQuickAdd(p);
-      });
-    }
-
-    // Customize button
-    const customizeBtn = card.querySelector(".pos-btn-customize");
-    if (customizeBtn) {
-      customizeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        openCustomizationModal(p);
-      });
-    }
   });
 }
 
@@ -434,7 +425,7 @@ function handleQuickAdd(product) {
   }
 
   addToCart(product, defaultOpts, 1);
-  showToast(`+1 ${product.name} تمت الإضافة للسلة ✓`, "success");
+  showToast(`تمت إضافة ${product.name} إلى السلة ✓`, "success");
   renderProducts(); // Refresh card qty badge
   renderCart();
 }
@@ -538,6 +529,7 @@ function renderModalContent() {
       const isSingle = group.selection_type === "single" || group.max_selections === 1;
       const isReq = Boolean(group.is_required);
       const selectedIds = state.modalSelectedOptions[group.id] || [];
+      const opts = group.options || [];
 
       html += `
         <div class="pos-options-group" data-group-id="${group.id}">
@@ -547,8 +539,8 @@ function renderModalContent() {
               ${isReq ? 'إجباري' : 'اختياري'}
             </span>
           </div>
-          <div class="pos-segmented-group">
-            ${(group.options || []).map(opt => {
+          <div class="pos-segmented-group" data-count="${opts.length}">
+            ${opts.map(opt => {
               const isSelected = selectedIds.includes(opt.id);
               const mod = Number(opt.price_modifier) || 0;
               const priceText = mod > 0 ? `+${formatAmount(mod)} د.ع` : (mod < 0 ? `${formatAmount(mod)} د.ع` : "مشمول");
@@ -563,6 +555,13 @@ function renderModalContent() {
         </div>
       `;
     }
+  } else {
+    html = `
+      <div class="modal-info-note">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <p>هذا الصنف يُحضّر بالوصفة القياسية لبوكس كافي دون خيارات إضافية.</p>
+      </div>
+    `;
   }
 
   bodyEl.innerHTML = html;
