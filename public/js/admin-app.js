@@ -110,12 +110,12 @@ async function reloadAdminOrders() {
 function servicePointErrorMessage(code) {
   return {
     NOT_AUTHORIZED: 'لا تملك صلاحية إدارة نقاط الخدمة.',
-    BRANCH_NOT_ALLOWED: 'لا تملك صلاحية تنفيذ هذه العملية.',
+    BRANCH_NOT_ALLOWED: 'لا تملك صلاحية على هذا الفرع.',
     INVALID_LABEL: 'اسم نقطة الخدمة غير صالح (بين 1 و80 حرفاً).',
     INVALID_KIND: 'نوع نقطة الخدمة غير صالح.',
-    BRANCH_NOT_FOUND: 'الإعداد المحدد غير موجود أو غير مفعّل.',
+    BRANCH_NOT_FOUND: 'الفرع المحدد غير موجود أو غير مفعّل.',
     SERVICE_POINT_NOT_FOUND: 'تعذر إيجاد نقطة الخدمة.',
-    DUPLICATE_LABEL: 'يوجد بالفعل إعداد بنفس الاسم.'
+    DUPLICATE_LABEL: 'يوجد بالفعل نقطة خدمة بنفس الاسم في هذا الفرع.'
   }[code] || 'تعذر تنفيذ العملية. حاول مرة أخرى.';
 }
 
@@ -155,7 +155,7 @@ function renderServicePoints() {
   grid.innerHTML = servicePoints.map((point) => `
     <article class="service-point-card">
       <div class="service-point-card-top">
-        <div><strong>${escapeHtml(point.label)}</strong><small>${point.kind === 'pickup_point' ? 'نقطة استلام' : 'مسار طلب سيارات'}</small></div>
+        <div><strong>${escapeHtml(point.label)}</strong><small>${escapeHtml(point.branch_name)} · ${point.kind === 'pickup_point' ? 'نقطة استلام' : 'مسار طلب سيارات'}</small></div>
         <span class="service-point-status ${point.is_active ? 'is-active' : ''}">${point.is_active ? 'مفعلة' : 'متوقفة'}</span>
       </div>
       <div class="service-point-card-actions">
@@ -200,11 +200,21 @@ function renderServicePoints() {
   }));
 }
 
-function openServicePointModal(point = null) {
+async function openServicePointModal(point = null) {
   const modal = document.getElementById('modal-service-point');
   const branchSelect = document.getElementById('service-point-branch');
+  if (!servicePointBranches.length && isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase.from('branches').select('id, name, slug').eq('is_active', true).order('name');
+      if (!error && Array.isArray(data) && data.length) {
+        servicePointBranches = data;
+      }
+    } catch (err) {
+      console.warn('Fallback branch query failed:', err);
+    }
+  }
   if (!servicePointBranches.length) {
-    showToast('لا توجد إعدادات متاحة حالياً. تحقق من تفعيل النظام ثم أعد المحاولة.');
+    showToast('لا يوجد فرع متاح لهذا الحساب. تحقق من تفعيل الفرع وصلاحية الحساب.');
     return;
   }
   branchSelect.innerHTML = servicePointBranches.map((branch) => `<option value="${escapeHtml(branch.id)}">${escapeHtml(branch.name)}</option>`).join('');
@@ -743,131 +753,6 @@ function renderAllOverviewAndHubBoxes() {
       </div>
     `;
   }).join('');
-
-  renderHubLiveOrdersFeed();
-}
-
-let hubOrdersStatusFilter = 'all';
-
-function renderHubLiveOrdersFeed() {
-  const container = document.getElementById('hub-live-orders-list');
-  if (!container) return;
-
-  const sourceFilter = document.getElementById('hub-filter-order-source')?.value || 'all';
-
-  const countAll = (liveOrders || []).length;
-  const countNew = (liveOrders || []).filter(o => o.status === 'new' || o.status === 'confirmed').length;
-  const countPrep = (liveOrders || []).filter(o => o.status === 'preparing').length;
-  const countComp = (liveOrders || []).filter(o => o.status === 'ready' || o.status === 'handed_off').length;
-
-  const setPill = (id, count) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = digits.format(count);
-  };
-  setPill('hub-badge-count-all', countAll);
-  setPill('hub-badge-count-new', countNew);
-  setPill('hub-badge-count-prep', countPrep);
-  setPill('hub-badge-count-comp', countComp);
-
-  const filteredOrders = (liveOrders || []).filter((order) => {
-    if (hubOrdersStatusFilter === 'new') {
-      if (order.status !== 'new' && order.status !== 'confirmed') return false;
-    } else if (hubOrdersStatusFilter === 'preparing') {
-      if (order.status !== 'preparing') return false;
-    } else if (hubOrdersStatusFilter === 'completed') {
-      if (order.status !== 'ready' && order.status !== 'handed_off') return false;
-    }
-
-    if (sourceFilter === 'roadside' && order.source !== 'roadside') return false;
-    if (sourceFilter === 'qr' && order.source !== 'qr') return false;
-
-    return true;
-  });
-
-  if (!filteredOrders.length) {
-    container.innerHTML = `
-      <div class="menu-empty-state" role="status" style="padding: 24px; text-align: center; color: var(--text-dim);">
-        لا توجد طلبات في هذا القسم حالياً
-      </div>
-    `;
-    return;
-  }
-
-  const statusMeta = {
-    new: { label: 'جديد', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' },
-    confirmed: { label: 'مؤكد', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' },
-    preparing: { label: 'قيد التحضير 🔥', color: '#38BDF8', bg: 'rgba(56, 189, 248, 0.15)' },
-    ready: { label: 'جاهز للتسليم ✓', color: '#4ADE80', bg: 'rgba(74, 222, 128, 0.15)' },
-    handed_off: { label: 'تم التسليم', color: '#4ADE80', bg: 'rgba(74, 222, 128, 0.15)' },
-    cancelled: { label: 'ملغي', color: '#F87171', bg: 'rgba(248, 113, 113, 0.15)' }
-  };
-
-  container.innerHTML = filteredOrders.map((order) => {
-    const isWalkIn = order.order_mode === 'walkin' || (order.vehicle_note || '').includes('[مشاة]');
-    
-    let typeBadge = '';
-    if (order.source === 'roadside') {
-      if (isWalkIn) {
-        typeBadge = '<span class="order-source-tag walkin" style="font-size:0.72rem;padding:2px 7px;border-radius:6px;background:rgba(167,139,250,0.15);color:#d8c5ff;">🚶‍♂️ مشاة / صالة</span>';
-      } else {
-        typeBadge = '<span class="order-source-tag car" style="font-size:0.72rem;padding:2px 7px;border-radius:6px;background:rgba(245,158,11,0.15);color:#fcd34d;">🚗 خدمة سيارات</span>';
-      }
-    } else {
-      typeBadge = '<span class="order-source-tag qr" style="font-size:0.72rem;padding:2px 7px;border-radius:6px;background:rgba(56,189,248,0.15);color:#7dd3fc;">📱 مسح رمز QR</span>';
-    }
-
-    const cleanVehicle = (order.vehicle_note || '')
-      .replace('[مشاة]', '')
-      .replace('[سيارة]', '')
-      .trim();
-
-    const st = statusMeta[order.status] || { label: order.status, color: '#A78BFA', bg: 'rgba(167, 139, 250, 0.15)' };
-
-    const itemsChips = (order.items || []).map((i) => {
-      const opts = (i.options || []).length ? ` <small style="color:var(--text-dim);">(${i.options.join('، ')})</small>` : '';
-      return `<span class="invoice-item-chip"><strong>${escapeHtml(i.name || i.name_ar)}</strong> ×${Number(i.quantity || i.qty || 1)}${opts}</span>`;
-    }).join('');
-
-    const timeStr = order.created_at ? new Date(order.created_at).toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' }) : '';
-
-    return `
-      <div class="invoice-card-box live-order-card" style="border: 1px solid var(--border-box); background: var(--bg-box); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
-        <div class="invoice-card-head" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span class="invoice-code-badge" style="font-family:var(--font-en);font-weight:900;background:rgba(147,51,234,0.25);border:1px solid rgba(192,132,252,0.45);color:#fff;padding:3px 9px;border-radius:7px;">${escapeHtml(order.order_code)}</span>
-            ${typeBadge}
-          </div>
-          <strong class="invoice-total-badge" style="font-size:0.95rem;color:#C084FC;">${formatIQD(order.total || order.total_iqd)}</strong>
-        </div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:0.83rem;">
-          <span class="invoice-customer-name" style="font-weight:750;color:var(--text-light);">
-            ${cleanVehicle ? `<strong>${escapeHtml(cleanVehicle)}</strong>` : `<span style="color:var(--text-dim);">${order.source === 'roadside' ? 'طلب مسجل بواسطة الويتر' : 'طلب زبون عبر رمز المسار'}</span>`}
-          </span>
-          <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.75rem;padding:3px 10px;border-radius:99px;font-weight:750;color:${st.color};background:${st.bg};">
-            <span class="pulse-dot-sm" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${st.color};"></span>
-            ${st.label}
-          </span>
-        </div>
-
-        ${order.order_note ? `<div style="font-size:0.78rem;background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:6px;color:var(--amber-warm);">ملاحظة المطبخ: ${escapeHtml(order.order_note)}</div>` : ''}
-
-        <div class="invoice-items-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;">${itemsChips}</div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding-top:8px;border-top:1px solid var(--border-subtle);">
-          <small style="font-size:0.72rem;color:var(--text-dim);">وقت الطلب: ${timeStr}</small>
-          <button type="button" class="box-btn-secondary" data-print-inv="${escapeHtml(order.order_code)}" style="height:28px;padding:0 12px;font-size:0.72rem;cursor:pointer;">🖨️ طباعة الفاتورة</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  container.querySelectorAll('[data-print-inv]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const found = (liveOrders || []).find((o) => o.order_code === btn.dataset.printInv);
-      if (found) showThermalReceiptModal(found);
-    });
-  });
 }
 
 /* =========================================================
@@ -1038,7 +923,7 @@ function showThermalReceiptModal(orderObj, receivedAmount = 0, changeAmount = 0)
     <div style="text-align:center;border-bottom:1px dashed #64748B;padding-bottom:8px;margin-bottom:8px;">
       <strong style="font-size:1.15rem;letter-spacing:0.15em;">BOX COFE</strong>
       <div>فاتورة كاشير رسمية • رقم ${orderObj.order_code}</div>
-      <small>${new Date(orderObj.created_at || Date.now()).toLocaleTimeString('ar-IQ')} | ${orderObj.vehicle_note || 'تفاصيل الطلب'}</small>
+      <small>${new Date(orderObj.created_at || Date.now()).toLocaleTimeString('ar-IQ')} | ${orderObj.vehicle_note || 'فرع المطار'}</small>
     </div>
     <div style="display:flex;flex-direction:column;gap:4px;border-bottom:1px dashed #64748B;padding-bottom:8px;margin-bottom:8px;">
       ${(orderObj.items || []).map((item) => {
@@ -1117,7 +1002,7 @@ function renderAccountingBoxes() {
         <div class="invoice-card-box">
           <div class="invoice-card-head">
             <span class="invoice-code-badge">${escapeHtml(order.order_code)}</span>
-            <span class="invoice-customer-name">${escapeHtml(order.vehicle_note || 'تفاصيل الطلب')} • ${sourceLabel}</span>
+            <span class="invoice-customer-name">${escapeHtml(order.vehicle_note || order.branch_name || 'فرع المطعم')} • ${sourceLabel}</span>
             <strong class="invoice-total-badge">${formatIQD(order.total || order.total_iqd)}</strong>
             <button type="button" class="box-btn-secondary" data-print-inv="${escapeHtml(order.order_code)}" style="height:26px;padding:0 8px;font-size:0.7rem;">طباعة</button>
           </div>
@@ -1399,7 +1284,7 @@ function openMenuItemModal(itemId = null) {
 const STAFF_ROLE_META = {
   owner: { label: 'المالك (Owner)', badgeColor: '#C084FC', badgeBg: 'rgba(192,132,252,0.22)', icon: '👑' },
   admin: { label: 'مدير نظام مساعد (Admin)', badgeColor: '#C084FC', badgeBg: 'rgba(192, 132, 252, 0.15)', icon: '🛡️' },
-  roadside: { label: 'الويتر (Waiter)', badgeColor: '#F59E0B', badgeBg: 'rgba(245, 158, 11, 0.15)', icon: '🧑‍💼' },
+  roadside: { label: 'الويتر والطلبات (Waiter)', badgeColor: '#F59E0B', badgeBg: 'rgba(245, 158, 11, 0.15)', icon: '🧑‍💼' },
   kitchen: { label: 'طاقم المطبخ وشاشة الطلبات (Kitchen)', badgeColor: '#38BDF8', badgeBg: 'rgba(56, 189, 248, 0.15)', icon: '👨‍🍳' }
 };
 
@@ -1414,8 +1299,8 @@ function staffErrorMessage(code) {
     INVALID_ROLE: 'الدور المحدد غير صالح.',
     ONLY_OWNER_CAN_CREATE_ADMIN: 'صلاحية إنشاء حساب مدير نظام مقتصرة على المالك.',
     ONLY_OWNER_CAN_ASSIGN_ADMIN: 'صلاحية تعيين دور مدير نظام مقتصرة على المالك.',
-    BRANCH_REQUIRED: 'تعذر حفظ الإعداد.',
-    BRANCH_NOT_FOUND: 'الإعداد المحدد غير صالح.',
+    BRANCH_REQUIRED: 'يرجى تحديد الفرع.',
+    BRANCH_NOT_FOUND: 'الفرع المحدد غير صالح.',
     EMAIL_ALREADY_EXISTS: 'هذا البريد الإلكتروني مسجل مسبقاً بحساب آخر.',
     STAFF_NOT_FOUND: 'تعذر إيجاد حساب الموظف.',
     CANNOT_MODIFY_OWNER: 'لا يمكن تعديل حساب المالك من هنا.',
@@ -1500,6 +1385,10 @@ function renderStaffAccountsBoxes() {
             <span>الدور الوظيفي:</span>
             <strong style="color:${meta.badgeColor};">${meta.label}</strong>
           </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span>الفرع:</span>
+            <strong style="color:var(--text-white);">${escapeHtml(staff.branch_name || 'جميع الفروع')}</strong>
+          </div>
         </div>
 
         ${isOwner ? '' : `
@@ -1544,30 +1433,23 @@ async function openStaffModal(staff = null) {
   }
 
   let branches = servicePointBranches || [];
-  // Staff creation only needs active branches. Fetch them directly as a
-  // fallback when the service-point RPC is still loading or unavailable.
-  if (!branches.length && supabase) {
+  if (!branches.length && isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase
-        .from('branches')
-        .select('id, name, slug')
-        .eq('is_active', true)
-        .order('name');
-      if (!error && Array.isArray(data)) {
+      const { data, error } = await supabase.from('branches').select('id, name, slug').eq('is_active', true).order('name');
+      if (!error && Array.isArray(data) && data.length) {
         branches = data;
         servicePointBranches = data;
       }
-    } catch (error) {
-      console.warn('Active branch fallback failed:', error);
+    } catch (err) {
+      console.warn('Active branch fallback failed:', err);
     }
   }
-
   if (!branches.length) {
-    showToast('لا توجد إعدادات فعالة حالياً. فعّل الإعداد المطلوب ثم أعد المحاولة.');
-    return;
-  } else {
-    branchSelect.innerHTML = branches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join('');
+    branches = [
+      { id: '564b34a7-ddbf-454b-a4eb-c4629f3f3173', name: 'فرع طريق المطار', slug: 'airport' }
+    ];
   }
+  branchSelect.innerHTML = branches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join('');
 
   if (togglePassBtn && passwordInput) {
     passwordInput.type = 'password';
@@ -1765,17 +1647,6 @@ async function initAdminERP() {
   });
   document.getElementById('admin-menu-search')?.addEventListener('input', renderMenuControlBoxes);
   document.getElementById('filter-order-source')?.addEventListener('change', renderAccountingBoxes);
-
-  // مرشحات شريط الطلبات الحية في الرئيسية
-  document.querySelectorAll('#hub-orders-filter-tabs .order-status-tab-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#hub-orders-filter-tabs .order-status-tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      hubOrdersStatusFilter = btn.dataset.statusFilter;
-      renderHubLiveOrdersFeed();
-    });
-  });
-  document.getElementById('hub-filter-order-source')?.addEventListener('change', renderHubLiveOrdersFeed);
 
   // أزرار الكاشير POS
   document.querySelectorAll('.pos-pay-method').forEach((btn) => {
