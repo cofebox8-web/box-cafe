@@ -21,6 +21,13 @@ const state = {
   isSubmitting: false,
   pendingSubmitAfterLogin: false,
   realtimeChannel: null,
+  orderRealtimeChannel: null,
+  orderRealtimeUserId: null,
+  orderRealtimeRetryTimer: null,
+  orderRealtimeHasSubscribed: false,
+  orderStatusRefreshInFlight: false,
+  orderStatusByCode: new Map(),
+  waiterAudioContext: null,
   refreshTimer: null,
   refreshInFlight: false
 };
@@ -91,6 +98,7 @@ async function initPOS() {
   // Load Menu Data immediately (No blocking screen!)
   await loadMenuData();
   setupRealtime();
+  if (state.profile?.role === "roadside") setupOrderRealtime();
 }
 
 function updateAuthUI(profile) {
@@ -177,8 +185,162 @@ function setupRealtime() {
     .subscribe();
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") scheduleRefresh();
+    if (document.visibilityState !== "visible") return;
+    scheduleRefresh();
+    recoverOrderRealtime();
   });
+
+  window.addEventListener("online", recoverOrderRealtime);
+  document.addEventListener("pointerdown", unlockWaiterAudio, { once: true, capture: true });
+  document.addEventListener("keydown", unlockWaiterAudio, { once: true, capture: true });
+}
+
+function setupOrderRealtime() {
+  const userId = state.profile?.user_id;
+  if (!isSupabaseConfigured || !supabase || !userId || state.profile?.role !== "roadside") return;
+  if (state.orderRealtimeChannel && state.orderRealtimeUserId === userId) return;
+
+  disposeOrderRealtime();
+  const channel = supabase.channel(`waiter-orders-${userId}`)
+    .on("postgres_changes", {
+      event: "UPDATE",
+      schema: "public",
+      table: "orders",
+      filter: `created_by=eq.${userId}`
+    }, handleWaiterOrderUpdate);
+  state.orderRealtimeChannel = channel;
+  state.orderRealtimeUserId = userId;
+  channel.subscribe((status) => {
+      if (state.orderRealtimeChannel !== channel) return;
+      if (status === "SUBSCRIBED") {
+        if (state.orderRealtimeRetryTimer) {
+          window.clearTimeout(state.orderRealtimeRetryTimer);
+          state.orderRealtimeRetryTimer = null;
+        }
+        const isReconnect = state.orderRealtimeHasSubscribed;
+        state.orderRealtimeHasSubscribed = true;
+        refreshWaiterOrderStatuses({ notifyReady: isReconnect });
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+        console.warn("Waiter order realtime disconnected:", status);
+        scheduleOrderRealtimeRetry();
+      }
+    });
+}
+
+async function refreshWaiterOrderStatuses({ notifyReady = false } = {}) {
+  const profile = state.profile;
+  if (!profile?.user_id || !profile.branch_id || !supabase || state.orderStatusRefreshInFlight) return false;
+
+  state.orderStatusRefreshInFlight = true;
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabase
+      .from("orders")
+      .select("order_code, status, created_by")
+      .eq("branch_id", profile.branch_id)
+      .eq("created_by", profile.user_id)
+      .gte("created_at", since);
+    if (error) throw error;
+
+    for (const order of data || []) {
+      const previousStatus = state.orderStatusByCode.get(order.order_code);
+      if (notifyReady && previousStatus && previousStatus !== "ready" && order.status === "ready") {
+        notifyWaiterOrderReady(order.order_code);
+      }
+      state.orderStatusByCode.set(order.order_code, order.status);
+    }
+    return true;
+  } catch (error) {
+    console.warn("Waiter order status reconciliation failed:", error?.message || error);
+    return false;
+  } finally {
+    state.orderStatusRefreshInFlight = false;
+  }
+}
+
+function handleWaiterOrderUpdate(payload) {
+  const order = payload?.new;
+  const userId = state.profile?.user_id;
+  if (!order?.order_code || order.created_by !== userId) return;
+
+  const previousStatus = state.orderStatusByCode.get(order.order_code);
+  if (order.status === "ready" && previousStatus && previousStatus !== "ready") {
+    notifyWaiterOrderReady(order.order_code);
+  }
+  state.orderStatusByCode.set(order.order_code, order.status);
+}
+
+function recoverOrderRealtime() {
+  if (document.visibilityState === "hidden" || !state.profile || state.profile.role !== "roadside") return;
+  const channel = state.orderRealtimeChannel;
+  if (!channel || channel.state !== "joined") {
+    if (channel) scheduleOrderRealtimeRetry();
+    else setupOrderRealtime();
+    return;
+  }
+  refreshWaiterOrderStatuses({ notifyReady: state.orderRealtimeHasSubscribed });
+}
+
+function scheduleOrderRealtimeRetry() {
+  if (state.orderRealtimeRetryTimer || !state.profile?.user_id) return;
+  state.orderRealtimeRetryTimer = window.setTimeout(async () => {
+    state.orderRealtimeRetryTimer = null;
+    const oldChannel = state.orderRealtimeChannel;
+    state.orderRealtimeChannel = null;
+    if (oldChannel) await supabase.removeChannel(oldChannel).catch(() => {});
+    setupOrderRealtime();
+  }, 2500);
+}
+
+function disposeOrderRealtime() {
+  if (state.orderRealtimeRetryTimer) {
+    window.clearTimeout(state.orderRealtimeRetryTimer);
+    state.orderRealtimeRetryTimer = null;
+  }
+  const channel = state.orderRealtimeChannel;
+  state.orderRealtimeChannel = null;
+  state.orderRealtimeUserId = null;
+  state.orderRealtimeHasSubscribed = false;
+  state.orderStatusByCode.clear();
+  if (channel && supabase) supabase.removeChannel(channel).catch(() => {});
+}
+
+function unlockWaiterAudio() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  try {
+    if (!state.waiterAudioContext) state.waiterAudioContext = new AudioContext();
+    if (state.waiterAudioContext.state === "suspended") state.waiterAudioContext.resume().catch(() => {});
+  } catch (error) {
+    console.debug("Waiter notification sound is unavailable:", error?.message || error);
+  }
+}
+
+function playWaiterReadyBell() {
+  unlockWaiterAudio();
+  const context = state.waiterAudioContext;
+  if (!context || context.state !== "running") return;
+
+  const now = context.currentTime;
+  [784, 988].forEach((frequency, index) => {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const start = now + index * 0.16;
+    oscillator.type = "sine";
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.16, start + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.42);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(start + 0.44);
+  });
+}
+
+function notifyWaiterOrderReady(orderCode) {
+  playWaiterReadyBell();
+  showToast(`الطلب #${orderCode} جاهز للتسليم`, "success");
 }
 
 function scheduleRefresh() {
@@ -917,6 +1079,9 @@ async function handleCheckoutSubmit() {
     }
 
     const orderData = res.data;
+    if (orderData.order_code) {
+      state.orderStatusByCode.set(orderData.order_code, orderData.status || "new");
+    }
 
     // Success! Clear cart
     state.cart = [];
@@ -967,7 +1132,7 @@ function openSuccessModal(orderData) {
   const modeTotalEl = $("success-mode-and-total");
   if (modeTotalEl) {
     const modeLabel = state.orderMode === "car" ? "خدمة سيارات" : "صالة / استلام";
-    const totalLabel = formatMoney(orderData.total_amount || 0);
+    const totalLabel = formatMoney(orderData.total ?? orderData.total_amount ?? 0);
     modeTotalEl.textContent = `${modeLabel} • المجموع: ${totalLabel}`;
   }
 
@@ -1255,6 +1420,7 @@ function setupEventListeners() {
 
         state.profile = profile;
         updateAuthUI(profile);
+        if (profile.role === "roadside") setupOrderRealtime();
         closeLoginModal();
         showToast(`مرحباً بك، ${profile.full_name || "الويتر"} 👋`, "success");
 
@@ -1277,6 +1443,7 @@ function setupEventListeners() {
 
   // Sign out
   $("desktop-signout-btn")?.addEventListener("click", async () => {
+    disposeOrderRealtime();
     await signOutStaff(supabase).catch(() => {});
     state.profile = null;
     updateAuthUI(null);
