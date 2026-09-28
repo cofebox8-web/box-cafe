@@ -5,14 +5,14 @@
 import {
   getStaffSession,
   signInStaff,
-  signOutStaff,
   resolveStaffDestination,
   requestPasswordReset,
   updateStaffPassword,
   sanitizeNextPath,
   roleLabel
 } from "./staff-auth.js";
-import { isSupabaseConfigured, supabase, createScopedSupabaseClient } from "./supabase-client.js";
+import { isSupabaseConfigured, createScopedSupabaseClient } from "./supabase-scoped-client.js";
+import { SUPABASE_URL } from "./config.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -22,31 +22,47 @@ const state = {
   isRecoveryFlow: false
 };
 
-// The waiter must not share the browser auth session with /admin. When this
-// unified login is opened for /waiter, use the same isolated storage namespace
-// as waiter-app.js so the redirect and refresh keep the session alive.
-const waiterSupabase = createScopedSupabaseClient("box_cofe_waiter_auth") || supabase;
-// Use a short-lived isolated client to identify the role before persisting the
-// session. This prevents a roadside login from being written to the admin
-// storage key just because the old URL contains `next=/admin`.
-const loginProbeSupabase = createScopedSupabaseClient("box_cofe_login_probe") || supabase;
+const DEFAULT_AUTH_STORAGE_KEY = `sb-${new URL(SUPABASE_URL).hostname.split(".")[0]}-auth-token`;
+const LOGIN_STAGING_STORAGE_KEY = "box_cofe_login_staging";
+const initialNext = sanitizeNextPath(new URLSearchParams(window.location.search).get("next"));
+let activeAuthStorageKey = initialNext.startsWith("/waiter") || initialNext.startsWith("/roadside")
+  ? "box_cofe_waiter_auth"
+  : DEFAULT_AUTH_STORAGE_KEY;
 
-function getAuthClient() {
-  const next = state.nextParam || "";
-  return next.startsWith("/waiter") || next.startsWith("/roadside") ? waiterSupabase : supabase;
-}
-
-async function persistRoleSession(context, sourceClient) {
-  const targetClient = context?.profile?.role === "roadside" ? waiterSupabase : supabase;
-  if (context?.session && targetClient !== sourceClient) {
-    const { error } = await targetClient.auth.setSession({
-      access_token: context.session.access_token,
-      refresh_token: context.session.refresh_token
-    });
-    if (error) throw error;
-    await sourceClient.auth.signOut({ scope: "local" }).catch(() => {});
+// One Auth client handles login and changes only the backing storage key after
+// staff_profiles confirms the role. This avoids creating probe/default/waiter
+// Auth clients together, while keeping waiter and admin sessions isolated.
+const loginStorage = {
+  async getItem() {
+    return localStorage.getItem(activeAuthStorageKey);
+  },
+  async setItem(_key, value) {
+    localStorage.setItem(activeAuthStorageKey, value);
+  },
+  async removeItem() {
+    localStorage.removeItem(activeAuthStorageKey);
   }
-  return targetClient;
+};
+
+const supabase = await createScopedSupabaseClient(LOGIN_STAGING_STORAGE_KEY, loginStorage, {
+  detectSessionInUrl: true
+});
+
+async function persistRoleSession(context) {
+  if (!context?.profile || !context.session || !supabase) return;
+  const targetKey = context.profile.role === "roadside"
+    ? "box_cofe_waiter_auth"
+    : DEFAULT_AUTH_STORAGE_KEY;
+
+  if (activeAuthStorageKey !== targetKey) {
+    const serializedSession = localStorage.getItem(activeAuthStorageKey);
+    if (!serializedSession) throw new Error("تعذر حفظ جلسة الدخول. أعد المحاولة.");
+    localStorage.setItem(targetKey, serializedSession);
+    localStorage.removeItem(activeAuthStorageKey);
+    activeAuthStorageKey = targetKey;
+  }
+
+  await Promise.resolve(supabase.auth.stopAutoRefresh?.()).catch(() => {});
 }
 
 // ============================================================================
@@ -161,6 +177,9 @@ function checkUrlParams() {
 
   const rawNext = searchParams.get("next");
   state.nextParam = sanitizeNextPath(rawNext);
+  activeAuthStorageKey = state.nextParam.startsWith("/waiter") || state.nextParam.startsWith("/roadside")
+    ? "box_cofe_waiter_auth"
+    : DEFAULT_AUTH_STORAGE_KEY;
 
   // Check if arriving from Supabase password recovery email
   const type = searchParams.get("type") || hashParams.get("type");
@@ -176,26 +195,19 @@ function checkUrlParams() {
 
 async function checkExistingSession() {
   if (state.isRecoveryFlow) return;
+  if (!isSupabaseConfigured || !supabase) {
+    setAuthAlert("خدمة الدخول غير متاحة حالياً. تحقق من إعدادات Supabase والاتصال بالإنترنت.", "error");
+    return;
+  }
 
   try {
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get("signed_out") === "1") return;
 
-    const preferredClient = getAuthClient();
-    const sessionPromise = getStaffSession(preferredClient);
-    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
-    let context = await Promise.race([sessionPromise, timeoutPromise]);
-    let sourceClient = preferredClient;
-    // Migrate a legacy roadside session that was saved under the shared key
-    // before waiter storage isolation was introduced.
-    if (!context?.profile) {
-      const fallbackClient = preferredClient === waiterSupabase ? supabase : waiterSupabase;
-      context = await getStaffSession(fallbackClient);
-      sourceClient = fallbackClient;
-    }
+    const context = await getStaffSession(supabase);
     if (!context || !context.profile) return;
 
-    await persistRoleSession(context, sourceClient);
+    await persistRoleSession(context, supabase);
 
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
     window.location.replace(targetUrl);
@@ -237,8 +249,9 @@ async function handleSignInSubmit(event) {
   if (spinner) spinner.hidden = false;
 
   try {
-    const context = await signInStaff(emailVal, passwordVal, loginProbeSupabase);
-    await persistRoleSession(context, loginProbeSupabase);
+    activeAuthStorageKey = LOGIN_STAGING_STORAGE_KEY;
+    const context = await signInStaff(emailVal, passwordVal, supabase);
+    await persistRoleSession(context, supabase);
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
     window.location.replace(targetUrl);
   } catch (error) {
@@ -271,7 +284,7 @@ async function handleResetSubmit(event) {
   );
 
   try {
-    await requestPasswordReset(emailVal, `${window.location.origin}/login`);
+    await requestPasswordReset(emailVal, `${window.location.origin}/login`, supabase);
     switchView("signin");
     setAuthAlert(
       "إذا كان البريد الإلكتروني مسجلاً في النظام، فسيصل إليه رابط استعادة كلمة المرور خلال دقائق. يرجى مراجعة صندوق الوارد والبريد غير الهام.",
@@ -316,7 +329,7 @@ async function handleRecoverySubmit(event) {
   );
 
   try {
-    const context = await updateStaffPassword(passwordVal);
+    const context = await updateStaffPassword(passwordVal, supabase);
     const targetUrl = resolveStaffDestination(context?.profile, state.nextParam);
     window.location.replace(targetUrl);
   } catch (error) {
@@ -337,6 +350,8 @@ async function handleRecoverySubmit(event) {
 // ============================================================================
 
 function initLoginApp() {
+  checkUrlParams();
+
   setupPasswordToggle("current-password", "toggle-password-btn", "toggle-password-text");
   setupPasswordToggle("new-password", "toggle-new-password-btn", "toggle-new-password-text");
 
@@ -356,7 +371,6 @@ function initLoginApp() {
     });
   }
 
-  checkUrlParams();
   checkExistingSession();
 }
 

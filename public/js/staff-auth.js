@@ -1,7 +1,11 @@
-import { isSupabaseConfigured, supabase } from "./supabase-client.js";
-
 const STAFF_PROFILE_FIELDS = "user_id, full_name, role, branch_id, restaurant_id, is_active";
 const ALLOWED_ROLES = new Set(["owner", "admin", "roadside", "kitchen"]);
+
+async function resolveAuthClient(client) {
+  if (client !== undefined) return { client, configured: Boolean(client) };
+  const module = await import("./supabase-client.js");
+  return { client: module.supabase, configured: module.isSupabaseConfigured };
+}
 
 // Remove legacy insecure local-auth data left over from a previous version of this file.
 // Staff accounts and passwords must never live in the browser; see supabase/functions/admin-manage-staff.
@@ -16,14 +20,14 @@ try {
   ].forEach(k => localStorage.removeItem(k));
 } catch {}
 
-function configurationError() {
-  if (!isSupabaseConfigured || !supabase) {
+function configurationError(configured, client) {
+  if (!configured || !client) {
     return new Error("خدمة الدخول غير متاحة حالياً. تحقق من إعدادات Supabase والاتصال بالإنترنت.");
   }
   return null;
 }
 
-async function resolveProfileBranch(profile, client = supabase) {
+async function resolveProfileBranch(profile, client) {
   if (!profile) return null;
 
   if (profile.branch_slug && profile.branch_name) {
@@ -52,11 +56,11 @@ async function resolveProfileBranch(profile, client = supabase) {
   return null;
 }
 
-async function loadStaffProfile(userId, userObj = null, client = supabase) {
+async function loadStaffProfile(userId, userObj = null, client) {
   let data = null;
 
   // 1. استرجاع الملف من Supabase (المصدر الوحيد والموثوق لصلاحيات الموظف)
-  if (isSupabaseConfigured && client) {
+  if (client) {
     try {
       const res = await client
         .from("staff_profiles")
@@ -159,8 +163,10 @@ export function resolveStaffDestination(profile, requestedNext = "") {
   throw new Error("دور الحساب غير معروف في النظام.");
 }
 
-export async function getStaffSession(client = supabase) {
-  if (isSupabaseConfigured && client) {
+export async function getStaffSession(clientOverride) {
+  const auth = await resolveAuthClient(clientOverride);
+  const client = auth.client;
+  if (auth.configured && client) {
     try {
       const { data, error } = await client.auth.getSession();
       if (!error && data.session?.user) {
@@ -178,11 +184,13 @@ export async function getStaffSession(client = supabase) {
   return null;
 }
 
-export async function signInStaff(email, password, client = supabase) {
+export async function signInStaff(email, password, clientOverride) {
   const cleanEmail = String(email || "").trim().toLowerCase();
   const rawPassword = String(password || "");
 
-  const unavailable = configurationError();
+  const auth = await resolveAuthClient(clientOverride);
+  const client = auth.client;
+  const unavailable = configurationError(auth.configured, client);
   if (unavailable) throw unavailable;
 
   let authData = null;
@@ -224,14 +232,16 @@ export async function signInStaff(email, password, client = supabase) {
   throw new Error("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
 }
 
-export async function requestPasswordReset(email, redirectToUrl) {
-  const unavailable = configurationError();
+export async function requestPasswordReset(email, redirectToUrl, clientOverride) {
+  const auth = await resolveAuthClient(clientOverride);
+  const client = auth.client;
+  const unavailable = configurationError(auth.configured, client);
   if (unavailable) throw unavailable;
 
   const cleanEmail = String(email || "").trim().toLowerCase();
   const redirectTo = redirectToUrl || `${window.location.origin}/login`;
 
-  const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+  const { error } = await client.auth.resetPasswordForEmail(cleanEmail, {
     redirectTo
   });
 
@@ -248,11 +258,13 @@ export async function requestPasswordReset(email, redirectToUrl) {
   return true;
 }
 
-export async function updateStaffPassword(newPassword) {
-  const unavailable = configurationError();
+export async function updateStaffPassword(newPassword, clientOverride) {
+  const auth = await resolveAuthClient(clientOverride);
+  const client = auth.client;
+  const unavailable = configurationError(auth.configured, client);
   if (unavailable) throw unavailable;
 
-  const { error } = await supabase.auth.updateUser({
+  const { error } = await client.auth.updateUser({
     password: String(newPassword || "")
   });
 
@@ -260,11 +272,13 @@ export async function updateStaffPassword(newPassword) {
     throw new Error("تعذر تحديث كلمة المرور. قد تكون صلاحية رابط الاستعادة قد انتهت، اطلب رابطاً جديداً.");
   }
 
-  return getStaffSession();
+  return getStaffSession(client);
 }
 
-export async function signOutStaff(client = supabase) {
-  if (isSupabaseConfigured && client) {
+export async function signOutStaff(clientOverride) {
+  const auth = await resolveAuthClient(clientOverride);
+  const client = auth.client;
+  if (auth.configured && client) {
     try {
       await client.auth.signOut();
     } catch {}

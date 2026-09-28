@@ -1,13 +1,13 @@
 // BOX COFE — Official Waiter POS Controller
 // High-Speed Ordering Terminal with Luxury Customer Menu Aesthetics
 
-import { supabase as defaultSupabase, isSupabaseConfigured, createScopedSupabaseClient } from "./supabase-client.js";
+import { isSupabaseConfigured, createScopedSupabaseClient } from "./supabase-scoped-client.js";
 import { getStaffSession, signInStaff, signOutStaff } from "./staff-auth.js";
 
 // Keep the waiter session independent from the owner/admin session. Supabase
 // otherwise shares one browser storage key, so opening /waiter could sign the
 // administrator out of an already-open /admin tab.
-const supabase = createScopedSupabaseClient("box_cofe_waiter_auth") || defaultSupabase;
+const supabase = createScopedSupabaseClient("box_cofe_waiter_auth");
 
 const $ = (id) => document.getElementById(id);
 
@@ -69,6 +69,7 @@ function showToast(message, type = "info") {
 async function initAuth() {
   if (!isSupabaseConfigured || !supabase) {
     showLoginError("تعذر الاتصال بقاعدة البيانات. يرجى التحقق من الاتصال بالإنترنت.");
+    showLoginGate(true);
     return;
   }
 
