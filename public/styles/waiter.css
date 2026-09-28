@@ -143,9 +143,16 @@ body.waiter-pos-body {
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* POS Action Button */
-.pos-add-btn {
+/* POS Card Actions (Fast 1-Tap Add + Customize) */
+.pos-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   width: 100%;
+}
+
+.pos-btn-quick-add {
+  flex: 1;
   min-height: 36px;
   padding: 0 12px;
   border-radius: var(--radius-pill);
@@ -158,40 +165,59 @@ body.waiter-pos-body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   cursor: pointer;
   transition: all 0.16s ease;
   white-space: nowrap;
 }
 
-.pos-add-btn:hover {
+.pos-btn-quick-add:hover:not(:disabled) {
   background: var(--coffee-hover);
   border-color: var(--coffee-hover);
   transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(74, 53, 37, 0.28);
 }
 
-.pos-add-btn:active {
-  transform: scale(0.97);
+.pos-btn-quick-add:active {
+  transform: scale(0.96);
 }
 
-.pos-add-btn.btn-customize {
-  background: var(--bg-surface);
-  border-color: var(--border-color);
-  color: var(--coffee-primary);
+.pos-btn-quick-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.pos-add-btn.btn-customize:hover {
-  background: var(--coffee-primary);
-  color: #FFFFFF;
-  border-color: var(--coffee-primary);
-}
-
-.pos-add-btn .icon {
+.pos-btn-quick-add .icon {
   width: 15px;
   height: 15px;
   stroke: currentColor;
   stroke-width: 2.4;
   fill: none;
+}
+
+.pos-btn-customize {
+  min-height: 36px;
+  padding: 0 11px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--coffee-primary);
+  font-family: var(--font-arabic);
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+}
+
+.pos-btn-customize:hover {
+  background: var(--coffee-primary);
+  color: #FFFFFF;
+  border-color: var(--coffee-primary);
 }
 
 /* --------------------------------------------------------------------------
@@ -699,16 +725,166 @@ dialog.cart-drawer-dialog::backdrop {
 }
 
 /* --------------------------------------------------------------------------
-   5. Interactive Customization Modal (نافذة التخصيص للويتر)
+   5. Interactive Customization Modal (نافذة التخصيص السريعة والفخمة للويتر)
    -------------------------------------------------------------------------- */
+dialog.pos-custom-sheet {
+  width: min(500px, calc(100% - 16px));
+  max-height: 85vh;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-modal);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  dialog.pos-custom-sheet {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    max-height: 85vh;
+  }
+}
+
+.sheet-drag-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-hover);
+  border-radius: 2px;
+  margin: 10px auto 4px;
+}
+
+/* Compact Modal Hero Header */
+.modal-compact-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.compact-hero-thumb {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.compact-hero-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.compact-hero-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.compact-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.compact-modal-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.compact-modal-close {
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: #FFFFFF;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.16s ease;
+  flex-shrink: 0;
+}
+
+.compact-modal-close:hover {
+  background: var(--coffee-primary);
+  color: #FFFFFF;
+}
+
+.compact-modal-close .icon {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+
+.compact-modal-desc {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.compact-price-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--coffee-primary);
+  background: var(--bg-card);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-color);
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+/* Modal Scrollable Body */
+.modal-scrollable-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(85vh - 170px);
+}
+
+/* Option Groups */
 .pos-options-group {
   background: var(--bg-page);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .pos-group-title-row {
@@ -719,15 +895,15 @@ dialog.cart-drawer-dialog::backdrop {
 
 .pos-group-title {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .pos-group-badge {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-pill);
 }
 
@@ -741,87 +917,68 @@ dialog.cart-drawer-dialog::backdrop {
   color: var(--text-muted);
 }
 
-/* Options Cards Grid */
-.pos-options-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+/* Segmented Equal-Width Option Buttons (Pills) */
+.pos-segmented-group {
+  display: flex;
   gap: 8px;
+  width: 100%;
 }
 
-.pos-option-selectable-card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: var(--bg-card);
-  border: 1.5px solid var(--border-color);
+.pos-segment-pill {
+  flex: 1;
+  min-height: 48px;
+  padding: 6px 10px;
   border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   cursor: pointer;
   transition: all 0.16s ease;
   user-select: none;
+  font-family: var(--font-arabic);
+  text-align: center;
 }
 
-.pos-option-selectable-card:hover {
+.pos-segment-pill:hover {
   border-color: var(--coffee-accent);
   background: var(--bg-surface);
 }
 
-.pos-option-selectable-card.selected {
-  border-color: var(--coffee-primary);
-  background: #FFFDFC;
-  box-shadow: 0 0 0 2px rgba(74, 53, 37, 0.14);
-}
-
-.pos-option-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.pos-opt-name {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.pos-opt-price {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--coffee-accent);
-}
-
-.pos-opt-check-indicator {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: transparent;
-  transition: all 0.15s ease;
-}
-
-.pos-option-selectable-card.selected .pos-opt-check-indicator {
+.pos-segment-pill.selected {
   background: var(--coffee-primary);
   border-color: var(--coffee-primary);
   color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(74, 53, 37, 0.25);
 }
 
-.pos-opt-check-indicator svg {
-  width: 11px;
-  height: 11px;
-  stroke: currentColor;
-  stroke-width: 3;
+.pos-segment-pill .segment-name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
-/* Modal Quantity & CTA Row */
+.pos-segment-pill .segment-price {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--coffee-accent);
+  line-height: 1.1;
+}
+
+.pos-segment-pill.selected .segment-price {
+  color: #EFE8DE;
+}
+
+/* Footer Stepper & Luxury CTA Button */
 .modal-pos-footer {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
+  gap: 10px;
+  padding: 12px 18px;
   border-top: 1px solid var(--border-color);
   background: var(--bg-card);
 }
@@ -829,11 +986,11 @@ dialog.cart-drawer-dialog::backdrop {
 .modal-stepper {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: var(--bg-page);
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-pill);
-  padding: 4px 6px;
+  padding: 3px 6px;
 }
 
 .modal-stepper-btn {
@@ -858,34 +1015,44 @@ dialog.cart-drawer-dialog::backdrop {
 }
 
 .modal-stepper-count {
-  min-width: 26px;
+  min-width: 24px;
   text-align: center;
   font-size: 0.95rem;
   font-weight: 800;
+  font-feature-settings: "tnum";
 }
 
 .modal-add-to-order-btn {
   flex: 1;
   min-height: 48px;
   border-radius: var(--radius-pill);
-  background: var(--coffee-primary);
+  background: linear-gradient(135deg, #4A3525 0%, #2A1C12 100%);
   color: #FFFFFF;
   border: none;
   font-family: var(--font-arabic);
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.18s ease;
-  box-shadow: 0 4px 12px rgba(74, 53, 37, 0.22);
+  transition: all 0.16s ease;
+  box-shadow: 0 4px 16px rgba(74, 53, 37, 0.28);
 }
 
 .modal-add-to-order-btn:hover {
-  background: var(--coffee-hover);
   transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(74, 53, 37, 0.36);
+}
+
+.modal-add-to-order-btn:active {
+  transform: scale(0.98);
+}
+
+.btn-price-divider {
+  opacity: 0.5;
+  font-weight: 400;
 }
 
 /* --------------------------------------------------------------------------

@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles/waiter.css?v=20260928_v6" />
+    <link rel="stylesheet" href="/styles/waiter.css?v=20260928_v7" />
   </head>
   <body class="waiter-pos-body">
     <!-- Pure Typographic Brand Header (Exact Match with Menu) -->
@@ -221,23 +221,25 @@
       </div>
     </dialog>
 
-    <!-- Product Customization Dialog -->
-    <dialog class="customization-modal" id="customization-modal" aria-labelledby="pos-modal-title">
+    <!-- Product Customization Dialog (Compact, Ultra-Modern POS Sheet) -->
+    <dialog class="customization-modal pos-custom-sheet" id="customization-modal" aria-labelledby="pos-modal-title">
       <div class="modal-content-shell">
-        <div class="modal-top-bar">
-          <button type="button" class="modal-close-btn" id="pos-modal-close" aria-label="إغلاق النافذة">
-            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
+        <div class="sheet-drag-handle" aria-hidden="true"></div>
 
-        <div class="modal-hero-header">
-          <div class="modal-thumb-box" id="pos-modal-thumb-box" style="display: none;">
+        <!-- Compact Header -->
+        <div class="modal-compact-hero">
+          <div class="compact-hero-thumb" id="pos-modal-thumb-box" style="display: none;">
             <img id="pos-modal-image" src="" alt="" loading="lazy" />
           </div>
-          <div class="modal-title-group">
-            <h3 id="pos-modal-title" class="modal-product-name">اسم الصنف</h3>
-            <p id="pos-modal-desc" class="modal-product-desc">وصف الصنف</p>
-            <div class="modal-price-pill" id="pos-modal-base-price">0 د.ع</div>
+          <div class="compact-hero-info">
+            <div class="compact-title-row">
+              <h3 id="pos-modal-title" class="compact-modal-title">اسم الصنف</h3>
+              <button type="button" class="compact-modal-close" id="pos-modal-close" aria-label="إغلاق">
+                <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <p id="pos-modal-desc" class="compact-modal-desc">وصف الصنف</p>
+            <div class="compact-price-chip" id="pos-modal-base-price">0 د.ع</div>
           </div>
         </div>
 
@@ -252,7 +254,9 @@
             <button type="button" class="modal-stepper-btn" id="modal-qty-plus" aria-label="زيادة الكمية">+</button>
           </div>
           <button type="button" class="modal-add-to-order-btn" id="modal-confirm-add-btn">
-            <span>إضافة للطلب</span> • <span id="modal-calc-price">0 د.ع</span>
+            <span>إضافة للطلب</span>
+            <span class="btn-price-divider">•</span>
+            <span id="modal-calc-price">0 د.ع</span>
           </button>
         </div>
       </div>
@@ -304,6 +308,6 @@
 
     <!-- Scripts -->
     <script src="/vendor/supabase.umd.js"></script>
-    <script type="module" src="/js/waiter-app.js?v=20260928_v6"></script>
+    <script type="module" src="/js/waiter-app.js?v=20260928_v7"></script>
   </body>
 </html>

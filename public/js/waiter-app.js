@@ -42,7 +42,7 @@ const ICONS = {
 
 function formatAmount(amount) {
   const num = Number(amount) || 0;
-  return new Intl.NumberFormat("ar-IQ", { maximumFractionDigits: 0 }).format(num);
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(num);
 }
 
 function formatMoney(amount, currency = "IQD") {
@@ -262,7 +262,7 @@ function renderProductCardHtml(p, currency = "IQD") {
     <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="${escapeHtml(p.name)}">
       <div class="product-card-media">
         ${!isAvailable ? `<span class="product-soldout-badge">غير متوفر حالياً</span>` : ""}
-        ${cartQty > 0 ? `<span class="card-cart-qty-badge" title="في السلة">${cartQty}</span>` : ""}
+        ${cartQty > 0 ? `<span class="card-cart-qty-badge" title="الكمية في السلة">${cartQty}</span>` : ""}
         ${p.image_url
           ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" />`
           : `<div class="product-image-fallback">
@@ -282,12 +282,17 @@ function renderProductCardHtml(p, currency = "IQD") {
             <span class="price-amount">${priceFormatted}</span>
             <span class="price-currency">د.ع</span>
           </div>
-          <button type="button" class="pos-add-btn ${hasOptions ? 'btn-customize' : 'btn-direct-add'}" data-action="pos-add" data-product-id="${p.id}" ${!isAvailable ? 'disabled' : ''}>
-            ${hasOptions
-              ? `<span>تخصيص +</span>`
-              : `<svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>إضافة</span>`
-            }
-          </button>
+          <div class="pos-card-actions">
+            ${hasOptions ? `
+              <button type="button" class="pos-btn-customize" data-action="customize" data-product-id="${p.id}" title="تخصيص الحجم والإضافات">
+                <span>تخصيص</span>
+              </button>
+            ` : ""}
+            <button type="button" class="pos-btn-quick-add" data-action="quick-add" data-product-id="${p.id}" title="${hasOptions ? 'إضافة سريعة بالخيارات الافتراضية' : 'إضافة للطلب'}" ${!isAvailable ? 'disabled' : ''}>
+              <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>إضافة</span>
+            </button>
+          </div>
         </div>
       </div>
     </article>
@@ -378,33 +383,60 @@ function renderProducts() {
     const p = products.find(x => x.id === productId);
     if (!p || !p.is_available) return;
 
+    // Card body click
     card.addEventListener("click", (e) => {
-      // Prevent double trigger if clicked on the button directly
-      if (e.target.closest(".pos-add-btn")) return;
-      handleProductCardAction(p);
+      if (e.target.closest(".pos-card-actions")) return;
+      const hasOptions = Array.isArray(p.option_groups) && p.option_groups.length > 0;
+      if (hasOptions) {
+        openCustomizationModal(p);
+      } else {
+        handleQuickAdd(p);
+      }
     });
 
-    const addBtn = card.querySelector(".pos-add-btn");
-    if (addBtn) {
-      addBtn.addEventListener("click", (e) => {
+    // Quick Add button
+    const quickAddBtn = card.querySelector(".pos-btn-quick-add");
+    if (quickAddBtn) {
+      quickAddBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        handleProductCardAction(p);
+        handleQuickAdd(p);
+      });
+    }
+
+    // Customize button
+    const customizeBtn = card.querySelector(".pos-btn-customize");
+    if (customizeBtn) {
+      customizeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openCustomizationModal(p);
       });
     }
   });
 }
 
-function handleProductCardAction(product) {
-  const hasOptions = Array.isArray(product.option_groups) && product.option_groups.length > 0;
-  if (hasOptions) {
-    openCustomizationModal(product);
-  } else {
-    // 1-Tap Direct Add
-    addToCart(product, [], 1);
-    showToast(`تمت إضافة ${product.name} إلى السلة ✓`, "success");
-    renderProducts(); // Refresh card qty badge
-    renderCart();
+// Ultra-Fast 1-Tap Add with Default Options
+function handleQuickAdd(product) {
+  const defaultOpts = [];
+  if (Array.isArray(product.option_groups)) {
+    for (const group of product.option_groups) {
+      const opts = group.options || [];
+      const def = opts.find(o => o.is_default && o.is_available) || opts[0];
+      if (def) {
+        defaultOpts.push({
+          groupId: group.id,
+          groupName: group.name,
+          optionId: def.id,
+          optionName: def.name,
+          priceModifier: Number(def.price_modifier) || 0
+        });
+      }
+    }
   }
+
+  addToCart(product, defaultOpts, 1);
+  showToast(`+1 ${product.name} تمت الإضافة للسلة ✓`, "success");
+  renderProducts(); // Refresh card qty badge
+  renderCart();
 }
 
 // --------------------------------------------------------------------------
@@ -495,7 +527,7 @@ function renderModalContent() {
   if (descEl) descEl.textContent = p.description || "قهوة مختصة محضرة بعناية من بوكس كافي.";
 
   const basePriceEl = $("pos-modal-base-price");
-  if (basePriceEl) basePriceEl.textContent = `السعر الأساسي: ${formatMoney(p.price)}`;
+  if (basePriceEl) basePriceEl.textContent = `${formatMoney(p.price)}`;
 
   const bodyEl = $("pos-modal-options-body");
   if (!bodyEl) return;
@@ -515,19 +547,16 @@ function renderModalContent() {
               ${isReq ? 'إجباري' : 'اختياري'}
             </span>
           </div>
-          <div class="pos-options-grid">
+          <div class="pos-segmented-group">
             ${(group.options || []).map(opt => {
               const isSelected = selectedIds.includes(opt.id);
               const mod = Number(opt.price_modifier) || 0;
               const priceText = mod > 0 ? `+${formatAmount(mod)} د.ع` : (mod < 0 ? `${formatAmount(mod)} د.ع` : "مشمول");
               return `
-                <div class="pos-option-selectable-card ${isSelected ? 'selected' : ''}" data-group-id="${group.id}" data-option-id="${opt.id}" data-single="${isSingle ? 'true' : 'false'}">
-                  <div class="pos-option-info">
-                    <span class="pos-opt-name">${escapeHtml(opt.name)}</span>
-                    <span class="pos-opt-price">${priceText}</span>
-                  </div>
-                  <div class="pos-opt-check-indicator" aria-hidden="true">${ICONS.check}</div>
-                </div>
+                <button type="button" class="pos-segment-pill ${isSelected ? 'selected' : ''}" data-group-id="${group.id}" data-option-id="${opt.id}" data-single="${isSingle ? 'true' : 'false'}">
+                  <span class="segment-name">${escapeHtml(opt.name)}</span>
+                  <span class="segment-price">${priceText}</span>
+                </button>
               `;
             }).join("")}
           </div>
@@ -538,12 +567,12 @@ function renderModalContent() {
 
   bodyEl.innerHTML = html;
 
-  // Bind selectable cards
-  bodyEl.querySelectorAll(".pos-option-selectable-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const groupId = card.dataset.groupId;
-      const optionId = card.dataset.optionId;
-      const isSingle = card.dataset.single === "true";
+  // Bind segmented pill buttons
+  bodyEl.querySelectorAll(".pos-segment-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      const groupId = pill.dataset.groupId;
+      const optionId = pill.dataset.optionId;
+      const isSingle = pill.dataset.single === "true";
 
       if (!state.modalSelectedOptions[groupId]) {
         state.modalSelectedOptions[groupId] = [];
@@ -551,16 +580,16 @@ function renderModalContent() {
 
       if (isSingle) {
         state.modalSelectedOptions[groupId] = [optionId];
-        card.closest(".pos-options-grid").querySelectorAll(".pos-option-selectable-card").forEach(c => c.classList.remove("selected"));
-        card.classList.add("selected");
+        pill.closest(".pos-segmented-group").querySelectorAll(".pos-segment-pill").forEach(c => c.classList.remove("selected"));
+        pill.classList.add("selected");
       } else {
         const idx = state.modalSelectedOptions[groupId].indexOf(optionId);
         if (idx >= 0) {
           state.modalSelectedOptions[groupId].splice(idx, 1);
-          card.classList.remove("selected");
+          pill.classList.remove("selected");
         } else {
           state.modalSelectedOptions[groupId].push(optionId);
-          card.classList.add("selected");
+          pill.classList.add("selected");
         }
       }
 
