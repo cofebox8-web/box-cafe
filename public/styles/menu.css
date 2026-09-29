@@ -655,6 +655,7 @@ dialog.customization-modal {
   box-shadow: var(--shadow-modal);
   color: var(--text-primary);
   overflow: hidden;
+  outline: none;
 }
 
 dialog.customization-modal::backdrop {
