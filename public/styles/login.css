@@ -88,6 +88,15 @@ input {
   margin: auto;
 }
 
+.session-check-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 60px 0;
+}
+
 .login-card {
   position: relative;
   width: 100%;

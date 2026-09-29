@@ -16,7 +16,15 @@
 <body class="login-body">
 
   <main class="login-viewport">
-    <div class="login-card">
+    <div id="session-check-loader" class="session-check-loader" aria-live="polite">
+      <div class="card-brand" dir="ltr" aria-label="BOX COFE">
+        <span class="logo-box">BOX</span>
+        <span class="logo-cofe">COFE</span>
+      </div>
+      <div class="spinner-ring" aria-hidden="true"></div>
+    </div>
+
+    <div class="login-card" id="login-card" hidden>
 
       <!-- شعار بوكس كافي الرسمي -->
       <div class="card-brand" dir="ltr" aria-label="BOX COFE">

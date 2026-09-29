@@ -146,24 +146,34 @@ function checkUrlParams() {
 // Core Session & Sign-in Logic
 // ============================================================================
 
+function revealLoginCard() {
+  const loader = $("session-check-loader");
+  const card = $("login-card");
+  if (loader) loader.hidden = true;
+  if (card) card.hidden = false;
+}
+
+// Returns true if the page is navigating away (a valid session was found),
+// so the caller never reveals the plain sign-in form behind it.
 async function checkExistingSession() {
-  if (state.isRecoveryFlow) return;
   if (!isSupabaseConfigured || !supabase) {
     setAuthAlert("خدمة الدخول غير متاحة حالياً. تحقق من إعدادات Supabase والاتصال بالإنترنت.", "error");
-    return;
+    return false;
   }
 
   try {
     const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get("signed_out") === "1") return;
+    if (searchParams.get("signed_out") === "1") return false;
 
     const context = await getStaffSession(supabase);
-    if (!context || !context.profile) return;
+    if (!context || !context.profile) return false;
 
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
     window.location.replace(targetUrl);
+    return true;
   } catch (error) {
     console.debug("Session pre-check passed:", error?.message);
+    return false;
   }
 }
 
@@ -298,7 +308,7 @@ async function handleRecoverySubmit(event) {
 // Initialization
 // ============================================================================
 
-function initLoginApp() {
+async function initLoginApp() {
   checkUrlParams();
 
   setupPasswordToggle("current-password", "toggle-password-btn", "toggle-password-text");
@@ -316,11 +326,23 @@ function initLoginApp() {
       if (event === "PASSWORD_RECOVERY") {
         state.isRecoveryFlow = true;
         switchView("recovery");
+        revealLoginCard();
       }
     });
   }
 
-  checkExistingSession();
+  // A password-recovery link must show the "set new password" form right
+  // away; it never carries an existing staff session worth checking for.
+  if (state.isRecoveryFlow) {
+    revealLoginCard();
+    return;
+  }
+
+  // Keep the form hidden behind a spinner until we know whether a valid
+  // session already exists, instead of flashing the empty sign-in form for
+  // however long the network check takes before redirecting away.
+  const isRedirecting = await checkExistingSession();
+  if (!isRedirecting) revealLoginCard();
 }
 
 if (document.readyState === "loading") {
