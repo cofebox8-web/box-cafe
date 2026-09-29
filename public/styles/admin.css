@@ -1349,15 +1349,13 @@ textarea.structured-input:focus,
 /* =========================================================
    الصفحة 05 و 06: كردات الأصناف والأسعار وكردات الموظفين
    ========================================================= */
-.menu-control-boxes-grid,
-.staff-boxes-grid {
+.menu-control-boxes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
   gap: 10px;
 }
 
-.menu-control-box,
-.staff-account-box {
+.menu-control-box {
   background: var(--bg-box);
   border: 1px solid var(--border-box);
   border-radius: 12px;
@@ -1391,6 +1389,11 @@ textarea.structured-input:focus,
   min-width: 0;
 }
 
+.menu-thumb-info > div:last-child {
+  min-width: 0;
+  flex: 1;
+}
+
 .menu-item-thumb {
   width: 44px;
   height: 44px;
@@ -1405,8 +1408,8 @@ textarea.structured-input:focus,
   display: block;
 }
 
-.menu-box-name { display: block; font-size: 0.88rem; font-weight: 900; color: #FFFFFF; }
-.menu-box-cat { font-size: 0.7rem; color: var(--text-dim); }
+.menu-box-name { display: block; font-size: 0.88rem; font-weight: 900; color: #FFFFFF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-box-cat { display: block; font-size: 0.7rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .menu-price-display {
   font-size: 0.96rem;
@@ -2420,6 +2423,7 @@ textarea.structured-input:focus,
 .staff-boxes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  align-items: stretch;
   gap: 12px;
   margin-top: 14px;
 }
@@ -2431,17 +2435,13 @@ textarea.structured-input:focus,
   padding: 14px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 10px;
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .staff-account-box:hover {
   border-color: rgba(192, 132, 252, 0.45);
-}
-
-.staff-account-box.is-owner-card {
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.06) 0%, rgba(14, 11, 22, 0.95) 100%);
 }
 
 /* =========================================================

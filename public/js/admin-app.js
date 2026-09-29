@@ -1537,6 +1537,8 @@ async function openStaffModal(staff = null) {
     ];
   }
   branchSelect.innerHTML = branches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join('');
+  const branchFieldBox = document.getElementById('staff-branch-field-box');
+  const hasSingleBranch = branches.length <= 1;
 
   if (togglePassBtn && passwordInput) {
     passwordInput.type = 'password';
@@ -1561,6 +1563,10 @@ async function openStaffModal(staff = null) {
     const isRoleAdmin = roleSelect.value === 'admin';
     branchSelect.disabled = isRoleAdmin;
     if (branchHint) branchHint.style.display = isRoleAdmin ? 'block' : 'none';
+    // مع فرع واحد فقط بالمطعم، لا داعي لإظهار حقل اختيار — نعيّنه تلقائياً
+    // بصمت (يبقى الحقل ذكياً ويظهر من تلقاء نفسه إن أُضيف فرع ثانٍ لاحقاً).
+    if (branchFieldBox) branchFieldBox.style.display = (isRoleAdmin || hasSingleBranch) ? 'none' : '';
+    if (hasSingleBranch && !isRoleAdmin && branches[0]) branchSelect.value = branches[0].id;
     upgradeSelectToCustomDropdown(branchSelect);
   };
   roleSelect.onchange = updateBranchUI;
@@ -1885,10 +1891,18 @@ async function initAdminERP() {
         ? { action: 'update', staff_id: id, full_name: name, role, branch_id: role === 'admin' ? null : branchId, is_active: isActive, password: password || undefined }
         : { action: 'create', full_name: name, email, password, role, branch_id: role === 'admin' ? null : branchId, is_active: isActive };
 
-      await invokeStaffFunction(body);
+      const result = await invokeStaffFunction(body);
 
       document.getElementById('modal-staff-account').hidden = true;
-      await reloadStaffAccounts();
+      if (!id && result?.staff) {
+        // إدراج فوري بلا جولة شبكة إضافية لإعادة جلب القائمة كاملة —
+        // الخادم أعاد بيانات الموظف الجديد كاملة مع تأكيد الإنشاء نفسه.
+        staffAccounts = [...staffAccounts, result.staff];
+        staffAccountsLoaded = true;
+        renderStaffAccountsBoxes();
+      } else {
+        await reloadStaffAccounts();
+      }
       showToast(`تم حفظ حساب الموظف «${name}» (${roleLabel(role)}) بنجاح.`);
       form.reset();
     } catch (err) {

@@ -94,15 +94,17 @@ Deno.serve(async (req: Request) => {
       return json({ success: false, error: "ONLY_OWNER_CAN_CREATE_ADMIN" }, 403);
     }
 
+    let branchRecord: { id: string; name: string; slug: string } | null = null;
     if (role !== "admin") {
       if (!branchId) return json({ success: false, error: "BRANCH_REQUIRED" }, 400);
       const { data: branch } = await admin
         .from("branches")
-        .select("id")
+        .select("id, name, slug")
         .eq("id", branchId)
         .eq("restaurant_id", callerProfile.restaurant_id)
         .maybeSingle();
       if (!branch) return json({ success: false, error: "BRANCH_NOT_FOUND" }, 400);
+      branchRecord = branch;
     }
 
     const { data: created, error: createError } = await admin.auth.admin.createUser({
@@ -133,7 +135,21 @@ Deno.serve(async (req: Request) => {
       return json({ success: false, error: profileError.message }, 400);
     }
 
-    return json({ success: true, user_id: created.user.id });
+    return json({
+      success: true,
+      user_id: created.user.id,
+      staff: {
+        user_id: created.user.id,
+        full_name: fullName,
+        role,
+        is_active: isActive,
+        branch_id: role === "admin" ? null : branchId,
+        branch_name: role === "admin" ? "جميع الفروع" : (branchRecord?.name ?? ""),
+        branch_slug: role === "admin" ? "" : (branchRecord?.slug ?? ""),
+        email,
+        created_at: created.user.created_at,
+      },
+    });
   }
 
   // --------------------------------------------------------------------
