@@ -339,23 +339,17 @@ function renderKDS() {
     ready: {
       badgeText: "جاهز للتسليم",
       badgeClass: "badge-ready",
-      btnText: "تم التسليم للسيارة ✓",
-      btnClass: "btn-mark-delivered",
-      nextStatus: "handed_off"
+      nextStatus: null
     },
     handed_off: {
       badgeText: "تم التسليم ✓",
       badgeClass: "badge-delivered",
-      btnText: "إرجاع إلى جاهز ↺",
-      btnClass: "btn-undo-status",
-      nextStatus: "ready"
+      nextStatus: null
     },
     delivered: {
       badgeText: "تم التسليم ✓",
       badgeClass: "badge-delivered",
-      btnText: "إرجاع إلى جاهز ↺",
-      btnClass: "btn-undo-status",
-      nextStatus: "ready"
+      nextStatus: null
     }
   };
 

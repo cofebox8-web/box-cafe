@@ -27,6 +27,9 @@ const state = {
   orderRealtimeHasSubscribed: false,
   orderStatusRefreshInFlight: false,
   orderStatusByCode: new Map(),
+  readyDeliveryOrders: new Map(),
+  readyDeliveryPanel: null,
+  markingDeliveredCodes: new Set(),
   waiterAudioContext: null,
   refreshTimer: null,
   refreshInFlight: false
@@ -117,6 +120,13 @@ function updateAuthUI(profile) {
     if (authBadge) authBadge.style.display = "none";
     if (loginTrigger) loginTrigger.style.display = "inline-block";
   }
+
+  if (profile?.role === "roadside") {
+    const readyPanel = ensureWaiterReadyPanel();
+    if (readyPanel) readyPanel.style.display = "flex";
+  } else if (state.readyDeliveryPanel) {
+    state.readyDeliveryPanel.style.display = "none";
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -197,17 +207,24 @@ function setupRealtime() {
 
 function setupOrderRealtime() {
   const userId = state.profile?.user_id;
-  if (!isSupabaseConfigured || !supabase || !userId || state.profile?.role !== "roadside") return;
+  const branchId = state.profile?.branch_id;
+  if (!isSupabaseConfigured || !supabase || !userId || !branchId || state.profile?.role !== "roadside") return;
   if (state.orderRealtimeChannel && state.orderRealtimeUserId === userId) return;
 
   disposeOrderRealtime();
-  const channel = supabase.channel(`waiter-orders-${userId}`)
+  const channel = supabase.channel(`waiter-orders-${branchId}-${userId}`)
     .on("postgres_changes", {
       event: "UPDATE",
       schema: "public",
       table: "orders",
       filter: `created_by=eq.${userId}`
-    }, handleWaiterOrderUpdate);
+    }, handleWaiterOrderUpdate)
+    .on("postgres_changes", {
+      event: "INSERT",
+      schema: "public",
+      table: "order_status_events",
+      filter: `branch_id=eq.${branchId}`
+    }, handleWaiterOrderStatusEvent);
   state.orderRealtimeChannel = channel;
   state.orderRealtimeUserId = userId;
   channel.subscribe((status) => {
@@ -219,12 +236,121 @@ function setupOrderRealtime() {
         }
         const isReconnect = state.orderRealtimeHasSubscribed;
         state.orderRealtimeHasSubscribed = true;
+        loadWaiterReadyOrders();
         refreshWaiterOrderStatuses({ notifyReady: isReconnect });
       } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
         console.warn("Waiter order realtime disconnected:", status);
         scheduleOrderRealtimeRetry();
       }
     });
+}
+
+function ensureWaiterReadyPanel() {
+  if (state.readyDeliveryPanel?.isConnected) return state.readyDeliveryPanel;
+  const main = document.querySelector(".waiter-main-view");
+  const search = $("search-filter-section");
+  if (!main || !search) return null;
+
+  const panel = document.createElement("section");
+  panel.className = "waiter-cart-panel waiter-ready-delivery-panel";
+  panel.setAttribute("aria-label", "طلبات جاهزة للتسليم");
+  panel.style.cssText = "display:flex;flex-direction:column;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-card);box-shadow:var(--shadow-card);overflow:hidden;margin:0 0 24px;";
+  panel.innerHTML = `
+    <div class="cart-header-row">
+      <div class="cart-title-group">
+        <h2>جاهزة للتسليم</h2>
+        <span class="cart-total-badge" data-ready-count>0</span>
+      </div>
+    </div>
+    <div data-ready-list style="padding:12px 16px;display:grid;gap:10px;">
+      <p data-ready-empty style="margin:0;color:var(--text-muted);font-size:.9rem;">لا توجد طلبات جاهزة حالياً</p>
+    </div>`;
+  search.insertAdjacentElement("afterend", panel);
+  state.readyDeliveryPanel = panel;
+  return panel;
+}
+
+function renderWaiterReadyOrders() {
+  const panel = ensureWaiterReadyPanel();
+  if (!panel) return;
+  const list = panel.querySelector("[data-ready-list]");
+  const count = panel.querySelector("[data-ready-count]");
+  const orders = [...state.readyDeliveryOrders.values()];
+  if (count) count.textContent = String(orders.length);
+  if (!list) return;
+
+  if (!orders.length) {
+    list.innerHTML = `<p data-ready-empty style="margin:0;color:var(--text-muted);font-size:.9rem;">لا توجد طلبات جاهزة حالياً</p>`;
+    return;
+  }
+
+  list.innerHTML = orders.map(order => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--border-color);border-radius:var(--radius-sm);background:var(--bg-surface);">
+      <strong style="direction:ltr;font-size:1rem;">${escapeHtml(order.order_code)}</strong>
+      <button type="button" class="cart-submit-btn" data-mark-delivered="${escapeHtml(order.order_code)}" ${state.markingDeliveredCodes.has(order.order_code) ? "disabled" : ""} style="width:auto;min-height:42px;padding:8px 18px;">
+        ${state.markingDeliveredCodes.has(order.order_code) ? "جارٍ التأكيد…" : "تم التسليم"}
+      </button>
+    </div>`).join("");
+
+  list.querySelectorAll("[data-mark-delivered]").forEach(button => {
+    button.addEventListener("click", () => markWaiterOrderDelivered(button.dataset.markDelivered));
+  });
+}
+
+async function loadWaiterReadyOrders({ notifyReadyOrderId = null } = {}) {
+  if (state.profile?.role !== "roadside" || !supabase) return false;
+  ensureWaiterReadyPanel();
+  try {
+    const previousOrderIds = new Set([...state.readyDeliveryOrders.values()].map(order => order.id));
+    const { data, error } = await supabase.rpc("get_waiter_ready_orders");
+    if (error) throw error;
+    if (!data?.success || !Array.isArray(data.orders)) throw new Error(data?.error || "تعذر تحميل الطلبات الجاهزة");
+
+    state.readyDeliveryOrders = new Map(data.orders
+      .filter(order => order?.order_code && order.status === "ready")
+      .map(order => [order.order_code, order]));
+    for (const order of state.readyDeliveryOrders.values()) {
+      state.orderStatusByCode.set(order.order_code, "ready");
+      if (notifyReadyOrderId && order.id === notifyReadyOrderId && !previousOrderIds.has(order.id)) {
+        notifyWaiterOrderReady(order.order_code);
+      }
+    }
+    renderWaiterReadyOrders();
+    return true;
+  } catch (error) {
+    console.warn("Waiter ready queue load failed:", error?.message || error);
+    const panel = ensureWaiterReadyPanel();
+    const list = panel?.querySelector("[data-ready-list]");
+    if (list && state.readyDeliveryOrders.size === 0) {
+      list.innerHTML = `<p role="alert" style="margin:0;color:var(--status-soldout-text);font-size:.9rem;">تعذر تحميل الطلبات الجاهزة. أعد المحاولة بعد التحقق من الاتصال.</p>`;
+    }
+    return false;
+  }
+}
+
+async function markWaiterOrderDelivered(orderCode) {
+  if (!orderCode || state.markingDeliveredCodes.has(orderCode)) return;
+  state.markingDeliveredCodes.add(orderCode);
+  renderWaiterReadyOrders();
+  try {
+    const { data, error } = await supabase.rpc("mark_order_delivered", { p_order_code: orderCode });
+    if (error) throw error;
+    if (data?.success !== true) {
+      if (data?.error === "INVALID_TRANSITION") {
+        await loadWaiterReadyOrders();
+      }
+      throw new Error(data?.error || "تعذر تأكيد التسليم");
+    }
+    state.readyDeliveryOrders.delete(orderCode);
+    state.orderStatusByCode.set(orderCode, "handed_off");
+    showToast(`تم تسليم الطلب ${orderCode}`, "success");
+  } catch (error) {
+    console.error("Mark order delivered failed:", error);
+    showToast(error?.message === "NOT_AUTHORIZED" ? "ليس لديك صلاحية تسليم هذا الطلب" : "تعذر تأكيد التسليم. أعد المحاولة.", "error");
+  } finally {
+    state.markingDeliveredCodes.delete(orderCode);
+    renderWaiterReadyOrders();
+  }
 }
 
 async function refreshWaiterOrderStatuses({ notifyReady = false } = {}) {
@@ -264,10 +390,36 @@ function handleWaiterOrderUpdate(payload) {
   if (!order?.order_code || order.created_by !== userId) return;
 
   const previousStatus = state.orderStatusByCode.get(order.order_code);
-  if (order.status === "ready" && previousStatus && previousStatus !== "ready") {
+  const oldStatus = payload?.old?.status ?? previousStatus;
+  if (order.status === "ready" && oldStatus && oldStatus !== "ready") {
     notifyWaiterOrderReady(order.order_code);
   }
   state.orderStatusByCode.set(order.order_code, order.status);
+  if (order.status === "ready") {
+    state.readyDeliveryOrders.set(order.order_code, order);
+    renderWaiterReadyOrders();
+  } else if (order.status === "handed_off" || order.status === "delivered") {
+    state.readyDeliveryOrders.delete(order.order_code);
+    renderWaiterReadyOrders();
+  }
+}
+
+function handleWaiterOrderStatusEvent(payload) {
+  const event = payload?.new;
+  if (!event?.order_id || event.branch_id !== state.profile?.branch_id) return;
+
+  if (event.new_status === "ready") {
+    loadWaiterReadyOrders({ notifyReadyOrderId: event.order_id });
+  } else if (event.new_status === "handed_off" || event.new_status === "delivered") {
+    const readyOrder = [...state.readyDeliveryOrders.values()].find(order => order.id === event.order_id);
+    if (readyOrder) {
+      state.readyDeliveryOrders.delete(readyOrder.order_code);
+      state.orderStatusByCode.set(readyOrder.order_code, event.new_status);
+      renderWaiterReadyOrders();
+    } else {
+      loadWaiterReadyOrders();
+    }
+  }
 }
 
 function recoverOrderRealtime() {
@@ -278,6 +430,7 @@ function recoverOrderRealtime() {
     else setupOrderRealtime();
     return;
   }
+  loadWaiterReadyOrders();
   refreshWaiterOrderStatuses({ notifyReady: state.orderRealtimeHasSubscribed });
 }
 
@@ -302,6 +455,8 @@ function disposeOrderRealtime() {
   state.orderRealtimeUserId = null;
   state.orderRealtimeHasSubscribed = false;
   state.orderStatusByCode.clear();
+  state.readyDeliveryOrders.clear();
+  renderWaiterReadyOrders();
   if (channel && supabase) supabase.removeChannel(channel).catch(() => {});
 }
 
