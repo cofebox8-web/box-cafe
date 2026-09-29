@@ -7,7 +7,6 @@ export const isSupabaseConfigured =
   SUPABASE_PUBLISHABLE_KEY !== "YOUR_SUPABASE_PUBLISHABLE_KEY";
 
 let supabaseClient = null;
-let createSupabaseClient = null;
 
 if (isSupabaseConfigured) {
   try {
@@ -24,7 +23,6 @@ if (isSupabaseConfigured) {
       }
     }
     if (createClient) {
-      createSupabaseClient = createClient;
       supabaseClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
         auth: {
           persistSession: true,
@@ -39,27 +37,6 @@ if (isSupabaseConfigured) {
 }
 
 export const supabase = supabaseClient;
-
-// Staff screens can use their own auth storage namespace. This prevents an
-// owner session in /admin from logging out a waiter session in /waiter when
-// both screens are open in the same browser.
-export function createScopedSupabaseClient(storageKey, storage = null) {
-  if (!createSupabaseClient || !isSupabaseConfigured) return supabaseClient;
-  try {
-    return createSupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: false,
-        storageKey,
-        ...(storage ? { storage } : {})
-      }
-    });
-  } catch (error) {
-    console.warn("Scoped Supabase initialization error:", error);
-    return supabaseClient;
-  }
-}
 
 export function requireSupabase() {
   if (!supabase) {
