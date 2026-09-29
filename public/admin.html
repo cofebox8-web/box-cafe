@@ -728,6 +728,21 @@
     </div>
   </div>
 
+  <!-- نافذة تأكيد عامة قابلة لإعادة الاستخدام — تحل محل نوافذ confirm() الافتراضية بالمتصفح -->
+  <div id="modal-confirm-action" class="erp-modal-backdrop" hidden>
+    <div class="erp-modal-box">
+      <div class="modal-box-top">
+        <h3 id="confirm-action-title">تأكيد الإجراء</h3>
+        <button type="button" class="modal-close-x" data-close-modal="modal-confirm-action" aria-label="إغلاق">✕</button>
+      </div>
+      <p id="confirm-action-message" style="color:var(--text-dim); line-height:1.7; margin:0 0 20px;"></p>
+      <div class="modal-box-actions">
+        <button type="button" id="confirm-action-confirm-btn" class="box-btn-danger-sm" style="flex:1; padding:10px 18px;">تأكيد</button>
+        <button type="button" id="confirm-action-cancel-btn" class="box-btn-secondary" data-close-modal="modal-confirm-action">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-service-point" class="erp-modal-backdrop" hidden>
     <div class="erp-modal-box">
       <div class="modal-box-top">

@@ -76,6 +76,44 @@ function showToast(message) {
   }, 2600);
 }
 
+// بديل بصري متسق مع تصميم الموقع لـ window.confirm() الافتراضي بالمتصفح
+// (كان يتصرف أحياناً بشكل غير متوقع مع الإجراءات غير المتزامنة — أول ضغطة
+// لا تُظهره أحياناً وتحتاج ضغطة ثانية).
+function confirmAction(message, { title = 'تأكيد الإجراء', confirmText = 'تأكيد' } = {}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('modal-confirm-action');
+    const titleEl = document.getElementById('confirm-action-title');
+    const msgEl = document.getElementById('confirm-action-message');
+    const confirmBtn = document.getElementById('confirm-action-confirm-btn');
+    const cancelBtn = document.getElementById('confirm-action-cancel-btn');
+    if (!modal || !msgEl || !confirmBtn || !cancelBtn) {
+      resolve(window.confirm(message));
+      return;
+    }
+
+    if (titleEl) titleEl.textContent = title;
+    msgEl.textContent = message;
+    confirmBtn.textContent = confirmText;
+
+    const cleanup = (result) => {
+      modal.hidden = true;
+      confirmBtn.removeEventListener('click', onConfirm);
+      cancelBtn.removeEventListener('click', onCancel);
+      modal.removeEventListener('click', onBackdropClick);
+      resolve(result);
+    };
+    const onConfirm = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+    const onBackdropClick = (e) => { if (e.target === modal) cleanup(false); };
+
+    confirmBtn.addEventListener('click', onConfirm);
+    cancelBtn.addEventListener('click', onCancel);
+    modal.addEventListener('click', onBackdropClick);
+    modal.hidden = false;
+    confirmBtn.focus();
+  });
+}
+
 async function reloadAdminMenu() {
   if (!isSupabaseConfigured || !supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
   const { data, error } = await supabase.rpc('admin_get_menu');
@@ -187,7 +225,8 @@ function renderServicePoints() {
   }));
   grid.querySelectorAll('[data-rotate-service-qr]').forEach((button) => button.addEventListener('click', async () => {
     const point = servicePoints.find((item) => item.id === button.dataset.rotateServiceQr);
-    if (!point || !window.confirm(`تدوير رمز QR لـ «${point.label}»؟ الرمز القديم سيتوقف فوراً.`)) return;
+    if (!point) return;
+    if (!(await confirmAction(`تدوير رمز QR لـ «${point.label}»؟ الرمز القديم سيتوقف فوراً.`, { title: 'تدوير رمز QR', confirmText: 'تدوير الرمز' }))) return;
     try {
       const { data, error } = await supabase.rpc('admin_rotate_service_point_qr', { p_service_point_id: point.id });
       if (error) throw error;
@@ -1226,7 +1265,7 @@ function renderMenuControlBoxes() {
     btn.addEventListener('click', async () => {
       const target = (menuData.products || []).find((i) => i.id === btn.dataset.deleteItem);
       if (!target) return;
-      if (!window.confirm(`تحذف "${target.name}" من المنيو؟`)) return;
+      if (!(await confirmAction(`تحذف "${target.name}" من المنيو؟`, { title: 'حذف منتج', confirmText: 'حذف' }))) return;
       btn.disabled = true;
       try {
         if (!isSupabaseConfigured || !supabase) throw new Error('تعذر الاتصال بقاعدة البيانات.');
@@ -1900,7 +1939,11 @@ async function initAdminERP() {
     if (deleteBtn) {
       const id = deleteBtn.dataset.deleteStaff;
       const staff = staffAccounts.find(a => a.user_id === id);
-      if (staff && window.confirm(`هل أنت متأكد من حذف حساب الموظف «${staff.full_name}» نهائياً؟ لا يمكن التراجع عن هذا الإجراء.`)) {
+      const confirmed = staff && await confirmAction(
+        `هل أنت متأكد من حذف حساب الموظف «${staff.full_name}» نهائياً؟ لا يمكن التراجع عن هذا الإجراء.`,
+        { title: 'حذف حساب موظف', confirmText: 'حذف نهائياً' }
+      );
+      if (confirmed) {
         deleteBtn.disabled = true;
         try {
           await invokeStaffFunction({ action: 'delete', staff_id: id });
