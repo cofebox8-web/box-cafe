@@ -144,8 +144,10 @@ function subscribeToKitchenOrders() {
       }
     })
     .subscribe((status) => {
+      // انقطاع مؤقت لا يستدعي إزعاج الباريستا؛ يُعاد الاتصال والجلب تلقائياً
+      // بصمت عند SUBSCRIBED أدناه، بلا حاجة لأي تدخل يدوي.
       if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-        showLiveToast("انقطع التحديث اللحظي مؤقتاً؛ ستبقى إعادة التحميل متاحة.");
+        console.debug("Kitchen realtime disconnected temporarily:", status);
       } else if (status === "SUBSCRIBED") {
         // يغطي أول اشتراك وأيضاً إعادة الاتصال التلقائية بعد انقطاع صامت؛
         // إعادة الجلب هنا تلتقط أي طلب وصل أثناء فجوة غير مُكتشَفة بحدث خطأ صريح.

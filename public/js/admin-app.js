@@ -329,8 +329,10 @@ function subscribeAdminOrders() {
       reloadAdminOrders().catch((error) => showToast(error.message || 'تعذر تحديث سجل الطلبات.'));
     })
     .subscribe((status) => {
+      // انقطاع مؤقت لا يحتاج إزعاج المستخدم؛ يعيد الاتصال تلقائياً بصمت
+      // (Supabase يعيد الاشتراك من تلقاء نفسه، ولا حاجة لتحديث يدوي).
       if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        showToast('انقطع تحديث الطلبات المباشر. حدّث الصفحة إذا لم تعد المزامنة.');
+        console.debug('Admin orders realtime disconnected temporarily:', status);
       }
     });
 }
@@ -351,7 +353,7 @@ function subscribeAdminMenu() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'product_option_items' }, scheduleAdminMenuRefresh)
     .subscribe((status) => {
       if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        showToast('تعذر تشغيل التحديث اللحظي للمنيو. ستتم المزامنة عند إعادة الفتح.');
+        console.debug('Admin menu realtime disconnected temporarily:', status);
       }
     });
 }
