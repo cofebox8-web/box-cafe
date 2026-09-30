@@ -91,6 +91,38 @@ function parseRouteContext() {
   state.qrToken = token.trim();
 }
 
+const MENU_CACHE_PREFIX = "box_cofe_customer_menu_v1";
+
+function getMenuCacheKey() {
+  const branch = state.branchSlug || "default";
+  const token = state.qrToken || "public";
+  return `${MENU_CACHE_PREFIX}_${branch}_${token}`;
+}
+
+function readCachedMenu() {
+  try {
+    const raw = localStorage.getItem(getMenuCacheKey());
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.success === true && Array.isArray(parsed.categories) && Array.isArray(parsed.products)) {
+      return parsed;
+    }
+  } catch (e) {
+    console.warn("Could not read menu cache:", e);
+  }
+  return null;
+}
+
+function saveMenuCache(data) {
+  try {
+    if (data && data.success === true && Array.isArray(data.categories) && Array.isArray(data.products)) {
+      localStorage.setItem(getMenuCacheKey(), JSON.stringify(data));
+    }
+  } catch (e) {
+    console.warn("Could not save menu cache:", e);
+  }
+}
+
 // Fetch Menu Data from Supabase RPC
 async function loadMenuData({ silent = false } = {}) {
   if (!silent) showSkeletonLoading(true);
@@ -127,7 +159,7 @@ async function loadMenuData({ silent = false } = {}) {
         : (errCode === "NO_ACTIVE_SERVICE_POINT"
           ? "لا توجد نقطة خدمة فعالة لعرض المنيو حالياً."
           : "تعذر جلب بيانات المنيو أو نقطة الخدمة."));
-      showErrorScreen("تنبيه المنيو", errMsg);
+      if (!silent) showErrorScreen("تنبيه المنيو", errMsg);
       return;
     }
 
@@ -135,11 +167,12 @@ async function loadMenuData({ silent = false } = {}) {
     if (res.data?.branch?.slug) {
       state.branchSlug = res.data.branch.slug;
     }
+    saveMenuCache(res.data);
     renderApp();
     setupCustomerMenuRealtime();
   } catch (err) {
     console.error("Menu fetch exception:", err);
-    if (!silent) {
+    if (!silent && !state.menuData) {
       showErrorScreen("خطأ في الاتصال", err.message || "تعذر جلب المنيو من الخادم. يرجى التحقق من اتصالك بالإنترنت وإعادة المحاولة.");
     }
   } finally {
@@ -247,7 +280,7 @@ function renderProductCardHtml(p, currency = "IQD") {
   const priceFormatted = formatAmountOnly(p.price);
 
   return `
-    <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="عرض تفاصيل ${escapeHtml(p.name)}">
+    <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="عرض خيارات ${escapeHtml(p.name)}">
       <div class="product-card-media">
         ${!isAvailable ? `<span class="product-soldout-badge">غير متوفر حالياً</span>` : ""}
         ${p.image_url
@@ -269,8 +302,8 @@ function renderProductCardHtml(p, currency = "IQD") {
             <span class="price-amount">${priceFormatted}</span>
             <span class="price-currency">د.ع</span>
           </div>
-          <button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}" aria-label="عرض تفاصيل ${escapeHtml(p.name)}">
-            <span>تفاصيل الصنف</span>
+          <button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}" aria-label="عرض خيارات ${escapeHtml(p.name)}">
+            <span>عرض الخيارات</span>
             <svg class="btn-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
           </button>
         </div>
@@ -397,6 +430,12 @@ function openProductDetailsModal(productId) {
   if (modal) {
     lockBodyScroll();
     modal.showModal();
+
+    // Immediately remove focus so Chrome's auto-focus does not draw a blue focus ring
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+
     modal.onclick = (e) => {
       const rect = modal.getBoundingClientRect();
       const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
@@ -493,36 +532,15 @@ function renderModalContent() {
   optionsContainer.innerHTML = optionsHtml;
 }
 
-// Mobile Body Scroll Lock
-let activeModalCount = 0;
-let savedWindowScrollY = 0;
-
+// Mobile & Desktop Scroll Lock (Zero-reflow, no layout shifts)
 function lockBodyScroll() {
-  if (activeModalCount === 0) {
-    savedWindowScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${savedWindowScrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.width = "100%";
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-  }
-  activeModalCount++;
+  document.body.classList.add("modal-open-scroll-locked");
+  document.documentElement.classList.add("modal-open-scroll-locked");
 }
 
 function unlockBodyScroll() {
-  if (activeModalCount > 0) activeModalCount--;
-  if (activeModalCount === 0) {
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.left = "";
-    document.body.style.right = "";
-    document.body.style.width = "";
-    document.body.style.overflow = "";
-    document.documentElement.style.overflow = "";
-    window.scrollTo(0, savedWindowScrollY);
-  }
+  document.body.classList.remove("modal-open-scroll-locked");
+  document.documentElement.classList.remove("modal-open-scroll-locked");
 }
 
 // UI State Toggles: Skeleton, Error Screen
@@ -614,6 +632,23 @@ function setupEventListeners() {
 document.addEventListener("DOMContentLoaded", () => {
   parseRouteContext();
   setupEventListeners();
-  loadMenuData();
+
+  // Instant Stale-While-Revalidate bootstrap:
+  // Render cached menu immediately (0ms instant display)
+  const cached = readCachedMenu();
+  if (cached && Array.isArray(cached.categories) && cached.categories.length > 0) {
+    state.menuData = cached;
+    if (cached.branch?.slug) {
+      state.branchSlug = cached.branch.slug;
+    }
+    showSkeletonLoading(false);
+    renderApp();
+    // Revalidate in background silently
+    loadMenuData({ silent: true });
+  } else {
+    // First visit ever: show skeleton and fetch fresh data
+    loadMenuData({ silent: false });
+  }
+
   setupCustomerMenuRealtime();
 });

@@ -67,6 +67,17 @@
    -------------------------------------------------------------------------- */
 *, *::before, *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+html.modal-open-scroll-locked,
+body.modal-open-scroll-locked {
+  overflow: hidden !important;
+  overscroll-behavior: contain !important;
 }
 
 html {
@@ -458,9 +469,9 @@ body.customer-menu-body {
   box-shadow: var(--shadow-hover);
 }
 
+.product-card:focus,
 .product-card:focus-visible {
-  outline: 2px solid var(--coffee-primary);
-  outline-offset: 2px;
+  outline: none !important;
 }
 
 .product-card.unavailable {
@@ -624,6 +635,12 @@ body.customer-menu-body {
   white-space: nowrap;
 }
 
+.view-details-btn:focus,
+.view-details-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .view-details-btn .btn-arrow-icon {
   width: 13px;
   height: 13px;
@@ -655,13 +672,67 @@ dialog.customization-modal {
   box-shadow: var(--shadow-modal);
   color: var(--text-primary);
   overflow: hidden;
-  outline: none;
+  outline: none !important;
+  animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+dialog.customization-modal:focus,
+dialog.customization-modal:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 dialog.customization-modal::backdrop {
   background: rgba(35, 31, 28, 0.55);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  animation: modalBackdropFade 0.22s ease forwards;
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalBackdropFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  dialog.customization-modal {
+    width: 100%;
+    max-width: 100%;
+    margin-top: auto;
+    margin-bottom: 0;
+    margin-inline: 0;
+    border-bottom: none;
+    border-radius: 22px 22px 0 0;
+    max-height: 86vh;
+    animation: modalSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes modalSlideUp {
+    from {
+      opacity: 0.6;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 .modal-content-shell {
@@ -699,6 +770,12 @@ dialog.customization-modal::backdrop {
 .modal-close-btn:hover {
   background: var(--coffee-primary);
   color: #FFFFFF;
+}
+
+.modal-close-btn:focus,
+.modal-close-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .modal-close-btn .icon {
@@ -904,6 +981,12 @@ dialog.customization-modal::backdrop {
 
 .modal-dismiss-btn:hover {
   background: var(--coffee-hover);
+}
+
+.modal-dismiss-btn:focus,
+.modal-dismiss-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* --------------------------------------------------------------------------
