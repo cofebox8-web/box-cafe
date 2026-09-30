@@ -280,7 +280,7 @@ function renderProductCardHtml(p, currency = "IQD") {
   const priceFormatted = formatAmountOnly(p.price);
 
   return `
-    <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="عرض خيارات ${escapeHtml(p.name)}">
+    <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="تخصيص ${escapeHtml(p.name)}">
       <div class="product-card-media">
         ${!isAvailable ? `<span class="product-soldout-badge">غير متوفر حالياً</span>` : ""}
         ${p.image_url
@@ -302,10 +302,18 @@ function renderProductCardHtml(p, currency = "IQD") {
             <span class="price-amount">${priceFormatted}</span>
             <span class="price-currency">د.ع</span>
           </div>
-          <button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}" aria-label="عرض خيارات ${escapeHtml(p.name)}">
-            <span>عرض الخيارات</span>
-            <svg class="btn-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
+          ${isAvailable ? `
+            <button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}" aria-label="تخصيص ${escapeHtml(p.name)}">
+              <span class="btn-text">تخصيص الصنف</span>
+              <span class="btn-action-badge" aria-hidden="true">
+                <svg class="btn-arrow-icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+              </span>
+            </button>
+          ` : `
+            <button type="button" class="view-details-btn is-unavailable" disabled aria-label="غير متوفر">
+              <span class="btn-text">غير متوفر حالياً</span>
+            </button>
+          `}
         </div>
       </div>
     </article>
