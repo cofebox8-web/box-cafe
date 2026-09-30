@@ -1,40 +1,49 @@
 /* ==========================================================================
    BOX COFE — Pure Luxury Minimalist Login Card
+   Official Brand Identity: Warm Milk & Roasted Coffee Luxury Experience
    Ultra-clean, Centered, Zero Distractions
    ========================================================================== */
 
 :root {
-  color-scheme: dark;
-  --bg-obsidian: #06050a;
-  --bg-card: rgba(18, 14, 28, 0.78);
-  --bg-input: #090710;
+  color-scheme: light;
 
-  --purple-main: #9333ea;
-  --purple-bright: #c084fc;
-  --purple-glow: rgba(168, 85, 247, 0.28);
-  --purple-soft: rgba(192, 132, 252, 0.12);
+  /* Warm Coffee Palette */
+  --bg-page: #F8F5EE;
+  --bg-card: #FFFFFF;
+  --bg-input: #FFFFFF;
+  --bg-surface: #F0E9DF;
+  --bg-subtle: #E8E1D5;
 
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-card: rgba(192, 132, 252, 0.25);
-  --border-focus: #c084fc;
+  /* Brand Colors */
+  --coffee-primary: #4A3525;
+  --coffee-hover: #36261A;
+  --coffee-accent: #785135;
+  --coffee-light: #EFE8DE;
 
-  --text-white: #f8fafc;
-  --text-light: #cbd5e1;
-  --text-dim: #94a3b8;
-  --text-muted: #64748b;
+  /* Borders */
+  --border-subtle: #EFE9E0;
+  --border-card: #E6DFD4;
+  --border-focus: #4A3525;
 
-  --color-danger: #ef4444;
-  --color-danger-bg: rgba(239, 68, 68, 0.12);
-  --color-danger-border: rgba(239, 68, 68, 0.35);
+  /* Typography Colors */
+  --text-primary: #231F1C;
+  --text-secondary: #57524E;
+  --text-muted: #8C857E;
+  --text-white: #FFFFFF;
 
-  --color-success: #10b981;
-  --color-success-bg: rgba(16, 185, 129, 0.12);
-  --color-success-border: rgba(16, 185, 129, 0.35);
+  /* Status Colors */
+  --color-danger: #DC2626;
+  --color-danger-bg: #FEF2F2;
+  --color-danger-border: #FECACA;
 
-  --font-ar: "Cairo", "Tajawal", system-ui, -apple-system, sans-serif;
+  --color-success: #16A34A;
+  --color-success-bg: #F0FDF4;
+  --color-success-border: #BBF7D0;
+
+  --font-ar: "Cairo", system-ui, -apple-system, sans-serif;
   --font-en: "Montserrat", system-ui, sans-serif;
 
-  --radius-card: 24px;
+  --radius-card: 20px;
   --radius-md: 12px;
   --radius-sm: 8px;
 }
@@ -60,12 +69,8 @@ body.login-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-obsidian);
-  background-image:
-    radial-gradient(circle at 50% 25%, rgba(147, 51, 234, 0.18), transparent 45%),
-    radial-gradient(circle at 80% 85%, rgba(109, 40, 217, 0.12), transparent 40%),
-    radial-gradient(circle at 20% 75%, rgba(76, 29, 149, 0.1), transparent 40%);
-  color: var(--text-white);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
   font-family: var(--font-ar);
   direction: rtl;
   -webkit-font-smoothing: antialiased;
@@ -84,7 +89,7 @@ input {
    ========================================================================== */
 .login-viewport {
   width: 100%;
-  max-width: 410px;
+  max-width: 420px;
   margin: auto;
 }
 
@@ -104,43 +109,43 @@ input {
   border: 1px solid var(--border-card);
   border-radius: var(--radius-card);
   background: var(--bg-card);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  box-shadow:
-    0 24px 70px rgba(0, 0, 0, 0.75),
-    0 0 50px rgba(147, 51, 234, 0.15);
+  box-shadow: 0 12px 36px rgba(74, 53, 37, 0.08);
 }
 
 /* ==========================================================================
-   Brand & Title
+   Brand & Title (Matching Menu & Waiter Pure Typographic Lockup)
    ========================================================================== */
 .card-brand {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   font-family: var(--font-en);
   font-size: 26px;
   font-weight: 900;
-  letter-spacing: 0.14em;
-  margin-bottom: 22px;
+  letter-spacing: 0.12em;
+  margin-bottom: 24px;
   user-select: none;
 }
 
 .logo-box {
-  color: #ffffff;
+  background: var(--coffee-primary);
+  color: #FFFFFF;
+  padding: 3px 9px;
+  border-radius: 6px;
+  line-height: 1.1;
 }
 
 .logo-cofe {
-  color: var(--purple-bright);
-  text-shadow: 0 0 16px var(--purple-glow);
+  color: var(--coffee-primary);
+  line-height: 1.1;
 }
 
 .card-title {
   font-size: 1.25rem;
   font-weight: 800;
   text-align: center;
-  color: var(--text-white);
+  color: var(--text-primary);
   margin-bottom: 22px;
 }
 
@@ -153,8 +158,8 @@ input {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 3px solid rgba(192, 132, 252, 0.18);
-  border-top-color: var(--purple-bright);
+  border: 3px solid var(--border-card);
+  border-top-color: var(--coffee-primary);
   animation: spin 0.75s linear infinite;
 }
 
@@ -179,16 +184,16 @@ input {
 }
 
 .field-label {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  color: var(--text-light);
+  color: var(--text-secondary);
 }
 
 .inline-link-btn {
   border: 0;
   background: transparent;
-  color: var(--purple-bright);
-  font-size: 0.76rem;
+  color: var(--coffee-accent);
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   padding: 2px 4px;
@@ -198,7 +203,7 @@ input {
 
 .inline-link-btn:hover,
 .inline-link-btn:focus-visible {
-  color: #fff;
+  color: var(--coffee-hover);
   text-decoration: underline;
   outline: none;
 }
@@ -213,10 +218,10 @@ input {
   width: 100%;
   height: 48px;
   padding: 10px 14px;
-  border: 1px solid var(--border-subtle);
+  border: 1.5px solid var(--border-card);
   border-radius: var(--radius-md);
   background: var(--bg-input);
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 0.95rem;
   outline: none;
   transition: border-color 0.16s ease, box-shadow 0.16s ease;
@@ -227,13 +232,13 @@ input {
 }
 
 .field-input:hover {
-  border-color: rgba(192, 132, 252, 0.35);
+  border-color: var(--coffee-accent);
 }
 
 .field-input:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.2);
-  background: #0c0915;
+  box-shadow: 0 0 0 3px rgba(74, 53, 37, 0.12);
+  background: #FFFFFF;
 }
 
 .input-shell.has-action .field-input {
@@ -243,18 +248,19 @@ input {
 
 .field-group.has-error .field-input {
   border-color: var(--color-danger);
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
 }
 
 .field-error {
-  color: #fca5a5;
-  font-size: 0.76rem;
+  color: var(--color-danger);
+  font-size: 0.78rem;
+  font-weight: 600;
   line-height: 1.4;
   margin-top: 1px;
 }
 
 /* ==========================================================================
-   Password Visibility Button (موقع العين على اليمين بدقة)
+   Password Visibility Button
    ========================================================================== */
 .password-toggle-btn {
   position: absolute;
@@ -270,7 +276,7 @@ input {
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text-dim);
+  color: var(--text-muted);
   cursor: pointer;
   padding: 0;
   z-index: 2;
@@ -278,12 +284,12 @@ input {
 }
 
 .password-toggle-btn:hover {
-  color: var(--purple-bright);
-  background: rgba(192, 132, 252, 0.12);
+  color: var(--coffee-primary);
+  background: var(--bg-surface);
 }
 
 .password-toggle-btn:focus-visible {
-  outline: 2px solid var(--purple-bright);
+  outline: 2px solid var(--coffee-primary);
 }
 
 .password-toggle-btn svg {
@@ -305,56 +311,57 @@ input {
   height: 48px;
   margin-top: 6px;
   padding: 0 20px;
-  border: 1px solid rgba(192, 132, 252, 0.4);
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #9333ea, #6d28d9);
-  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  background: var(--coffee-primary);
+  color: #FFFFFF;
   font-size: 0.96rem;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(109, 40, 217, 0.35);
+  box-shadow: 0 4px 14px rgba(74, 53, 37, 0.25);
   touch-action: manipulation;
-  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.18s ease;
 }
 
 .primary-submit-btn:hover:not(:disabled) {
-  filter: brightness(1.12);
+  background: var(--coffee-hover);
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(109, 40, 217, 0.45);
+  box-shadow: 0 6px 18px rgba(74, 53, 37, 0.32);
 }
 
 .primary-submit-btn:active:not(:disabled) {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 .primary-submit-btn:focus-visible {
-  outline: 3px solid var(--purple-bright);
+  outline: 3px solid var(--coffee-primary);
   outline-offset: 2px;
 }
 
 .primary-submit-btn:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .secondary-ghost-btn {
   width: 100%;
-  height: 42px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  height: 44px;
+  border: 1px solid var(--border-card);
+  border-radius: 9999px;
   background: transparent;
-  color: var(--text-light);
-  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .secondary-ghost-btn:hover,
 .secondary-ghost-btn:focus-visible {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--border-card);
-  color: #ffffff;
+  background: var(--bg-surface);
+  border-color: var(--coffee-accent);
+  color: var(--coffee-primary);
 }
 
 .btn-spinner {
@@ -374,42 +381,44 @@ input {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 11px 14px;
+  padding: 12px 14px;
   border-radius: var(--radius-md);
   margin-bottom: 16px;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   line-height: 1.5;
   border: 1px solid var(--color-danger-border);
   background: var(--color-danger-bg);
-  color: #fecaca;
+  color: var(--color-danger);
 }
 
 .auth-alert[data-tone="success"] {
   border-color: var(--color-success-border);
   background: var(--color-success-bg);
-  color: #a7f3d0;
+  color: var(--color-success);
 }
 
 .auth-alert[data-tone="info"] {
-  border-color: rgba(192, 132, 252, 0.35);
-  background: rgba(147, 51, 234, 0.14);
-  color: #ede9fe;
+  border-color: var(--border-card);
+  background: var(--bg-surface);
+  color: var(--coffee-primary);
 }
 
 .auth-alert-icon {
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
+  background: currentColor;
+  color: #FFFFFF !important;
   font-weight: 800;
   font-size: 0.75rem;
 }
 
 .auth-alert-content {
   flex: 1;
+  font-weight: 600;
 }
 
 /* ==========================================================================
@@ -427,7 +436,7 @@ input {
   }
   .login-card {
     padding: 24px 18px;
-    border-radius: 20px;
+    border-radius: 18px;
   }
 }
 
