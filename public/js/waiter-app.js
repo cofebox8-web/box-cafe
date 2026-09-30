@@ -105,20 +105,22 @@ async function initPOS() {
 }
 
 function updateAuthUI(profile) {
-  const authBadge = $("waiter-auth-badge");
-  const loginTrigger = $("desktop-login-trigger");
-  const nameText = $("waiter-name-text");
+  const authBadges = document.querySelectorAll("#waiter-auth-badge, .waiter-status-pill");
+  const loginTriggers = document.querySelectorAll("#waiter-login-trigger, #desktop-login-trigger, .waiter-login-trigger-btn");
+  const nameTexts = document.querySelectorAll("#waiter-name-text, .waiter-name-text");
 
   if (profile) {
-    if (authBadge) authBadge.style.display = "inline-flex";
-    if (loginTrigger) loginTrigger.style.display = "none";
-    if (nameText) {
-      const roleStr = profile.role === "roadside" ? "الويتر" : "إدارة";
-      nameText.textContent = `${roleStr}: ${profile.full_name || profile.email || "موظف"}`;
-    }
+    authBadges.forEach(b => b.style.display = "inline-flex");
+    loginTriggers.forEach(t => t.style.display = "none");
+    const roleStr = profile.role === "roadside" ? "الويتر" : "إدارة";
+    const displayName = profile.full_name || profile.email || "موظف";
+    nameTexts.forEach(nt => {
+      nt.textContent = `${roleStr}: ${displayName}`;
+      nt.title = `${roleStr}: ${displayName}`;
+    });
   } else {
-    if (authBadge) authBadge.style.display = "none";
-    if (loginTrigger) loginTrigger.style.display = "inline-block";
+    authBadges.forEach(b => b.style.display = "none");
+    loginTriggers.forEach(t => t.style.display = "inline-flex");
   }
 
   if (profile?.role === "roadside") {
@@ -1632,13 +1634,22 @@ function setupEventListeners() {
     });
   }
 
-  // Sign out
-  $("desktop-signout-btn")?.addEventListener("click", async () => {
-    disposeOrderRealtime();
-    await signOutStaff(supabase).catch(() => {});
-    state.profile = null;
-    updateAuthUI(null);
-    showToast("تم تسجيل الخروج بنجاح", "success");
+  // Sign out triggers (both header and desktop cart)
+  document.querySelectorAll("#waiter-signout-btn, #desktop-signout-btn, .waiter-signout-btn, .waiter-signout-link").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      disposeOrderRealtime();
+      await signOutStaff(supabase).catch(() => {});
+      state.profile = null;
+      updateAuthUI(null);
+      showToast("تم تسجيل الخروج بنجاح", "success");
+    });
+  });
+
+  // Login triggers (both header and desktop cart)
+  document.querySelectorAll("#waiter-login-trigger, #desktop-login-trigger, .waiter-login-trigger-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      openLoginModal();
+    });
   });
 }
 

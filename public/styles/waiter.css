@@ -65,33 +65,89 @@ body.modal-open {
   padding: 16px 16px 80px;
 }
 
-/* Header Waiter Status Bar */
+/* Header Waiter Status Bar & Signout Action */
+.waiter-header-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  max-width: var(--pos-container-max) !important;
+  gap: 10px;
+}
+
+.header-waiter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .waiter-status-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-surface);
+  background: #FFFFFF;
   border: 1px solid var(--border-color);
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: var(--radius-pill);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--coffee-primary);
+  box-shadow: var(--shadow-sm);
+  max-width: 100%;
 }
 
 .waiter-status-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #166534;
+  background: #16A34A;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+  flex-shrink: 0;
+}
+
+.waiter-name-text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--coffee-primary);
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 480px) {
+  .waiter-name-text {
+    max-width: 85px;
+    font-size: 0.72rem;
+  }
+}
+
+.waiter-signout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #DC2626;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-family: var(--font-arabic);
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  line-height: 1.2;
+}
+
+.waiter-signout-btn:hover {
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #B91C1C;
 }
 
 .waiter-signout-link {
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: var(--status-soldout-text);
   font-size: 0.76rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   padding: 0 4px;
   transition: color 0.15s ease;
@@ -99,7 +155,7 @@ body.modal-open {
 }
 
 .waiter-signout-link:hover {
-  color: var(--status-soldout-text);
+  color: #B91C1C;
 }
 
 .waiter-login-trigger-btn {
@@ -113,6 +169,7 @@ body.modal-open {
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: all 0.16s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .waiter-login-trigger-btn:hover {
