@@ -204,18 +204,28 @@ async function handleSignInSubmit(event) {
 
   if (hasError) return;
 
-  const submitBtn = $("login-submit-btn");
-  const spinner = $("login-btn-spinner");
-  if (submitBtn) submitBtn.disabled = true;
-  if (spinner) spinner.hidden = false;
+  setButtonLoading(
+    "login-submit-btn",
+    "login-btn-spinner",
+    "login-submit-label",
+    true,
+    "جارٍ تسجيل الدخول…",
+    "تسجيل الدخول"
+  );
 
   try {
     const context = await signInStaff(emailVal, passwordVal, supabase);
     const targetUrl = resolveStaffDestination(context.profile, state.nextParam);
     window.location.replace(targetUrl);
   } catch (error) {
-    if (submitBtn) submitBtn.disabled = false;
-    if (spinner) spinner.hidden = true;
+    setButtonLoading(
+      "login-submit-btn",
+      "login-btn-spinner",
+      "login-submit-label",
+      false,
+      "جارٍ تسجيل الدخول…",
+      "تسجيل الدخول"
+    );
     setAuthAlert(error.message || "تعذر تسجيل الدخول. تحقق من بياناتك وحاول مرة أخرى.", "error");
   }
 }

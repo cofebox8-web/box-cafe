@@ -193,7 +193,7 @@ async function initKitchenAuth() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     submit.disabled = true;
-    submit.textContent = "جارٍ التحقق…";
+    submit.textContent = "جارٍ التحقق والدخول…";
     try {
       const context = await signInStaff(
         document.getElementById("kds-login-email").value,
@@ -209,7 +209,7 @@ async function initKitchenAuth() {
       showKitchenLogin(error.message || "تعذر تسجيل الدخول.");
     } finally {
       submit.disabled = false;
-      submit.textContent = "دخول";
+      submit.textContent = "تسجيل الدخول";
     }
   });
 

@@ -794,14 +794,9 @@ let savedWindowScrollY = 0;
 function lockBodyScroll() {
   if (activeModalCount === 0) {
     savedWindowScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${savedWindowScrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.width = "100%";
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
     document.body.classList.add("modal-open");
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
   }
   activeModalCount++;
 }
@@ -810,14 +805,11 @@ function unlockBodyScroll() {
   if (activeModalCount > 0) activeModalCount--;
   if (activeModalCount === 0) {
     document.body.classList.remove("modal-open");
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.left = "";
-    document.body.style.right = "";
-    document.body.style.width = "";
-    document.body.style.overflow = "";
     document.documentElement.style.overflow = "";
-    window.scrollTo(0, savedWindowScrollY);
+    document.body.style.overflow = "";
+    if (savedWindowScrollY) {
+      window.scrollTo(0, savedWindowScrollY);
+    }
   }
 }
 
@@ -1341,15 +1333,29 @@ function openLoginModal(hint = "") {
   if (!modal) return;
 
   const errEl = $("login-error-alert");
+  const errMsg = $("login-error-message");
   if (errEl) {
     if (hint) {
-      errEl.textContent = hint;
-      errEl.style.display = "block";
+      if (errMsg) errMsg.textContent = hint;
+      errEl.style.display = "flex";
       errEl.style.color = "var(--coffee-primary)";
+      errEl.style.background = "var(--bg-page)";
+      errEl.style.borderColor = "var(--border-color)";
     } else {
       errEl.style.display = "none";
     }
   }
+
+  // Reset password field and visibility toggle
+  const passInput = $("login-password");
+  if (passInput) {
+    passInput.value = "";
+    passInput.type = "password";
+  }
+  const eyeIcon = document.querySelector("#toggle-waiter-password-btn .icon-eye");
+  const eyeOffIcon = document.querySelector("#toggle-waiter-password-btn .icon-eye-off");
+  if (eyeIcon) eyeIcon.style.display = "block";
+  if (eyeOffIcon) eyeOffIcon.style.display = "none";
 
   lockBodyScroll();
   modal.showModal();
@@ -1577,10 +1583,7 @@ function setupEventListeners() {
   if (loginModal) {
     loginModal.addEventListener("close", () => unlockBodyScroll());
     loginModal.addEventListener("click", (e) => {
-      const rect = loginModal.getBoundingClientRect();
-      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
-        && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
-      if (!isInDialog) {
+      if (e.target === loginModal) {
         closeLoginModal();
       }
     });
@@ -1593,16 +1596,51 @@ function setupEventListeners() {
   $("desktop-login-trigger")?.addEventListener("click", () => openLoginModal());
   $("login-modal-close")?.addEventListener("click", closeLoginModal);
 
+  // Password Visibility Toggle
+  const togglePassBtn = $("toggle-waiter-password-btn");
+  if (togglePassBtn) {
+    togglePassBtn.addEventListener("click", () => {
+      const passInput = $("login-password");
+      if (!passInput) return;
+      const isPass = passInput.type === "password";
+      passInput.type = isPass ? "text" : "password";
+      togglePassBtn.setAttribute("aria-pressed", String(isPass));
+      const eyeIcon = togglePassBtn.querySelector(".icon-eye");
+      const eyeOffIcon = togglePassBtn.querySelector(".icon-eye-off");
+      if (eyeIcon) eyeIcon.style.display = isPass ? "none" : "block";
+      if (eyeOffIcon) eyeOffIcon.style.display = isPass ? "block" : "none";
+      passInput.focus();
+    });
+  }
+
   const loginForm = $("waiter-login-form");
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = $("login-email")?.value;
+      const email = $("login-email")?.value?.trim();
       const pass = $("login-password")?.value;
       const errEl = $("login-error-alert");
+      const errMsg = $("login-error-message");
       const submitBtn = $("login-submit-btn");
+      const spinner = $("login-submit-spinner");
+      const lockIcon = $("login-submit-icon");
+      const submitLabel = $("login-submit-label");
 
-      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "جاري التحقق…"; }
+      if (!email || !pass) {
+        if (errEl) {
+          if (errMsg) errMsg.textContent = "يرجى إدخال البريد الإلكتروني وكلمة المرور.";
+          errEl.style.display = "flex";
+          errEl.style.color = "#DC2626";
+          errEl.style.background = "#FEF2F2";
+          errEl.style.borderColor = "#FECACA";
+        }
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      if (spinner) spinner.style.display = "inline-block";
+      if (lockIcon) lockIcon.style.display = "none";
+      if (submitLabel) submitLabel.textContent = "جارٍ تسجيل الدخول…";
       if (errEl) errEl.style.display = "none";
 
       try {
@@ -1624,12 +1662,17 @@ function setupEventListeners() {
         }
       } catch (err) {
         if (errEl) {
-          errEl.textContent = err.message || "البريد أو كلمة المرور غير صحيحة.";
-          errEl.style.display = "block";
-          errEl.style.color = "#B91C1C";
+          if (errMsg) errMsg.textContent = err.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+          errEl.style.display = "flex";
+          errEl.style.color = "#DC2626";
+          errEl.style.background = "#FEF2F2";
+          errEl.style.borderColor = "#FECACA";
         }
       } finally {
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "دخول"; }
+        if (submitBtn) submitBtn.disabled = false;
+        if (spinner) spinner.style.display = "none";
+        if (lockIcon) lockIcon.style.display = "inline-block";
+        if (submitLabel) submitLabel.textContent = "تسجيل الدخول";
       }
     });
   }
