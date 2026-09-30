@@ -81,27 +81,31 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function initPOS() {
-  loadSavedCart();
   setupEventListeners();
 
-  // Check Staff Auth Session silently
+  // The waiter POS is a protected staff route. Do not load the catalog or
+  // restore a cart until an active roadside session has been verified.
+  let staffSession = null;
   try {
-    const staffSession = await getStaffSession(supabase);
-    if (staffSession?.profile) {
-      state.profile = staffSession.profile;
-      updateAuthUI(staffSession.profile);
-    } else {
-      updateAuthUI(null);
-    }
+    if (!isSupabaseConfigured || !supabase) throw new Error("Supabase is not configured");
+    staffSession = await getStaffSession(supabase);
   } catch (err) {
-    console.debug("Silent staff session check:", err?.message);
-    updateAuthUI(null);
+    console.warn("Waiter route authentication failed:", err?.message || err);
   }
 
-  // Load Menu Data immediately (No blocking screen!)
+  const profile = staffSession?.profile;
+  if (!profile || profile.role !== "roadside" || !profile.is_active || !profile.branch_id) {
+    const next = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    window.location.replace(`/login?next=${encodeURIComponent(next || "/waiter")}`);
+    return;
+  }
+
+  state.profile = profile;
+  loadSavedCart();
+  updateAuthUI(profile);
   await loadMenuData();
   setupRealtime();
-  if (state.profile?.role === "roadside") setupOrderRealtime();
+  setupOrderRealtime();
 }
 
 function updateAuthUI(profile) {
