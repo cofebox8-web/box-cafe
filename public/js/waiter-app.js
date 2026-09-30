@@ -547,6 +547,9 @@ function renderCategories() {
       list.querySelectorAll(".category-pill-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
+      // Auto-scroll the clicked pill smoothly into the center of the scroll container
+      btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+
       if (catId === "all") {
         renderProducts();
       } else {
@@ -558,6 +561,40 @@ function renderCategories() {
       }
     });
   });
+
+  initCategoryNavScroll();
+}
+
+function initCategoryNavScroll() {
+  const nav = $("categories-nav-section") || document.querySelector(".categories-nav");
+  if (!nav) return;
+
+  function updateFades() {
+    const maxScroll = nav.scrollWidth - nav.clientWidth;
+    if (maxScroll <= 6) {
+      nav.className = "categories-nav fade-none";
+      return;
+    }
+    const scrollPos = Math.abs(nav.scrollLeft);
+    const atStart = scrollPos <= 6;
+    const atEnd = scrollPos >= (maxScroll - 8);
+
+    if (atStart) {
+      nav.className = "categories-nav fade-left-only";
+    } else if (atEnd) {
+      nav.className = "categories-nav fade-right-only";
+    } else {
+      nav.className = "categories-nav fade-both";
+    }
+  }
+
+  if (!nav._hasScrollListener) {
+    nav.addEventListener("scroll", updateFades, { passive: true });
+    window.addEventListener("resize", updateFades, { passive: true });
+    nav._hasScrollListener = true;
+  }
+
+  requestAnimationFrame(updateFades);
 }
 
 // --------------------------------------------------------------------------

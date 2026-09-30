@@ -263,6 +263,12 @@ function renderCategories() {
       renderCategories();
       renderProducts();
 
+      // Auto-scroll the clicked pill smoothly into the center of the scroll container
+      const activeBtn = list.querySelector(`.category-pill-btn[data-category-id="${catId}"]`);
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
+
       if (catId !== "all") {
         const targetSection = document.getElementById(`cat-section-${catId}`);
         if (targetSection) {
@@ -271,6 +277,40 @@ function renderCategories() {
       }
     });
   });
+
+  initCategoryNavScroll();
+}
+
+function initCategoryNavScroll() {
+  const nav = document.getElementById("categories-nav-section") || document.querySelector(".categories-nav");
+  if (!nav) return;
+
+  function updateFades() {
+    const maxScroll = nav.scrollWidth - nav.clientWidth;
+    if (maxScroll <= 6) {
+      nav.className = "categories-nav fade-none";
+      return;
+    }
+    const scrollPos = Math.abs(nav.scrollLeft);
+    const atStart = scrollPos <= 6;
+    const atEnd = scrollPos >= (maxScroll - 8);
+
+    if (atStart) {
+      nav.className = "categories-nav fade-left-only";
+    } else if (atEnd) {
+      nav.className = "categories-nav fade-right-only";
+    } else {
+      nav.className = "categories-nav fade-both";
+    }
+  }
+
+  if (!nav._hasScrollListener) {
+    nav.addEventListener("scroll", updateFades, { passive: true });
+    window.addEventListener("resize", updateFades, { passive: true });
+    nav._hasScrollListener = true;
+  }
+
+  requestAnimationFrame(updateFades);
 }
 
 // Helper to render a single read-only product card

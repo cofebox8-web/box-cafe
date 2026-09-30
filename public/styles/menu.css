@@ -315,18 +315,59 @@ body.customer-menu-body {
   stroke-width: 2.5;
 }
 
-/* Categories Horizontal Scroll Bar */
+/* Categories Horizontal Scroll Bar (Full-bleed with subtle luxury edge fade) */
 .categories-nav {
   margin-top: 14px;
-  width: 100%;
+  width: calc(100% + 32px);
+  margin-inline: -16px;
+  padding-inline: 16px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 2px 0 6px;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  padding-top: 2px;
+  padding-bottom: 6px;
+  /* Default fade-left mask in RTL so cut-off pills gracefully fade instead of looking like a hard wall */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 28px, rgba(0, 0, 0, 1) 100%);
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 28px, rgba(0, 0, 0, 1) 100%);
 }
 
 .categories-nav::-webkit-scrollbar {
   display: none;
+}
+
+.categories-nav.fade-left-only {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 28px, rgba(0, 0, 0, 1) 100%);
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 28px, rgba(0, 0, 0, 1) 100%);
+}
+
+.categories-nav.fade-right-only {
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 1) 28px, rgba(0, 0, 0, 1) 100%);
+  mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 1) 28px, rgba(0, 0, 0, 1) 100%);
+}
+
+.categories-nav.fade-both {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 28px, rgba(0, 0, 0, 1) calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 28px, rgba(0, 0, 0, 1) calc(100% - 28px), transparent 100%);
+}
+
+.categories-nav.fade-none {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+@media (min-width: 1024px) {
+  .categories-nav,
+  .categories-nav.fade-left-only,
+  .categories-nav.fade-right-only,
+  .categories-nav.fade-both {
+    width: 100%;
+    margin-inline: 0;
+    padding-inline: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
 }
 
 .categories-list {
@@ -337,10 +378,13 @@ body.customer-menu-body {
   padding: 0;
   margin: 0;
   white-space: nowrap;
+  padding-inline-end: 16px;
+  scroll-snap-type: x proximity;
 }
 
 .category-item {
   flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
 .category-pill-btn {
@@ -359,12 +403,20 @@ body.customer-menu-body {
   justify-content: center;
   transition: all 0.18s ease;
   box-shadow: var(--shadow-sm);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.category-pill-btn:hover {
-  border-color: var(--border-hover);
-  background: var(--bg-surface);
-  color: var(--text-primary);
+@media (hover: hover) {
+  .category-pill-btn:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+  }
+}
+
+.category-pill-btn:active {
+  transform: scale(0.97);
 }
 
 .category-pill-btn.active {
