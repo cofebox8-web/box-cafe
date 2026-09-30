@@ -280,7 +280,7 @@ function renderProductCardHtml(p, currency = "IQD") {
   const priceFormatted = formatAmountOnly(p.price);
 
   return `
-    <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="إضافة ${escapeHtml(p.name)}">
+    <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="اطّلع على ${escapeHtml(p.name)}">
       <div class="product-card-media">
         ${!isAvailable ? `<span class="product-soldout-badge">غير متوفر حالياً</span>` : ""}
         ${p.image_url
@@ -303,10 +303,10 @@ function renderProductCardHtml(p, currency = "IQD") {
             <span class="price-currency">د.ع</span>
           </div>
           ${isAvailable ? `
-            <button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}" aria-label="إضافة ${escapeHtml(p.name)}">
-              <span class="btn-text">إضافة</span>
+            <button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}" aria-label="اطّلع على ${escapeHtml(p.name)}">
+              <span class="btn-text">اطّلع</span>
               <span class="btn-action-badge" aria-hidden="true">
-                <svg class="btn-plus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg class="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 18-6-6 6-6"/></svg>
               </span>
             </button>
           ` : `
