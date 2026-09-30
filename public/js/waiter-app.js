@@ -659,7 +659,6 @@ function renderProducts() {
             <span class="category-accent-bar" aria-hidden="true"></span>
             <h2 class="category-title">${escapeHtml(cat.name)}</h2>
           </div>
-          ${cat.description ? `<p class="category-desc">${escapeHtml(cat.description)}</p>` : ""}
         </div>
         <div class="products-grid">
           ${catProducts.map(p => renderProductCardHtml(p, currency)).join("")}

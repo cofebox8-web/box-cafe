@@ -411,10 +411,7 @@ body.customer-menu-body {
 }
 
 .category-desc {
-  font-size: 0.84rem;
-  color: var(--text-secondary);
-  margin: 4px 14px 0 0;
-  line-height: 1.5;
+  display: none !important;
 }
 
 /* --------------------------------------------------------------------------
