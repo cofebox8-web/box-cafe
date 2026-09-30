@@ -34,6 +34,29 @@ body.modal-open {
   touch-action: none !important;
 }
 
+.icon {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none !important;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.icon-sm {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.icon-lg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
 .waiter-main-view {
   flex: 1;
   width: 100%;
@@ -526,7 +549,7 @@ body.modal-open {
 
 /* Cart Footer & Checkout */
 .cart-footer-summary {
-  padding: 14px 16px 16px;
+  padding: 14px 16px max(16px, env(safe-area-inset-bottom, 16px));
   background: var(--bg-card);
   border-top: 1px solid var(--border-color);
   display: flex;
@@ -562,7 +585,7 @@ body.modal-open {
 
 .cart-submit-btn {
   width: 100%;
-  min-height: 48px;
+  min-height: 50px;
   border-radius: var(--radius-pill);
   background: var(--coffee-primary);
   border: none;
@@ -573,16 +596,35 @@ body.modal-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
   transition: all 0.18s ease;
   box-shadow: 0 4px 14px rgba(74, 53, 37, 0.25);
+  padding: 0 18px;
+}
+
+.cart-submit-btn .icon,
+.cart-submit-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  stroke: #FFFFFF !important;
+  stroke-width: 2.5 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
+  flex-shrink: 0 !important;
 }
 
 .cart-submit-btn:hover:not(:disabled) {
   background: var(--coffee-hover);
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(74, 53, 37, 0.32);
+}
+
+.cart-submit-btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .cart-submit-btn:disabled {
@@ -669,6 +711,10 @@ body.modal-open {
   height: 16px;
   stroke: currentColor;
   stroke-width: 2.2;
+  fill: none !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
 }
 
 /* Mobile Slide-Up Drawer Dialog */
