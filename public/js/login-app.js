@@ -120,6 +120,8 @@ function setButtonLoading(buttonId, spinnerId, labelId, isLoading, loadingText, 
 
   btn.disabled = isLoading;
   if (spinner) spinner.hidden = !isLoading;
+  const icon = btn.querySelector(".btn-icon");
+  if (icon) icon.style.display = isLoading ? "none" : "inline-block";
   if (label) label.textContent = isLoading ? loadingText : defaultText;
 }
 
@@ -352,7 +354,13 @@ async function initLoginApp() {
   // session already exists, instead of flashing the empty sign-in form for
   // however long the network check takes before redirecting away.
   const isRedirecting = await checkExistingSession();
-  if (!isRedirecting) revealLoginCard();
+  if (!isRedirecting) {
+    revealLoginCard();
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("signed_out") === "1") {
+      setAuthAlert("تم تسجيل الخروج بنجاح.", "success");
+    }
+  }
 }
 
 if (document.readyState === "loading") {

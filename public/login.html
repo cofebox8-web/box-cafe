@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles/login.css?v=20260930_coffee_v1" />
+  <link rel="stylesheet" href="/styles/login.css?v=20260930_login_v2" />
 </head>
 <body class="login-body">
 
@@ -103,6 +103,11 @@
 
           <button type="submit" id="login-submit-btn" class="primary-submit-btn">
             <span class="btn-spinner" id="login-btn-spinner" aria-hidden="true" hidden></span>
+            <svg class="btn-icon" id="login-btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
             <span id="login-submit-label">تسجيل الدخول</span>
           </button>
           <button type="button" id="open-reset-btn" class="inline-link-btn">نسيت كلمة المرور؟</button>
@@ -135,6 +140,10 @@
 
           <button type="submit" id="reset-submit-btn" class="primary-submit-btn">
             <span class="btn-spinner" id="reset-btn-spinner" aria-hidden="true" hidden></span>
+            <svg class="btn-icon" id="reset-btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
             <span id="reset-submit-label">إرسال رابط الاستعادة</span>
           </button>
           <button type="button" id="back-to-signin-btn" class="secondary-ghost-btn">العودة إلى تسجيل الدخول</button>
@@ -187,6 +196,7 @@
 
           <button type="submit" id="recovery-submit-btn" class="primary-submit-btn">
             <span class="btn-spinner" id="recovery-btn-spinner" aria-hidden="true" hidden></span>
+            <svg class="btn-icon" id="recovery-btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
             <span id="recovery-submit-label">حفظ والدخول</span>
           </button>
         </form>
@@ -196,6 +206,6 @@
   </main>
 
   <script src="/vendor/supabase.umd.js"></script>
-  <script type="module" src="/js/login-app.js?v=20260930_login_v1"></script>
+  <script type="module" src="/js/login-app.js?v=20260930_login_v2"></script>
 </body>
 </html>

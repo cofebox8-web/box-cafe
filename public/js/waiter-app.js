@@ -1680,11 +1680,16 @@ function setupEventListeners() {
   // Sign out triggers (both header and desktop cart)
   document.querySelectorAll("#waiter-signout-btn, #desktop-signout-btn, .waiter-signout-btn, .waiter-signout-link").forEach(btn => {
     btn.addEventListener("click", async () => {
+      btn.disabled = true;
       disposeOrderRealtime();
-      await signOutStaff(supabase).catch(() => {});
+      try {
+        await signOutStaff(supabase);
+      } catch (err) {
+        console.warn("Sign out error:", err);
+      }
       state.profile = null;
-      updateAuthUI(null);
-      showToast("تم تسجيل الخروج بنجاح", "success");
+      const nextPath = window.location.pathname || "/waiter";
+      window.location.href = `/login?signed_out=1&next=${encodeURIComponent(nextPath)}`;
     });
   });
 

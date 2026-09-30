@@ -300,47 +300,62 @@ input {
 }
 
 /* ==========================================================================
-   Submit Buttons
+   Submit Buttons (Luxury Coffee Brand Style)
    ========================================================================== */
 .primary-submit-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  height: 48px;
-  margin-top: 6px;
-  padding: 0 20px;
-  border: none;
+  min-height: 52px;
+  margin-top: 8px;
+  padding: 0 24px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
   background: var(--coffee-primary);
   color: #FFFFFF;
-  font-size: 0.96rem;
+  font-family: var(--font-ar);
+  font-size: 1rem;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(74, 53, 37, 0.25);
+  box-shadow: 0 6px 20px rgba(74, 53, 37, 0.26), 0 2px 6px rgba(74, 53, 37, 0.12);
   touch-action: manipulation;
-  transition: all 0.18s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: -0.01em;
+  position: relative;
+}
+
+.primary-submit-btn .btn-icon {
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
 }
 
 .primary-submit-btn:hover:not(:disabled) {
   background: var(--coffee-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(74, 53, 37, 0.32);
+  border-color: var(--coffee-hover);
+  transform: translateY(-1.5px);
+  box-shadow: 0 10px 26px rgba(74, 53, 37, 0.34), 0 3px 8px rgba(74, 53, 37, 0.18);
+}
+
+.primary-submit-btn:hover:not(:disabled) .btn-icon {
+  transform: translateX(-3px);
 }
 
 .primary-submit-btn:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(74, 53, 37, 0.22);
 }
 
 .primary-submit-btn:focus-visible {
   outline: 3px solid var(--coffee-primary);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 .primary-submit-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.65;
   cursor: not-allowed;
+  transform: none;
   box-shadow: none;
 }
 
