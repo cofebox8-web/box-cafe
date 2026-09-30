@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Montserrat:wght@800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles/admin.css?v=20260930_coffee_v1" />
+  <link rel="stylesheet" href="/styles/admin.css?v=20260930_coffee_v2" />
   <script src="/vendor/qrcode.min.js"></script>
 </head>
 <body class="erp-locked-body auth-pending">
@@ -205,7 +205,7 @@
               <h2 class="section-box-title">أقسام النظام المباشرة</h2>
             </div>
 
-            <!-- كردات وصول سريع أنيقة ومختصرة بدون نصوص زائدة -->
+            <!-- كردات وصول سريع أنيقة ومختصرة بدون نصوص زائدة (شبكة متوازنة 6 وحدات) -->
             <div class="quick-modules-grid">
               <div class="module-card-box compact" data-goto-tab="menu">
                 <div class="module-card-top">
@@ -214,7 +214,7 @@
                   </span>
                   <span class="module-live-tag" id="hub-badge-menu">المنيو</span>
                 </div>
-                <h3 class="module-box-title">المنيو</h3>
+                <h3 class="module-box-title">المنيو وقائمة الأصناف</h3>
                 <div class="module-box-footer">
                   <span class="module-open-link">فتح المنيو ←</span>
                 </div>
@@ -240,9 +240,22 @@
                   </span>
                   <span class="module-live-tag" id="hub-badge-staff">الموظفون</span>
                 </div>
-                <h3 class="module-box-title">حسابات الموظفين</h3>
+                <h3 class="module-box-title">حسابات طاقم العمل</h3>
                 <div class="module-box-footer">
                   <span class="module-open-link">إدارة الموظفين ←</span>
+                </div>
+              </div>
+
+              <div class="module-card-box compact" data-goto-tab="menu">
+                <div class="module-card-top">
+                  <span class="module-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+                  </span>
+                  <span class="module-live-tag">رموز QR</span>
+                </div>
+                <h3 class="module-box-title">نقاط الخدمة ورموز QR</h3>
+                <div class="module-box-footer">
+                  <span class="module-open-link">إدارة الرموز ←</span>
                 </div>
               </div>
 
@@ -255,7 +268,7 @@
                 </div>
                 <h3 class="module-box-title">نقطة بيع الويتر POS</h3>
                 <div class="module-box-footer">
-                  <a href="/waiter" target="_blank" class="module-open-link" style="color:var(--purple-bright);">فتح نقطة البيع ↗</a>
+                  <a href="/waiter" target="_blank" class="module-open-link">فتح نقطة البيع ↗</a>
                 </div>
               </div>
 
@@ -268,7 +281,7 @@
                 </div>
                 <h3 class="module-box-title">شاشة المطبخ KDS</h3>
                 <div class="module-box-footer">
-                  <a href="/kitchen" target="_blank" class="module-open-link" style="color:var(--purple-bright);">فتح الشاشة ↗</a>
+                  <a href="/kitchen" target="_blank" class="module-open-link">فتح الشاشة ↗</a>
                 </div>
               </div>
             </div>
@@ -847,6 +860,6 @@
   <div id="admin-toast" class="erp-toast" role="status" aria-live="polite" hidden></div>
 
   <script src="/vendor/supabase.umd.js"></script>
-  <script type="module" src="/js/admin-app.js?v=20260928_v15"></script>
+  <script type="module" src="/js/admin-app.js?v=20260930_v16"></script>
 </body>
 </html>

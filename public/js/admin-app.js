@@ -1369,10 +1369,10 @@ function openMenuItemModal(itemId = null) {
 }
 
 const STAFF_ROLE_META = {
-  owner: { label: 'المالك (Owner)', badgeColor: '#C084FC', badgeBg: 'rgba(192,132,252,0.22)', icon: '👑' },
-  admin: { label: 'مدير نظام مساعد (Admin)', badgeColor: '#C084FC', badgeBg: 'rgba(192, 132, 252, 0.15)', icon: '🛡️' },
-  roadside: { label: 'الويتر والطلبات (Waiter)', badgeColor: '#F59E0B', badgeBg: 'rgba(245, 158, 11, 0.15)', icon: '🧑‍💼' },
-  kitchen: { label: 'طاقم المطبخ وشاشة الطلبات (Kitchen)', badgeColor: '#38BDF8', badgeBg: 'rgba(56, 189, 248, 0.15)', icon: '👨‍🍳' }
+  owner: { label: 'المالك (Owner)', badgeColor: '#4A3525', badgeBg: 'rgba(74, 53, 37, 0.08)', icon: '👑' },
+  admin: { label: 'مدير نظام مساعد (Admin)', badgeColor: '#785135', badgeBg: 'rgba(120, 81, 53, 0.08)', icon: '🛡️' },
+  roadside: { label: 'الويتر والطلبات (Waiter)', badgeColor: '#D97706', badgeBg: 'rgba(217, 119, 6, 0.08)', icon: '☕' },
+  kitchen: { label: 'طاقم المطبخ وشاشة الطلبات (Kitchen)', badgeColor: '#16A34A', badgeBg: 'rgba(22, 163, 74, 0.08)', icon: '🍳' }
 };
 
 function staffErrorMessage(code) {
@@ -1428,7 +1428,43 @@ async function reloadStaffAccounts() {
     if (error) throw error;
     if (!data?.success) throw new Error(staffErrorMessage(data?.error));
     staffAccounts = Array.isArray(data.staff) ? data.staff : [];
+  } catch (rpcErr) {
+    console.warn('RPC admin_get_staff failed, falling back to direct table query:', rpcErr);
+    try {
+      const { data: profiles, error: pErr } = await supabase
+        .from('staff_profiles')
+        .select('user_id, full_name, role, is_active, branch_id, created_at, branches(name, slug)');
+      if (!pErr && Array.isArray(profiles)) {
+        staffAccounts = profiles.map(p => ({
+          user_id: p.user_id,
+          full_name: p.full_name,
+          role: p.role,
+          is_active: p.is_active,
+          branch_id: p.branch_id,
+          branch_name: p.branches?.name || 'جميع الفروع',
+          branch_slug: p.branches?.slug || 'airport',
+          email: '',
+          created_at: p.created_at
+        }));
+      }
+    } catch (fallbackErr) {
+      console.warn('Fallback staff query error:', fallbackErr);
+    }
   } finally {
+    // ALWAYS ensure current logged-in admin/owner is preserved in the accounts list
+    if (adminProfile && !staffAccounts.some(s => s.user_id === adminProfile.user_id)) {
+      staffAccounts.unshift({
+        user_id: adminProfile.user_id,
+        full_name: adminProfile.full_name || 'مدير النظام',
+        role: adminProfile.role || 'owner',
+        is_active: true,
+        branch_id: adminProfile.branch_id,
+        branch_name: adminProfile.branch_name || 'جميع الفروع',
+        branch_slug: adminProfile.branch_slug || 'airport',
+        email: adminProfile.email || '',
+        created_at: new Date().toISOString()
+      });
+    }
     staffAccountsLoaded = true;
     renderStaffAccountsBoxes();
   }
@@ -1447,46 +1483,51 @@ function renderStaffAccountsBoxes() {
   }
 
   grid.innerHTML = staffAccounts.map((staff) => {
-    const meta = STAFF_ROLE_META[staff.role] || { label: 'موظف', badgeColor: '#9CA3AF', badgeBg: 'rgba(156,163,175,0.15)', icon: '👤' };
+    const meta = STAFF_ROLE_META[staff.role] || { label: 'موظف', badgeColor: '#4A3525', badgeBg: 'rgba(74, 53, 37, 0.08)', icon: '👤' };
     const isActive = staff.is_active !== false;
     const isOwner = staff.role === 'owner';
     const isSelf = adminProfile && staff.user_id === adminProfile.user_id;
 
     return `
-      <article class="staff-account-box" data-staff-id="${escapeHtml(staff.user_id)}" ${isOwner ? 'style="border: 1px solid rgba(192, 132, 252, 0.45); background: linear-gradient(145deg, rgba(147, 51, 234, 0.14), rgba(15, 12, 22, 0.95));"' : ''}>
+      <article class="staff-account-box ${isOwner ? 'is-owner-card' : ''}" data-staff-id="${escapeHtml(staff.user_id)}">
         <div class="menu-box-top">
           <div class="menu-thumb-info">
-            <div style="width:44px; height:44px; border-radius:10px; background:${meta.badgeBg}; border:1px solid ${meta.badgeColor}66; display:flex; align-items:center; justify-content:center; font-size:1.25rem;">
+            <div class="staff-icon-wrap" style="background:${meta.badgeBg}; border:1px solid ${meta.badgeColor}33; color:${meta.badgeColor};">
               ${meta.icon}
             </div>
             <div>
               <strong class="menu-box-name">${escapeHtml(staff.full_name)}${isSelf ? ' (أنت)' : ''}</strong>
-              <small class="menu-box-cat" dir="ltr" style="text-align:right;">${escapeHtml(staff.email || '')}</small>
+              <small class="menu-box-cat" dir="ltr" style="text-align:right;">${escapeHtml(staff.email || 'حساب موظف معتمد')}</small>
             </div>
           </div>
           <span class="service-point-status ${isActive ? 'is-active' : ''}">${isActive ? 'مفعل' : 'معطل'}</span>
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:4px; font-size:0.75rem; color:var(--text-dim); padding:6px 0; border-top:1px solid var(--border-subtle); border-bottom:1px solid var(--border-subtle);">
-          <div style="display:flex; justify-content:space-between;">
+        <div class="staff-meta-row">
+          <div class="staff-meta-item">
             <span>الدور الوظيفي:</span>
-            <strong style="color:${meta.badgeColor};">${meta.label}</strong>
+            <strong style="color:${meta.badgeColor}; font-weight:800;">${meta.label}</strong>
           </div>
-          <div style="display:flex; justify-content:space-between;">
+          <div class="staff-meta-item">
             <span>الفرع:</span>
-            <strong style="color:var(--text-white);">${escapeHtml(staff.branch_name || 'جميع الفروع')}</strong>
+            <strong style="color:var(--text-primary);">${escapeHtml(staff.branch_name || 'جميع الفروع')}</strong>
           </div>
         </div>
 
-        ${isOwner ? '' : `
+        ${isOwner ? `
+          <div class="staff-owner-badge-note">
+            <span class="owner-star-icon">👑</span>
+            <span>حساب المالك الرئيسي — أعلى صلاحيات النظام</span>
+          </div>
+        ` : `
           <div class="service-point-card-actions" style="display:flex; gap:6px; margin-top:4px;">
-            <button type="button" class="box-btn-secondary" style="flex:1; font-size:0.75rem; padding:6px 8px;" data-toggle-staff-status="${escapeHtml(staff.user_id)}" ${isSelf ? 'disabled' : ''}>
-              ${isActive ? 'إيقاف' : 'تفعيل'}
+            <button type="button" class="box-btn-secondary" style="flex:1; font-size:0.75rem; padding:7px 8px; font-weight:700;" data-toggle-staff-status="${escapeHtml(staff.user_id)}" ${isSelf ? 'disabled' : ''}>
+              ${isActive ? 'إيقاف الحساب' : 'تفعيل الحساب'}
             </button>
-            <button type="button" class="box-btn-secondary" style="flex:1; font-size:0.75rem; padding:6px 8px;" data-edit-staff="${escapeHtml(staff.user_id)}">
+            <button type="button" class="box-btn-secondary" style="flex:1; font-size:0.75rem; padding:7px 8px; font-weight:700;" data-edit-staff="${escapeHtml(staff.user_id)}">
               تعديل
             </button>
-            <button type="button" class="box-btn-danger-sm" style="font-size:0.75rem; padding:6px 8px;" data-delete-staff="${escapeHtml(staff.user_id)}" ${isSelf ? 'disabled' : ''}>
+            <button type="button" class="box-btn-danger-sm" style="font-size:0.75rem; padding:7px 8px; font-weight:700;" data-delete-staff="${escapeHtml(staff.user_id)}" ${isSelf ? 'disabled' : ''}>
               حذف
             </button>
           </div>
@@ -1894,15 +1935,15 @@ async function initAdminERP() {
       const result = await invokeStaffFunction(body);
 
       document.getElementById('modal-staff-account').hidden = true;
-      if (!id && result?.staff) {
-        // إدراج فوري بلا جولة شبكة إضافية لإعادة جلب القائمة كاملة —
-        // الخادم أعاد بيانات الموظف الجديد كاملة مع تأكيد الإنشاء نفسه.
-        staffAccounts = [...staffAccounts, result.staff];
-        staffAccountsLoaded = true;
-        renderStaffAccountsBoxes();
-      } else {
-        await reloadStaffAccounts();
+      if (result?.staff) {
+        const existingIdx = staffAccounts.findIndex(s => s.user_id === result.staff.user_id);
+        if (existingIdx >= 0) {
+          staffAccounts[existingIdx] = result.staff;
+        } else {
+          staffAccounts.push(result.staff);
+        }
       }
+      await reloadStaffAccounts();
       showToast(`تم حفظ حساب الموظف «${name}» (${roleLabel(role)}) بنجاح.`);
       form.reset();
     } catch (err) {

@@ -736,7 +736,7 @@ function renderProducts() {
       e?.stopPropagation?.();
       const hasOptions = Array.isArray(p.option_groups) && p.option_groups.length > 0;
       if (hasOptions) {
-        openCustomizationModal(p);
+        openCustomizationModal(p, card);
       } else {
         handleQuickAdd(p);
       }
@@ -748,7 +748,10 @@ function renderProducts() {
     // Full-width add button tap/click
     const addBtn = card.querySelector(".pos-full-add-btn");
     if (addBtn) {
-      addBtn.addEventListener("click", triggerAction);
+      addBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        triggerAction(e);
+      });
     }
 
     // Keyboard support (Enter / Space)
@@ -781,7 +784,7 @@ function handleQuickAdd(product) {
 
   addToCart(product, defaultOpts, 1);
   showToast(`تمت إضافة ${product.name} إلى السلة ✓`, "success");
-  renderProducts(); // Refresh card qty badge
+  // Do not rebuild product list DOM on add — prevents scroll jumps and UI jerking
   renderCart();
 }
 
@@ -790,13 +793,13 @@ function handleQuickAdd(product) {
 // --------------------------------------------------------------------------
 let activeModalCount = 0;
 let savedWindowScrollY = 0;
+let waiterLastTriggerEl = null;
 
 function lockBodyScroll() {
   if (activeModalCount === 0) {
     savedWindowScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+    document.documentElement.classList.add("modal-open");
     document.body.classList.add("modal-open");
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
   }
   activeModalCount++;
 }
@@ -804,19 +807,19 @@ function lockBodyScroll() {
 function unlockBodyScroll() {
   if (activeModalCount > 0) activeModalCount--;
   if (activeModalCount === 0) {
+    document.documentElement.classList.remove("modal-open");
     document.body.classList.remove("modal-open");
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-    if (savedWindowScrollY) {
-      window.scrollTo(0, savedWindowScrollY);
+    if (Math.abs((window.scrollY || 0) - savedWindowScrollY) > 2) {
+      window.scrollTo({ top: savedWindowScrollY, behavior: "instant" });
     }
   }
 }
 
-function openCustomizationModal(product) {
+function openCustomizationModal(product, triggerEl = null) {
   state.selectedProductForModal = product;
   state.modalQuantity = 1;
   state.modalSelectedOptions = {};
+  waiterLastTriggerEl = triggerEl || document.activeElement;
 
   // Pre-select default options
   if (Array.isArray(product.option_groups)) {
@@ -839,6 +842,16 @@ function openCustomizationModal(product) {
   if (modal) {
     lockBodyScroll();
     modal.showModal();
+
+    try {
+      if (!history.state?.waiterModalOpen) {
+        history.pushState({ waiterModalOpen: true }, "");
+      }
+    } catch {}
+
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
   }
 }
 
@@ -1398,7 +1411,22 @@ function setupEventListeners() {
   // Customization Modal Controls & Backdrop / Touch Containment
   const customModal = $("customization-modal");
   if (customModal) {
-    customModal.addEventListener("close", () => unlockBodyScroll());
+    customModal.addEventListener("close", () => {
+      unlockBodyScroll();
+      if (Math.abs((window.scrollY || 0) - savedWindowScrollY) > 2) {
+        window.scrollTo({ top: savedWindowScrollY, behavior: "instant" });
+      }
+      if (waiterLastTriggerEl && typeof waiterLastTriggerEl.focus === "function") {
+        try {
+          waiterLastTriggerEl.focus({ preventScroll: true });
+        } catch {}
+      }
+      if (history.state?.waiterModalOpen) {
+        try {
+          history.back();
+        } catch {}
+      }
+    });
     customModal.addEventListener("click", (e) => {
       const rect = customModal.getBoundingClientRect();
       const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
@@ -1465,7 +1493,7 @@ function setupEventListeners() {
       addToCart(p, selectedOptsList, state.modalQuantity);
       closeCustomizationModal();
       showToast(`تمت إضافة ${p.name} إلى السلة ✓`, "success");
-      renderProducts();
+      // Do not rebuild product list DOM on add — preserves exact scroll location
       renderCart();
     });
   }
@@ -1540,7 +1568,17 @@ function setupEventListeners() {
   // Mobile Drawer Dialog & Touch Containment
   const drawer = $("mobile-cart-drawer");
   if (drawer) {
-    drawer.addEventListener("close", () => unlockBodyScroll());
+    drawer.addEventListener("close", () => {
+      unlockBodyScroll();
+      if (Math.abs((window.scrollY || 0) - savedWindowScrollY) > 2) {
+        window.scrollTo({ top: savedWindowScrollY, behavior: "instant" });
+      }
+      if (history.state?.waiterDrawerOpen) {
+        try {
+          history.back();
+        } catch {}
+      }
+    });
     drawer.addEventListener("click", (e) => {
       const rect = drawer.getBoundingClientRect();
       const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
@@ -1561,10 +1599,30 @@ function setupEventListeners() {
     if (drawer) {
       lockBodyScroll();
       drawer.showModal();
+      try {
+        if (!history.state?.waiterDrawerOpen) {
+          history.pushState({ waiterDrawerOpen: true }, "");
+        }
+      } catch {}
+      if (document.activeElement && typeof document.activeElement.blur === "function") {
+        document.activeElement.blur();
+      }
     }
   });
   $("mobile-drawer-close")?.addEventListener("click", () => {
     if (drawer) drawer.close();
+  });
+
+  // Global Popstate listener for Waiter dialogs
+  window.addEventListener("popstate", () => {
+    const customM = $("customization-modal");
+    if (customM && customM.open) {
+      customM.close();
+    }
+    const d = $("mobile-cart-drawer");
+    if (d && d.open) {
+      d.close();
+    }
   });
 
   // New Order Button (in Success Modal)

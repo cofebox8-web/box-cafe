@@ -453,23 +453,29 @@ function renderProducts() {
   container.querySelectorAll(".product-card").forEach(card => {
     card.addEventListener("click", () => {
       const prodId = card.dataset.productId;
-      if (prodId) openProductDetailsModal(prodId);
+      if (prodId) openProductDetailsModal(prodId, card);
     });
+
     card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         const prodId = card.dataset.productId;
-        if (prodId) openProductDetailsModal(prodId);
+        if (prodId) openProductDetailsModal(prodId, card);
       }
     });
   });
 }
 
+let savedMenuScrollY = 0;
+let lastMenuTriggerEl = null;
+
 // Open Read-Only Product Details Modal
-function openProductDetailsModal(productId) {
+function openProductDetailsModal(productId, triggerEl = null) {
   const product = state.menuData?.products?.find(p => p.id === productId);
   if (!product) return;
 
+  savedMenuScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+  lastMenuTriggerEl = triggerEl || document.activeElement;
   state.selectedProductForModal = product;
   renderModalContent();
 
@@ -478,16 +484,20 @@ function openProductDetailsModal(productId) {
     lockBodyScroll();
     modal.showModal();
 
-    // Immediately remove focus so Chrome's auto-focus does not draw a blue focus ring
+    // Push history state so Android/browser Back button closes modal smoothly
+    try {
+      if (!history.state?.menuModalOpen) {
+        history.pushState({ menuModalOpen: true }, "");
+      }
+    } catch {}
+
+    // Immediately remove focus so Chrome's auto-focus does not scroll or draw ring
     if (document.activeElement && typeof document.activeElement.blur === "function") {
       document.activeElement.blur();
     }
 
     modal.onclick = (e) => {
-      const rect = modal.getBoundingClientRect();
-      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
-        && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
-      if (!isInDialog) {
+      if (e.target === modal) {
         modal.close();
       }
     };
@@ -653,7 +663,34 @@ function setupEventListeners() {
   const modalDismissBtn = document.getElementById("modal-dismiss-btn");
 
   if (productModal) {
-    productModal.addEventListener("close", () => unlockBodyScroll());
+    productModal.addEventListener("close", () => {
+      unlockBodyScroll();
+      if (Math.abs((window.scrollY || 0) - savedMenuScrollY) > 2) {
+        window.scrollTo({ top: savedMenuScrollY, behavior: "instant" });
+      }
+      if (lastMenuTriggerEl && typeof lastMenuTriggerEl.focus === "function") {
+        try {
+          lastMenuTriggerEl.focus({ preventScroll: true });
+        } catch {}
+      }
+      if (history.state?.menuModalOpen) {
+        try {
+          history.back();
+        } catch {}
+      }
+    });
+
+    productModal.addEventListener("touchmove", (e) => {
+      if (!e.target.closest(".modal-content-shell")) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    window.addEventListener("popstate", () => {
+      if (productModal && productModal.open) {
+        productModal.close();
+      }
+    });
   }
   if (modalCloseBtn) {
     modalCloseBtn.addEventListener("click", () => {

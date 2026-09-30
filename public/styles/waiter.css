@@ -15,6 +15,10 @@
   --pos-container-max: 1360px;
 }
 
+html {
+  scroll-behavior: auto !important;
+}
+
 body.waiter-pos-body {
   min-height: 100vh;
   display: flex;
@@ -24,14 +28,10 @@ body.waiter-pos-body {
   font-family: var(--font-arabic);
 }
 
+html.modal-open,
 body.modal-open {
-  position: fixed !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
   overflow: hidden !important;
-  overscroll-behavior: none !important;
-  touch-action: none !important;
+  overscroll-behavior: contain !important;
 }
 
 .icon {
