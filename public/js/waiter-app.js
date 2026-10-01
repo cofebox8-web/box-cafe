@@ -1259,7 +1259,10 @@ async function handleCheckoutSubmit() {
   const itemsPayload = state.cart.map(item => ({
     product_id: item.productId,
     quantity: item.quantity,
-    option_item_ids: item.options.map(o => o.optionId)
+    // This key must match place_customer_order's validated RPC contract.
+    // The server expects selected_option_ids; option_item_ids is ignored by
+    // jsonb_to_recordset and makes required options appear missing.
+    selected_option_ids: item.options.map(o => o.optionId)
   }));
 
   const vehicleNote = state.orderMode === "car" ? state.vehicleNote.trim() : state.walkinNote.trim();
