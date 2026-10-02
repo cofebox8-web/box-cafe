@@ -91,7 +91,20 @@ function parseRouteContext() {
   state.qrToken = token.trim();
 }
 
-const MENU_CACHE_PREFIX = "box_cofe_customer_menu_v1";
+const MENU_CACHE_PREFIX = "box_cofe_customer_menu_v2";
+
+function clearLegacyMenuCaches() {
+  try {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("box_cofe_customer_menu_v1")) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+  } catch {}
+}
 
 function getMenuCacheKey() {
   const branch = state.branchSlug || "default";
@@ -100,6 +113,7 @@ function getMenuCacheKey() {
 }
 
 function readCachedMenu() {
+  clearLegacyMenuCaches();
   try {
     const raw = localStorage.getItem(getMenuCacheKey());
     if (!raw) return null;

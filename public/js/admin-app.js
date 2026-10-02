@@ -2016,6 +2016,70 @@ async function initAdminERP() {
     }
   });
 
+  // تصفية البيانات التجريبية (System Reset)
+  document.getElementById('btn-open-purge-modal')?.addEventListener('click', () => {
+    const modal = document.getElementById('modal-purge-test-data');
+    if (modal) modal.hidden = false;
+  });
+
+  document.getElementById('btn-confirm-purge-execute')?.addEventListener('click', async () => {
+    const purgeOrders = Boolean(document.getElementById('chk-purge-orders')?.checked);
+    const purgeMenu = Boolean(document.getElementById('chk-purge-menu')?.checked);
+    const purgeStaff = Boolean(document.getElementById('chk-purge-staff')?.checked);
+
+    if (!purgeOrders && !purgeMenu && !purgeStaff) {
+      showToast('يرجى اختيار عنصر واحد على الأقل لتصفيته.');
+      return;
+    }
+
+    const confirmed = await confirmAction(
+      'تحذير: سيتم حذف البيانات المحددة نهائياً وتصفير الحسابات في النظام. هل أنت متأكد من المتابعة؟',
+      { title: 'تأكيد الحذف النهائي', confirmText: 'نعم، تصفية الآن' }
+    );
+    if (!confirmed) return;
+
+    const executeBtn = document.getElementById('btn-confirm-purge-execute');
+    executeBtn.disabled = true;
+    executeBtn.textContent = 'جارٍ التصفية الفورية…';
+
+    try {
+      const { data, error } = await supabase.rpc('admin_purge_test_data', {
+        p_purge_menu: purgeMenu,
+        p_purge_orders: purgeOrders,
+        p_purge_staff: purgeStaff
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.message || 'تعذر استكمال تصفية البيانات.');
+
+      // Clear any local cache
+      try {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('box_cofe_') || k.includes('menu'))) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+        sessionStorage.removeItem('box_cofe_waiter_cart_v2');
+      } catch {}
+
+      document.getElementById('modal-purge-test-data').hidden = true;
+      showToast(data.message || 'تمت تصفية البيانات بنجاح.');
+
+      // Reload live data in admin
+      if (purgeOrders) await reloadAdminOrders().catch(() => {});
+      if (purgeMenu) await reloadAdminMenu().catch(() => {});
+      if (purgeStaff) await reloadStaffAccounts().catch(() => {});
+      renderAllOverviewAndHubBoxes();
+    } catch (err) {
+      showToast(err.message || 'حدث خطأ أثناء تصفية البيانات.');
+    } finally {
+      executeBtn.disabled = false;
+      executeBtn.textContent = 'تأكيد التصفية الفورية 🗑️';
+    }
+  });
+
   document.getElementById('btn-open-add-item')?.addEventListener('click', () => openMenuItemModal(null));
   document.getElementById('btn-add-option-group')?.addEventListener('click', () => {
     const root = document.getElementById('item-option-groups');

@@ -286,6 +286,22 @@
               </div>
             </div>
 
+            <!-- قسم تصفية البيانات التجريبية (للمالك حصرياً) -->
+            <div class="hub-system-reset-wrap" style="margin-top: 28px; padding: 18px 20px; background: #FFFFFF; border: 1.5px dashed var(--border-box); border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+              <div style="max-width: 580px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span style="font-size: 1.15rem;">🧹</span>
+                  <h3 style="font-size: 0.96rem; font-weight: 800; color: var(--text-primary); margin: 0;">تصفية البيانات التجريبية (System Reset)</h3>
+                  <span class="module-live-tag" style="background: rgba(220, 38, 38, 0.08); color: #DC2626; border-color: rgba(220, 38, 38, 0.2);">خاص بالمالك</span>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-dim); margin: 0; line-height: 1.5;">تصفير كافة الطلبات والفواتير التجريبية، تصفية المنيو التجريبي، وإلغاء حسابات الموظفين التجريبية للبدء بنظام تشغيلي نظيف بالكامل.</p>
+              </div>
+              <button type="button" id="btn-open-purge-modal" class="box-btn-danger-sm" style="padding: 11px 20px; font-weight: 800; font-size: 0.85rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <span>تصفية الموقع والبيانات التجريبية</span>
+              </button>
+            </div>
+
           </div>
         </section>
 
@@ -857,9 +873,55 @@
     </div>
   </div>
 
+  <!-- 7. نافذة تأكيد تصفية البيانات التجريبية للمالك -->
+  <div id="modal-purge-test-data" class="erp-modal-backdrop" hidden>
+    <div class="erp-modal-box" style="max-width: 500px;">
+      <div class="modal-box-top">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.4rem;">⚠️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">تصفية البيانات التجريبية</h3>
+            <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-dim);">تصفير النظام وإزالة البيانات الاختبارية</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-x" data-close-modal="modal-purge-test-data" aria-label="إغلاق">✕</button>
+      </div>
+
+      <div style="padding: 16px 0;">
+        <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px;">
+          حدد العمليات المطلوب تنفيذها في قاعدة البيانات. هذا الإجراء دائم وسيصفر الحسابات والشاشات فوراً:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; background: var(--bg-surface); padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border-box);">
+          <label style="display: flex; align-items: center; gap: 10px; font-size: 0.86rem; font-weight: 700; color: var(--text-primary); cursor: pointer;">
+            <input type="checkbox" id="chk-purge-orders" checked style="width: 18px; height: 18px; accent-color: var(--coffee-primary);" />
+            <span>تصفير سجل الفواتير والطلبات المالية (0 طلب / 0 د.ع)</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; font-size: 0.86rem; font-weight: 700; color: var(--text-primary); cursor: pointer;">
+            <input type="checkbox" id="chk-purge-menu" checked style="width: 18px; height: 18px; accent-color: var(--coffee-primary);" />
+            <span>تصفية أصناف وأقسام المنيو التجريبية بالكامل</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; font-size: 0.86rem; font-weight: 700; color: var(--text-primary); cursor: pointer;">
+            <input type="checkbox" id="chk-purge-staff" checked style="width: 18px; height: 18px; accent-color: var(--coffee-primary);" />
+            <span>حذف حسابات الموظفين التجريبية (مع الإبقاء على حساب المالك)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-box-actions" style="margin-top: 8px;">
+        <button type="button" id="btn-confirm-purge-execute" class="box-btn-danger-sm" style="flex: 1; padding: 12px; font-weight: 800; font-size: 0.9rem; background: #DC2626; color: #fff;">
+          تأكيد التصفية الفورية 🗑️
+        </button>
+        <button type="button" data-close-modal="modal-purge-test-data" class="box-btn-secondary" style="padding: 12px 20px;">
+          إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="admin-toast" class="erp-toast" role="status" aria-live="polite" hidden></div>
 
   <script src="/vendor/supabase.umd.js"></script>
-  <script type="module" src="/js/admin-app.js?v=20260930_v16"></script>
+  <script type="module" src="/js/admin-app.js?v=20261002_v17"></script>
 </body>
 </html>
