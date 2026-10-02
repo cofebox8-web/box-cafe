@@ -1097,9 +1097,10 @@ button, a, input, select {
   width: 48px;
   height: 48px;
   border-radius: 9px;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 2px;
   border: 1px solid var(--border-box);
-  background: var(--bg-surface);
+  background: #FFFFFF;
   flex-shrink: 0;
 }
 
@@ -1584,9 +1585,10 @@ textarea.structured-input:focus,
   width: 44px;
   height: 44px;
   border-radius: 9px;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 2px;
   border: 1px solid var(--border-box);
-  background: var(--bg-surface);
+  background: #FFFFFF;
   flex-shrink: 0;
 }
 

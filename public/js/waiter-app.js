@@ -3,6 +3,7 @@
 
 import { supabase, isSupabaseConfigured } from "./supabase-client.js";
 import { getStaffSession, signInStaff, signOutStaff } from "./staff-auth.js";
+import { resolveProductImage } from "./product-images.js";
 
 // Application State
 const state = {
@@ -618,18 +619,14 @@ function renderProductCardHtml(p, currency = "IQD") {
   const cartQty = getProductQuantityInCart(p.id);
   const priceFormatted = formatAmount(p.price);
 
+  const imageUrl = resolveProductImage(p);
+
   return `
     <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="${escapeHtml(p.name)}">
       <div class="product-card-media">
         ${!isAvailable ? `<span class="product-soldout-badge">غير متوفر حالياً</span>` : ""}
         ${cartQty > 0 ? `<span class="card-cart-qty-badge" title="الكمية في السلة">${cartQty}</span>` : ""}
-        ${p.image_url
-          ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" />`
-          : `<div class="product-image-fallback">
-              <svg class="placeholder-coffee-svg icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
-              <span class="placeholder-brand-text">EV CAFE</span>
-            </div>`
-        }
+        <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" onerror="this.onerror=null; this.src='/images/products/espresso.jpg';" />
       </div>
       <div class="product-card-body">
         <div class="product-card-top-info">
@@ -898,13 +895,11 @@ function renderModalContent() {
   const thumbBox = $("pos-modal-thumb-box");
   const imgEl = $("pos-modal-image");
   if (thumbBox && imgEl) {
-    if (p.image_url) {
-      imgEl.src = p.image_url;
-      imgEl.alt = p.name;
-      thumbBox.style.display = "block";
-    } else {
-      thumbBox.style.display = "none";
-    }
+    const imageUrl = resolveProductImage(p);
+    imgEl.src = imageUrl;
+    imgEl.alt = p.name;
+    imgEl.onerror = () => { imgEl.src = '/images/products/espresso.jpg'; };
+    thumbBox.style.display = "block";
   }
 
   const titleEl = $("pos-modal-title");

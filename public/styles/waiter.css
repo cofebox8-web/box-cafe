@@ -945,15 +945,19 @@ dialog.pos-custom-sheet::backdrop {
   border-radius: var(--radius-md);
   overflow: hidden;
   flex-shrink: 0;
-  background: var(--bg-card);
+  background: #FFFFFF;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .compact-hero-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 4px;
   display: block;
 }
 

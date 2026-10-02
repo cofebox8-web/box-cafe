@@ -5,6 +5,7 @@ import {
   signOutStaff
 } from './staff-auth.js';
 import { supabase, isSupabaseConfigured } from './supabase-client.js';
+import { resolveProductImage } from './product-images.js';
 
 const syncChannel = typeof BroadcastChannel !== 'undefined'
   ? new BroadcastChannel('box_coffee_kitchen_sync')
@@ -875,9 +876,8 @@ function renderPosTerminal() {
     const cat = categories.find((c) => c.id === item.category_id);
     const inCartItem = posCart.find((c) => c.id === item.id);
     const qtyInCart = inCartItem ? inCartItem.qty : 0;
-    const media = item.image_url
-      ? `<img src="${item.image_url}" alt="${item.name}" class="pos-card-thumb" loading="lazy" />`
-      : '<div class="pos-card-thumb pos-card-thumb-empty" aria-hidden="true"></div>';
+    const imgUrl = resolveProductImage(item);
+    const media = `<img src="${imgUrl}" alt="${item.name}" class="pos-card-thumb" loading="lazy" onerror="this.onerror=null; this.src='/images/products/espresso.jpg';" />`;
 
     return `
       <div class="pos-product-card ${qtyInCart > 0 ? 'in-cart' : ''}" data-add-pos="${item.id}">
@@ -1167,9 +1167,8 @@ function renderMenuControlBoxes() {
   gridWrap.innerHTML = filteredItems.length ? filteredItems.map((item) => {
     const cat = categories.find((c) => c.id === item.category_id);
     const isAvail = item.is_available !== false;
-    const media = item.image_url
-      ? `<img src="${item.image_url}" alt="${item.name}" class="menu-item-thumb" loading="lazy" />`
-      : '<div class="menu-item-thumb menu-item-thumb-empty" aria-hidden="true">☕</div>';
+    const imgUrl = resolveProductImage(item);
+    const media = `<img src="${imgUrl}" alt="${item.name}" class="menu-item-thumb" loading="lazy" onerror="this.onerror=null; this.src='/images/products/espresso.jpg';" />`;
 
     return `
       <div class="menu-control-box">
@@ -1349,8 +1348,12 @@ function openMenuItemModal(itemId = null) {
     };
   }
 
-  if (item?.image_url) {
-    if (previewImg) previewImg.src = item.image_url;
+  const resolvedImg = item ? resolveProductImage(item) : '';
+  if (resolvedImg) {
+    if (previewImg) {
+      previewImg.src = resolvedImg;
+      previewImg.onerror = () => { previewImg.src = '/images/products/espresso.jpg'; };
+    }
     if (previewWrap) previewWrap.style.display = 'block';
     if (placeholder) placeholder.style.display = 'none';
   } else {

@@ -2,6 +2,7 @@
 // Vanilla JS ES Module — No Bundler, No Node.js runtime, Pure Read-Only
 
 import { supabase, isSupabaseConfigured } from "./supabase-client.js";
+import { resolveProductImage } from "./product-images.js";
 
 // Application State
 const state = {
@@ -332,18 +333,13 @@ function renderProductCardHtml(p, currency = "IQD") {
   const isAvailable = p.is_available !== false;
   const hasOptions = Array.isArray(p.option_groups) && p.option_groups.length > 0;
   const priceFormatted = formatAmountOnly(p.price);
+  const imageUrl = resolveProductImage(p);
 
   return `
     <article class="product-card ${!isAvailable ? 'unavailable' : ''}" data-product-id="${p.id}" tabindex="0" role="button" aria-label="اطّلع على ${escapeHtml(p.name)}">
       <div class="product-card-media">
         ${!isAvailable ? `<span class="product-soldout-badge">غير متوفر حالياً</span>` : ""}
-        ${p.image_url
-          ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" />`
-          : `<div class="product-image-fallback">
-              <svg class="placeholder-coffee-svg icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
-              <span class="placeholder-brand-text">EV CAFE</span>
-            </div>`
-        }
+        <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" onerror="this.onerror=null; this.src='/images/products/espresso.jpg';" />
       </div>
       <div class="product-card-body">
         <div class="product-card-top-info">
@@ -529,13 +525,11 @@ function renderModalContent() {
   const bannerEl = document.getElementById("modal-product-banner");
   const imgEl = document.getElementById("modal-product-image");
   if (bannerEl && imgEl) {
-    if (p.image_url) {
-      imgEl.src = p.image_url;
-      imgEl.alt = p.name;
-      bannerEl.style.display = "block";
-    } else {
-      bannerEl.style.display = "none";
-    }
+    const imageUrl = resolveProductImage(p);
+    imgEl.src = imageUrl;
+    imgEl.alt = p.name;
+    imgEl.onerror = () => { imgEl.src = '/images/products/espresso.jpg'; };
+    bannerEl.style.display = "block";
   }
 
   const titleEl = document.getElementById("modal-product-title");
