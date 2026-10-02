@@ -691,6 +691,7 @@ body.customer-menu-body {
 }
 
 /* Card Media (Pure White Studio Photography) */
+/* Card Media (Seamless Luxury Studio Product Presentation) */
 .product-card-media {
   position: relative;
   width: 100%;
@@ -702,19 +703,23 @@ body.customer-menu-body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 6px;
 }
 
 .product-card-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 10px;
+  padding: 2px;
   display: block;
-  transition: transform 0.35s ease;
+  mix-blend-mode: multiply;
+  filter: contrast(1.05) brightness(1.03);
+  transform: scale(1.12);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .product-card:hover .product-card-img {
-  transform: scale(1.05);
+  transform: scale(1.2);
 }
 
 .product-image-fallback {
@@ -1099,6 +1104,8 @@ dialog.customization-modal::backdrop {
   object-fit: contain;
   padding: 12px;
   display: block;
+  mix-blend-mode: multiply;
+  filter: contrast(1.05) brightness(1.03);
 }
 
 .modal-title-group {
