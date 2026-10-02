@@ -1,9 +1,15 @@
-// EV CAFE — Luxury Product Image Resolver
-// 100% Verified, Pure White (#FFFFFF) Studio & Bakery Photography
-// Zero Blank Cards | Distinct Images | High-End Presentation
+// EV CAFE — product image resolver
+// Database catalog URLs are authoritative; local defaults cover legacy items.
 
 export function resolveProductImage(p) {
   if (!p) return "/images/products/espresso.jpg";
+
+  // A product-specific URL saved by the admin/catalog is authoritative.
+  // Do not replace it with a category heuristic: variants such as strawberry,
+  // mango, pistachio, and caramel must keep their own product image.
+  if (typeof p.image_url === "string" && p.image_url.trim()) {
+    return p.image_url.trim();
+  }
 
   // If already pointing to an existing local product image, check if we have a better distinct one
   const name = String(p.name || "").trim();
@@ -75,11 +81,6 @@ export function resolveProductImage(p) {
 
   // 9. Smoothies (سموذي)
   if (name.includes("سموذي")) return "/images/products/smoothie.jpg";
-
-  // If already pointing to /images/products, return it
-  if (typeof p.image_url === "string" && p.image_url.startsWith("/images/products/")) {
-    return p.image_url;
-  }
 
   return "/images/products/espresso.jpg";
 }

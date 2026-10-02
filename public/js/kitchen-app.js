@@ -61,7 +61,7 @@ function showLiveToast(message) {
 
 function formatMoney(amount) {
   const num = Number(amount) || 0;
-  return `${num.toLocaleString("ar-IQ")} د.ع`;
+  return `${num.toLocaleString("en-US")} د.ع`;
 }
 
 function formatElapsedTime(isoStr) {

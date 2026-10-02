@@ -50,7 +50,8 @@ function getOptionIcon(groupName = "", optName = "") {
 // Format Iraqi Dinar / currency
 function formatAmountOnly(amount) {
   const num = Number(amount) || 0;
-  return new Intl.NumberFormat("ar-IQ", { maximumFractionDigits: 0 }).format(num);
+  // Keep Arabic labels with Western digits for clear, consistent pricing.
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(num);
 }
 
 function formatMoney(amount, currency = "IQD") {
