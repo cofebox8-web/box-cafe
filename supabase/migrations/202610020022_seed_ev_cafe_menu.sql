@@ -1,18 +1,87 @@
 -- Migration: 202610020022_seed_ev_cafe_menu.sql
 -- Description: Pure Standard SQL Seed for EV CAFE Menu (70 Products, 10 Categories)
+--              - 100% Self-contained: automatically creates any missing tables (DDL safe)
 --              - Deterministic UUIDs for Categories (11111111-0000-0000-0000-000000000001..0010)
 --              - Deterministic UUIDs for Products (22222222-0000-0000-0000-000000000001..0070)
 --              - 100% verified unique 4K studio photography (zero duplicates, zero mismatches)
 --              - Zero PL/pgSQL variable dependencies (immune to partial selection or syntax errors)
 --              - Fully idempotent with ON CONFLICT DO UPDATE
 
--- 1. Clean previous menu data to ensure a fresh, clean state
+-- 1. التأكد من وجود الجداول المطلوبة مسبقاً لمنع أي خطأ relation does not exist
+CREATE TABLE IF NOT EXISTS public.restaurants (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  slug text not null unique,
+  currency_code text not null default 'IQD' check (currency_code ~ '^[A-Z]{3}$'),
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+INSERT INTO public.restaurants (id, name, slug, currency_code, is_active)
+VALUES ('38dcaba7-adfc-441c-bcc1-bbfd4b3f0d12', 'بوكس كافي', 'box-coffee', 'IQD', true)
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  slug = EXCLUDED.slug,
+  currency_code = EXCLUDED.currency_code,
+  is_active = EXCLUDED.is_active;
+
+CREATE TABLE IF NOT EXISTS public.menu_categories (
+  id uuid primary key default gen_random_uuid(),
+  restaurant_id uuid not null references public.restaurants(id) on delete cascade,
+  name text not null,
+  description text,
+  sort_order integer not null default 0,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  unique (id, restaurant_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.menu_products (
+  id uuid primary key default gen_random_uuid(),
+  restaurant_id uuid not null references public.restaurants(id) on delete cascade,
+  category_id uuid not null,
+  name text not null,
+  description text,
+  image_url text,
+  price numeric(12, 2) not null check (price >= 0),
+  sort_order integer not null default 0,
+  is_available boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  foreign key (category_id, restaurant_id) references public.menu_categories(id, restaurant_id) on delete restrict,
+  unique (id, restaurant_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.product_option_groups (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references public.menu_products(id) on delete cascade,
+  name text not null,
+  selection_type text not null default 'single' check (selection_type in ('single', 'multiple')),
+  is_required boolean not null default false,
+  min_selections integer not null default 0 check (min_selections >= 0),
+  max_selections integer check (max_selections is null or max_selections >= min_selections),
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+CREATE TABLE IF NOT EXISTS public.product_option_items (
+  id uuid primary key default gen_random_uuid(),
+  group_id uuid not null references public.product_option_groups(id) on delete cascade,
+  name text not null,
+  price_modifier numeric(12, 2) not null default 0 check (price_modifier >= 0),
+  is_available boolean not null default true,
+  is_default boolean not null default false,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+-- 2. تنظيف البيانات السابقة لضمان التحديث النظيف
 DELETE FROM public.product_option_items;
 DELETE FROM public.product_option_groups;
 DELETE FROM public.menu_products;
 DELETE FROM public.menu_categories;
 
--- 2. Insert 10 Categories with Fixed UUIDs
+-- 3. إدخال الأقسام العشرة بالمعرفات الثابتة
 INSERT INTO public.menu_categories (id, restaurant_id, name, description, sort_order, is_active)
 SELECT
   c.id::uuid,
@@ -43,7 +112,7 @@ ON CONFLICT (id) DO UPDATE SET
   sort_order = EXCLUDED.sort_order,
   is_active = EXCLUDED.is_active;
 
--- 3. Insert 70 Products with Fixed UUIDs and Verified Studio Photos
+-- 4. إدخال الأصناف الـ 70 بصورها الحصرية 4K وأسعارها الرسمية
 INSERT INTO public.menu_products (id, restaurant_id, category_id, name, description, price, sort_order, image_url, is_available)
 SELECT
   p.id::uuid,
@@ -140,7 +209,7 @@ ON CONFLICT (id) DO UPDATE SET
   image_url = EXCLUDED.image_url,
   is_available = EXCLUDED.is_available;
 
--- 4. Attach Customizable Extras Option Groups (Coffee, Frappe, Matcha)
+-- 5. ربط خيارات الإضافات للمشروبات
 INSERT INTO public.product_option_groups (id, product_id, name, selection_type, is_required, min_selections, max_selections, sort_order)
 SELECT
   ('33333333-' || substr(p.id::text, 10))::uuid,
@@ -159,7 +228,7 @@ WHERE p.category_id IN (
   '11111111-0000-0000-0000-000000000007'
 );
 
--- 5. Insert Option Items for each Group
+-- 6. إدخال عناصر الإضافات لكل مجموعة
 INSERT INTO public.product_option_items (group_id, name, price_modifier, is_available, is_default, sort_order)
 SELECT
   g.id,
@@ -175,3 +244,21 @@ CROSS JOIN (VALUES
   ('نكهة إضافية', 500, 3),
   ('حليب خالي من اللاكتوز', 1000, 4)
 ) AS opt(name, price_modifier, sort_order);
+
+-- 7. تفعيل صلاحيات القراءة العامة
+ALTER TABLE public.menu_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.menu_products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.product_option_groups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.product_option_items ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "menu_categories_read_all" ON public.menu_categories;
+CREATE POLICY "menu_categories_read_all" ON public.menu_categories FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "menu_products_read_all" ON public.menu_products;
+CREATE POLICY "menu_products_read_all" ON public.menu_products FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "product_option_groups_read_all" ON public.product_option_groups;
+CREATE POLICY "product_option_groups_read_all" ON public.product_option_groups FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "product_option_items_read_all" ON public.product_option_items;
+CREATE POLICY "product_option_items_read_all" ON public.product_option_items FOR SELECT USING (true);
