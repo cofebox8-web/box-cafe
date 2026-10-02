@@ -115,6 +115,73 @@ input {
 /* ==========================================================================
    Brand & Title (Matching Menu & Waiter Pure Typographic Lockup)
    ========================================================================== */
+.login-brand-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 22px;
+  user-select: none;
+}
+
+.login-medallion-badge {
+  position: relative;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(150, 91, 50, 0.28);
+  border-radius: 24px;
+  padding: 8px;
+  box-shadow: 
+    0 14px 30px rgba(35, 31, 28, 0.08),
+    0 2px 6px rgba(150, 91, 50, 0.06);
+  margin-bottom: 10px;
+  transition: transform 0.2s ease;
+}
+
+.login-badge-img {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  border-radius: 16px;
+  display: block;
+}
+
+.login-brand-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.login-brand-title {
+  font-family: var(--font-en);
+  font-size: 1.85rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: var(--text-primary);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.login-brand-title .brand-word-ev {
+  color: #241B18;
+}
+
+.login-brand-title .brand-word-cafe {
+  color: #965B32;
+  margin-inline-start: 4px;
+}
+
+.login-brand-sub {
+  color: var(--coffee-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Fallback legacy card-brand */
 .card-brand {
   display: flex;
   align-items: center;
@@ -129,17 +196,6 @@ input {
   max-width: 200px;
   object-fit: contain;
   display: block;
-}
-
-.card-brand .brand-text-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.card-brand .logo-word-ev {
-  color: var(--text-primary);
-  font-weight: 900;
 }
 
 .card-brand .logo-word-cafe {

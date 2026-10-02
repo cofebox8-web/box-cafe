@@ -116,9 +116,189 @@ body.customer-menu-body {
   border-width: 0;
 }
 
-/* --------------------------------------------------------------------------
-   3. Header Section (الهيدر)
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   3. Header & Luxury Brand Stage (واجهة الهوية الفاخرة لـ EV CAFE)
+   ========================================================================== */
+.menu-brand-header {
+  position: relative;
+  background: radial-gradient(130% 110% at 50% 0%, #F4ECE1 0%, #F8F5EE 100%);
+  border-bottom: 1.5px solid var(--border-color);
+  padding: 26px 16px 22px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.menu-brand-header::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(150, 91, 50, 0.16) 0%, rgba(248, 245, 238, 0) 72%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.brand-hero-inner {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Luxury Medallion Badge */
+.brand-medallion-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.brand-medallion-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 34px;
+  background: radial-gradient(circle, rgba(150, 91, 50, 0.25) 0%, rgba(248, 245, 238, 0) 75%);
+  filter: blur(10px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.brand-medallion-card {
+  position: relative;
+  z-index: 2;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(150, 91, 50, 0.28);
+  border-radius: 28px;
+  padding: 10px;
+  box-shadow: 
+    0 16px 36px rgba(35, 31, 28, 0.08),
+    0 2px 8px rgba(150, 91, 50, 0.07),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease;
+}
+
+.brand-medallion-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 22px 48px rgba(35, 31, 28, 0.12),
+    0 6px 14px rgba(150, 91, 50, 0.1);
+}
+
+.brand-medallion-img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: 20px;
+  display: block;
+}
+
+/* Brand Typography & Prestige */
+.brand-hero-title-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.brand-hero-title {
+  font-family: var(--font-brand);
+  font-size: 2.25rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand-hero-title .hero-word-ev,
+.pos-brand-title .brand-word-ev {
+  color: #241B18;
+}
+
+.brand-hero-title .hero-word-cafe,
+.pos-brand-title .brand-word-cafe {
+  color: #965B32;
+  margin-inline-start: 5px;
+}
+
+.brand-hero-specialty-pill {
+  background: rgba(150, 91, 50, 0.1);
+  border: 1px solid rgba(150, 91, 50, 0.25);
+  color: #8A4F2A;
+  font-family: var(--font-arabic);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: 999px;
+  line-height: 1.2;
+}
+
+.brand-hero-tagline {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 14px;
+  max-width: 520px;
+}
+
+.brand-hero-meta-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hero-meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  box-shadow: 0 1px 3px rgba(35, 31, 28, 0.03);
+}
+
+.hero-meta-badge.status-open {
+  background: #F0FDF4;
+  border-color: rgba(22, 163, 74, 0.25);
+  color: #15803D;
+}
+
+.hero-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16A34A;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+  animation: heroPulse 2s infinite;
+}
+
+@keyframes heroPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+/* Compact Sticky Bar & POS Header Support */
 .menu-header {
   position: sticky;
   top: 0;
@@ -143,6 +323,71 @@ body.customer-menu-body {
   align-items: center;
 }
 
+/* Unified POS & Bar Brand Signature Lockup */
+.pos-brand-signature {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  line-height: 1;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  user-select: none;
+}
+
+.pos-brand-signature:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.pos-brand-emblem-badge {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(150, 91, 50, 0.28);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(35, 31, 28, 0.05);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.pos-brand-cup-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 9px;
+  display: block;
+}
+
+.pos-brand-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.pos-brand-title {
+  font-family: var(--font-brand);
+  font-size: 1.22rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pos-brand-subtitle {
+  font-family: var(--font-arabic);
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #8A4F2A;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
 .brand-signature-lockup {
   display: inline-flex;
   align-items: center;
@@ -165,53 +410,38 @@ body.customer-menu-body {
   display: block;
 }
 
-/* Fallback legacy components */
-.brand-logo-emblem {
-  height: 38px;
-  width: auto;
-  aspect-ratio: 1 / 1;
-  object-fit: contain;
-  display: block;
-}
-
-.brand-text-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.logo-word-ev {
-  color: var(--text-primary);
-  font-weight: 900;
-  line-height: 1;
-}
-
-.logo-word-cafe {
-  color: #965B32;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.logo-word-box {
-  background: var(--coffee-primary);
-  color: #FFFFFF;
-  padding: 3px 8px;
-  border-radius: 6px;
-  line-height: 1.1;
-}
-
-.logo-word-cofe {
-  color: var(--coffee-primary);
-  line-height: 1.1;
-}
-
 @media (max-width: 480px) {
+  .menu-brand-header {
+    padding: 20px 12px 18px;
+  }
+  .brand-medallion-img {
+    width: 82px;
+    height: 82px;
+  }
+  .brand-hero-title {
+    font-size: 1.7rem;
+  }
+  .brand-hero-tagline {
+    font-size: 0.88rem;
+    margin-bottom: 10px;
+  }
   .menu-header {
     padding: 8px 12px;
   }
   .brand-main-logo {
     height: 40px;
     max-width: 180px;
+  }
+  .pos-brand-emblem-badge {
+    width: 38px;
+    height: 38px;
+  }
+  .pos-brand-cup-img {
+    width: 32px;
+    height: 32px;
+  }
+  .pos-brand-title {
+    font-size: 1.08rem;
   }
 }
 
