@@ -146,21 +146,26 @@ body.customer-menu-body {
 .brand-signature-lockup {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   text-decoration: none;
-  font-family: var(--font-brand);
-  font-weight: 900;
-  font-size: 1.45rem;
-  letter-spacing: 0.12em;
-  color: var(--text-primary);
   line-height: 1;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
 
 .brand-signature-lockup:hover {
-  opacity: 0.92;
+  transform: scale(1.02);
+  opacity: 0.95;
 }
 
+.brand-main-logo {
+  height: 48px;
+  width: auto;
+  max-width: 230px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Fallback legacy components */
 .brand-logo-emblem {
   height: 38px;
   width: auto;
@@ -187,7 +192,6 @@ body.customer-menu-body {
   line-height: 1;
 }
 
-/* Fallback legacy support */
 .logo-word-box {
   background: var(--coffee-primary);
   color: #FFFFFF;
@@ -202,12 +206,12 @@ body.customer-menu-body {
 }
 
 @media (max-width: 480px) {
-  .brand-signature-lockup {
-    font-size: 1.25rem;
-    gap: 6px;
+  .menu-header {
+    padding: 8px 12px;
   }
-  .brand-logo-emblem {
-    height: 32px;
+  .brand-main-logo {
+    height: 40px;
+    max-width: 180px;
   }
 }
 

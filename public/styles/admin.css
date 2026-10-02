@@ -119,6 +119,14 @@ button, a, input, select {
   opacity: 0.9;
 }
 
+.pure-text-logo .brand-main-logo {
+  height: 36px;
+  width: auto;
+  max-width: 170px;
+  object-fit: contain;
+  display: block;
+}
+
 .pure-text-logo .brand-logo-emblem {
   height: 32px;
   width: auto;

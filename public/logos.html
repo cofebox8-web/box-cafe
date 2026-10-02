@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#F8F5EE" />
-    <title>EV CAFE — دليل الهوية البصرية والشعار الرسمي</title>
+    <title>EV CAFE — دليل الهوية والشعار المحدث</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,18 +21,17 @@
         --border-color: #E6DFD4;
         --radius-card: 20px;
         --font-ar: "Cairo", system-ui, sans-serif;
-        --font-en: "Montserrat", sans-serif;
       }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
         font-family: var(--font-ar);
         background: var(--bg-page);
         color: var(--text-primary);
-        padding: 2rem 1rem 4rem;
+        padding: 2.5rem 1rem 4rem;
         line-height: 1.6;
       }
       .container {
-        max-width: 900px;
+        max-width: 920px;
         margin: 0 auto;
       }
       .brand-hero {
@@ -45,7 +44,7 @@
         color: var(--coffee-brown);
         font-size: 0.85rem;
         font-weight: 800;
-        padding: 6px 16px;
+        padding: 6px 18px;
         border-radius: 999px;
         margin-bottom: 1rem;
       }
@@ -60,11 +59,21 @@
         font-size: 1.05rem;
       }
 
+      .section-heading {
+        font-size: 1.3rem;
+        font-weight: 900;
+        margin: 2rem 0 1rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
       .showcase-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1.5rem;
-        margin-bottom: 2.5rem;
+        margin-bottom: 2rem;
       }
       .showcase-card {
         background: var(--bg-card);
@@ -82,33 +91,32 @@
         transform: translateY(-3px);
         box-shadow: 0 8px 24px rgba(35, 31, 28, 0.08);
       }
-      .showcase-card.dark-preview {
+      .showcase-card.dark-card {
         background: #141211;
         border-color: rgba(255, 255, 255, 0.12);
         color: #F8F5EE;
       }
       .card-tag {
-        font-size: 0.78rem;
+        font-size: 0.8rem;
         font-weight: 800;
-        text-transform: uppercase;
         color: var(--coffee-brown);
         margin-bottom: 1.25rem;
       }
-      .dark-preview .card-tag {
+      .dark-card .card-tag {
         color: #E2A063;
       }
-      .logo-img-wrap {
+      .logo-box-wrap {
         width: 100%;
-        max-width: 260px;
-        aspect-ratio: 1 / 1;
+        min-height: 140px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 1.25rem;
+        padding: 12px;
       }
-      .logo-img-wrap img {
-        width: 100%;
-        height: 100%;
+      .logo-box-wrap img {
+        max-width: 100%;
+        height: auto;
         object-fit: contain;
       }
       .showcase-title {
@@ -120,20 +128,11 @@
         font-size: 0.88rem;
         color: var(--text-secondary);
       }
-      .dark-preview .showcase-desc {
+      .dark-card .showcase-desc {
         color: #A8A29E;
       }
 
-      /* Live Header Mockups */
-      .section-heading {
-        font-size: 1.35rem;
-        font-weight: 900;
-        margin-bottom: 1rem;
-        color: var(--text-primary);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+      /* Live Header Previews */
       .preview-box {
         background: var(--bg-card);
         border: 1.5px solid var(--border-color);
@@ -144,179 +143,132 @@
       .mock-bar {
         background: #F8F5EE;
         border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 1rem 1.5rem;
+        border-radius: 14px;
+        padding: 12px 24px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
         direction: ltr;
         margin-bottom: 1rem;
       }
       .mock-bar.dark-bar {
-        background: #1C1917;
+        background: #1A1715;
         border-color: rgba(255, 255, 255, 0.1);
       }
-      .brand-lockup {
-        display: inline-flex;
-        align-items: center;
-        gap: 9px;
-        font-family: var(--font-en);
-        font-weight: 900;
-        font-size: 1.45rem;
-        letter-spacing: 0.12em;
-        text-decoration: none;
-      }
-      .brand-lockup img {
-        height: 38px;
-        width: auto;
-      }
-      .brand-lockup .w-ev {
-        color: #231F1C;
-      }
-      .brand-lockup .w-cafe {
-        color: #965B32;
-        font-weight: 800;
-      }
-      .dark-bar .brand-lockup .w-ev {
-        color: #FFFFFF;
-      }
-      .dark-bar .brand-lockup .w-cafe {
-        color: #E2A063;
-      }
 
-      /* Palette */
-      .palette-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2.5rem;
-      }
-      .color-pill {
-        border-radius: 14px;
-        padding: 1rem;
-        text-align: center;
-        border: 1px solid rgba(0,0,0,0.06);
-      }
-      .color-pill span {
-        display: block;
-        font-size: 0.8rem;
-        font-weight: 800;
-        margin-top: 6px;
-      }
-
-      /* Quick Links */
+      /* Navigation */
       .nav-links-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 0.75rem;
+        margin-top: 1rem;
       }
       .nav-link-btn {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        padding: 10px;
-        border-radius: 10px;
+        padding: 12px;
+        border-radius: 12px;
         text-align: center;
         text-decoration: none;
         color: var(--text-primary);
-        font-weight: 700;
-        font-size: 0.9rem;
-        transition: background 0.15s ease;
+        font-weight: 800;
+        font-size: 0.92rem;
+        transition: background 0.15s ease, transform 0.15s ease;
       }
       .nav-link-btn:hover {
         background: #EFE8DE;
+        transform: translateY(-2px);
       }
     </style>
   </head>
   <body>
     <div class="container">
       <header class="brand-hero">
-        <span class="hero-badge">الهوية البصرية الرسمية المعتمدة</span>
-        <h1>EV CAFE</h1>
-        <p>شعار القهوة المختصة الاحترافي المعتمد لكافة شاشات ومطبوعات الموقع</p>
+        <span class="hero-badge">التحديث الشامل للهوية والبصرية</span>
+        <h1>EV CAFE — الشعار الرسمي المعتمد</h1>
+        <p>نسخ صافية بدقة فائقة (Vector & Lossless) بدون أي تشويش أو تشوه في الحواف</p>
       </header>
 
+      <!-- 1. الشعار الأفقي المعتمد في الهيدر -->
+      <h3 class="section-heading">1. الشعار الأفقي الرسمي المعتمد في شريط الموقع (Header)</h3>
       <div class="showcase-grid">
-        <!-- 1. Original Luxury Cream Badge -->
         <div class="showcase-card">
-          <span class="card-tag">الشعار الكامل (الخلفية الدافئة)</span>
-          <div class="logo-img-wrap">
-            <img src="/assets/ev-cafe-logo.png" alt="EV CAFE Logo" />
+          <span class="card-tag">النسخة النهارية (للمنيو والويتر)</span>
+          <div class="logo-box-wrap">
+            <img src="/assets/ev-cafe-horizontal.png" alt="EV CAFE Horizontal" style="max-height: 52px;" />
           </div>
-          <h2 class="showcase-title">EV CAFE — الكلاسيكي</h2>
-          <p class="showcase-desc">الشعار الأساسي المختار بدقة، يجمع دمج الحرفين EV في هيئة فنجان قهوة مع بخار متصاعد وخط فخم.</p>
+          <h2 class="showcase-title">EV CAFE — انسيابي نهاري</h2>
+          <p class="showcase-desc">يجمع بين فنجان القهوة الانسيابي على اليسار وكتابة EV CAFE الرسمية مع حواف فائقة النعومة.</p>
         </div>
 
-        <!-- 2. Transparent Dark Mode -->
-        <div class="showcase-card dark-preview">
-          <span class="card-tag">النمط الليلي / الشاشات الداكنة</span>
-          <div class="logo-img-wrap">
-            <img src="/assets/ev-cafe-logo-dark.png" alt="EV CAFE Dark Logo" />
+        <div class="showcase-card dark-card">
+          <span class="card-tag">النسخة الليلية (للإدارة وشاشة المطبخ)</span>
+          <div class="logo-box-wrap">
+            <img src="/assets/ev-cafe-horizontal-dark.png" alt="EV CAFE Horizontal Dark" style="max-height: 52px;" />
           </div>
-          <h2 class="showcase-title" style="color: #fff;">EV CAFE — الوضع الداكن</h2>
-          <p class="showcase-desc">مخصص للوحة تحكم الإدارة ERP وشاشات العرض الليلية مع تباين ذهبي كراميلي وأبيض نقي.</p>
-        </div>
-
-        <!-- 3. Icon / Favicon Mark -->
-        <div class="showcase-card">
-          <span class="card-tag">رمز الفنجان / أيقونة التطبيق</span>
-          <div class="logo-img-wrap">
-            <img src="/assets/ev-cafe-icon-trans.png" alt="EV CAFE Icon" />
-          </div>
-          <h2 class="showcase-title">أيقونة الرمز (Emblem)</h2>
-          <p class="showcase-desc">تُستخدم كـ Favicon في المتصفح، وعلى الأكواب، وأشرطة العناوين المدمجة في الهواتف.</p>
+          <h2 class="showcase-title" style="color:#fff;">EV CAFE — ليلي ذهبي</h2>
+          <p class="showcase-desc">تباين أبيض وكراميل ذهبي مخصص للوضع الداكن والشاشات الليلية.</p>
         </div>
       </div>
 
-      <!-- Live Mockups -->
-      <h3 class="section-heading">معاينة الشعار في شريط التنقل (Header Bars)</h3>
+      <!-- 2. الشعار الرأسي الأصلي -->
+      <h3 class="section-heading">2. الشعار الرأسي الأصلي (طبق الأصل من الصورة المختارة)</h3>
+      <div class="showcase-grid">
+        <div class="showcase-card">
+          <span class="card-tag">اللوغو الكامل الصافي</span>
+          <div class="logo-box-wrap">
+            <img src="/assets/ev-cafe-logo-clean.png" alt="EV CAFE Full" style="max-height: 140px;" />
+          </div>
+          <h2 class="showcase-title">الشعار المركزي (بطاقات الدخول والمطبوعات)</h2>
+          <p class="showcase-desc">الشعار الأصلي كما اخترته تماماً: الفنجان في الأعلى والاسم متناسق في الأسفل.</p>
+        </div>
+
+        <div class="showcase-card dark-card">
+          <span class="card-tag">اللوغو الكامل الليلي</span>
+          <div class="logo-box-wrap">
+            <img src="/assets/ev-cafe-logo-clean-dark.png" alt="EV CAFE Full Dark" style="max-height: 140px;" />
+          </div>
+          <h2 class="showcase-title" style="color:#fff;">اللوغو المركزي الليلي</h2>
+          <p class="showcase-desc">نسخة كاملة متوهجة بالذهبي والأبيض للخلفيات السوداء والفواتير الليلية.</p>
+        </div>
+
+        <div class="showcase-card">
+          <span class="card-tag">أيقونة المتصفح والتطبيق Favicon</span>
+          <div class="logo-box-wrap">
+            <img src="/assets/favicon-128.png" alt="EV CAFE Favicon" style="width: 80px; height: 80px; border-radius: 18px;" />
+          </div>
+          <h2 class="showcase-title">أيقونة الفنجان الصافية</h2>
+          <p class="showcase-desc">تظهر في علامات تبويب المتصفح (Favicon) وتطبيق شاشة الهاتف المحمول.</p>
+        </div>
+      </div>
+
+      <!-- Live Header Previews -->
+      <h3 class="section-heading">3. محاكاة حية لطريقة ظهور الهيدر في المنيو والشاشات</h3>
       <div class="preview-box">
         <div class="mock-bar">
-          <a href="/" class="brand-lockup">
-            <img src="/assets/ev-cafe-icon-trans.png" alt="EV CAFE" />
-            <span><span class="w-ev">EV</span> <span class="w-cafe">CAFE</span></span>
-          </a>
-          <span style="font-size:0.85rem; color:#8C857E; font-weight:700;">منيو الزبائن ونقطة البيع (نهاري)</span>
+          <img src="/assets/ev-cafe-horizontal.png" alt="EV CAFE" style="height: 48px; width: auto;" />
         </div>
+        <p style="text-align:center; font-size: 0.88rem; color: #78716C; margin-bottom: 1.5rem;">
+          مظهر الهيدر في منيو الزبائن ونقاط البيع (توسيط كامل، مساحة تنفس متناسقة، صفاء 100%)
+        </p>
 
         <div class="mock-bar dark-bar">
-          <a href="/admin" class="brand-lockup">
-            <img src="/assets/ev-cafe-icon-dark.png" alt="EV CAFE" />
-            <span><span class="w-ev">EV</span> <span class="w-cafe">CAFE</span></span>
-          </a>
-          <span style="font-size:0.85rem; color:#A8A29E; font-weight:700;">لوحة تحكم الإدارة والمطبخ (ليلي)</span>
+          <img src="/assets/ev-cafe-horizontal-dark.png" alt="EV CAFE Dark" style="height: 40px; width: auto;" />
         </div>
+        <p style="text-align:center; font-size: 0.88rem; color: #78716C;">
+          مظهر الهيدر في شاشة المطبخ KDS ولوحة التحكم ERP
+        </p>
       </div>
 
-      <!-- Palette -->
-      <h3 class="section-heading">ألوان الهوية الرسمية</h3>
-      <div class="palette-row">
-        <div class="color-pill" style="background: #231F1C; color: #fff;">
-          <strong>#231F1C</strong>
-          <span>إسبريسو داكن</span>
-        </div>
-        <div class="color-pill" style="background: #965B32; color: #fff;">
-          <strong>#965B32</strong>
-          <span>كراميل محمص</span>
-        </div>
-        <div class="color-pill" style="background: #E2A063; color: #231F1C;">
-          <strong>#E2A063</strong>
-          <span>ذهبي ليلي</span>
-        </div>
-        <div class="color-pill" style="background: #F8F5EE; color: #231F1C;">
-          <strong>#F8F5EE</strong>
-          <span>حليبي دافئ</span>
-        </div>
-      </div>
-
-      <!-- Navigation to all updated screens -->
-      <h3 class="section-heading">شاشات الموقع المحدثة بشعار EV CAFE</h3>
+      <!-- Links -->
+      <h3 class="section-heading">معاينة صفحات الموقع المحدثة</h3>
       <div class="nav-links-grid">
         <a href="/" class="nav-link-btn">منيو الزبائن ↗</a>
-        <a href="/menu" class="nav-link-btn">قائمة الطعام ↗</a>
+        <a href="/menu" class="nav-link-btn">قائمة المنيو ↗</a>
         <a href="/waiter" class="nav-link-btn">نقطة بيع الويتر ↗</a>
         <a href="/roadside" class="nav-link-btn">خدمة السيارات ↗</a>
-        <a href="/kitchen" class="nav-link-btn">شاشة المطبخ ↗</a>
-        <a href="/admin" class="nav-link-btn">لوحة الإدارة ↗</a>
+        <a href="/kitchen" class="nav-link-btn">شاشة المطبخ KDS ↗</a>
+        <a href="/admin" class="nav-link-btn">لوحة الإدارة ERP ↗</a>
         <a href="/login" class="nav-link-btn">تسجيل الدخول ↗</a>
       </div>
     </div>

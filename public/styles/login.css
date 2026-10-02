@@ -119,19 +119,14 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-family: var(--font-en);
-  font-size: 26px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
   margin-bottom: 24px;
   user-select: none;
 }
 
-.card-brand .brand-logo-emblem {
-  height: 44px;
+.card-brand .brand-main-logo {
+  height: 96px;
   width: auto;
-  aspect-ratio: 1 / 1;
+  max-width: 200px;
   object-fit: contain;
   display: block;
 }
