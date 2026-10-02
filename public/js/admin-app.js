@@ -2073,7 +2073,13 @@ async function initAdminERP() {
       if (purgeStaff) await reloadStaffAccounts().catch(() => {});
       renderAllOverviewAndHubBoxes();
     } catch (err) {
-      showToast(err.message || 'حدث خطأ أثناء تصفية البيانات.');
+      console.error('Purge error:', err);
+      const isMissingRpc = (err.message || '').includes('admin_purge_test_data') || (err.message || '').includes('schema cache');
+      if (isMissingRpc) {
+        showToast('تنبيه: يجب تشغيل كود SQL أولاً في لوحة Supabase (SQL Editor) لتفعيل التصفية المباشرة.');
+      } else {
+        showToast(err.message || 'حدث خطأ أثناء تصفية البيانات.');
+      }
     } finally {
       executeBtn.disabled = false;
       executeBtn.textContent = 'تأكيد التصفية الفورية 🗑️';
