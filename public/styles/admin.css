@@ -98,22 +98,54 @@ button, a, input, select {
   font-weight: 800;
 }
 
-/* الشعار الخطي النقي الرسمي BOX COFE */
+/* الشعار الخطي والرمزي الرسمي EV CAFE */
 .pure-text-logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.34em;
+  gap: 8px;
   direction: ltr;
   unicode-bidi: isolate;
   text-decoration: none;
   font-family: var(--font-en);
   font-weight: 900;
   font-size: 1.25rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  line-height: 1;
+  transition: opacity 0.15s ease;
+}
+
+.pure-text-logo:hover {
+  opacity: 0.9;
+}
+
+.pure-text-logo .brand-logo-emblem {
+  height: 32px;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  display: block;
+}
+
+.pure-text-logo .brand-text-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pure-text-logo .logo-word-ev {
+  color: #FFFFFF !important;
+  font-weight: 900;
   line-height: 1;
 }
 
+.pure-text-logo .logo-word-cafe {
+  color: #E2A063 !important;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Fallback legacy & printable QR overrides */
 .pure-text-logo .logo-word-box {
   background: var(--coffee-primary);
   color: #FFFFFF !important;
@@ -121,10 +153,19 @@ button, a, input, select {
   border-radius: 6px;
   line-height: 1.1;
 }
+
 .pure-text-logo .logo-word-cofe {
   color: var(--coffee-primary) !important;
   line-height: 1.1;
   text-shadow: none !important;
+}
+
+.qr-printable-card .pure-text-logo .logo-word-ev {
+  color: #231F1C !important;
+}
+
+.qr-printable-card .pure-text-logo .logo-word-cafe {
+  color: #965B32 !important;
 }
 
 /* =========================================================

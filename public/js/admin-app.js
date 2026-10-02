@@ -1008,7 +1008,7 @@ function showThermalReceiptModal(orderObj, receivedAmount = 0, changeAmount = 0)
 
   receiptArea.innerHTML = `
     <div style="text-align:center;border-bottom:1px dashed #64748B;padding-bottom:8px;margin-bottom:8px;">
-      <strong style="font-size:1.15rem;letter-spacing:0.15em;">BOX COFE</strong>
+      <strong style="font-size:1.15rem;letter-spacing:0.15em;">EV CAFE</strong>
       <div>فاتورة كاشير رسمية • رقم ${orderObj.order_code}</div>
       <small>${new Date(orderObj.created_at || Date.now()).toLocaleTimeString('ar-IQ')} | ${orderObj.vehicle_note || 'فرع المطار'}</small>
     </div>

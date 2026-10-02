@@ -3,125 +3,321 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#09090e" />
-    <title>BOX COFE — خطوط اللوغو التايبوغرافي</title>
+    <meta name="theme-color" content="#F8F5EE" />
+    <title>EV CAFE — دليل الهوية البصرية والشعار الرسمي</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@800;900&family=Montserrat:wght@800;900&family=Orbitron:wght@800;900&family=Outfit:wght@800;900&family=Syne:wght@800&family=Tajawal:wght@700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet" />
     <style>
       :root {
-        --bg: #08080c;
-        --card: #111119;
-        --border: rgba(192, 132, 252, 0.24);
-        --neon: #c084fc;
+        --bg-page: #F8F5EE;
+        --bg-card: #FFFFFF;
+        --text-primary: #231F1C;
+        --text-secondary: #57524E;
+        --coffee-brown: #965B32;
+        --coffee-dark: #231F1C;
+        --border-color: #E6DFD4;
+        --radius-card: 20px;
+        --font-ar: "Cairo", system-ui, sans-serif;
+        --font-en: "Montserrat", sans-serif;
       }
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
-        margin: 0;
-        font-family: "Tajawal", system-ui, sans-serif;
-        background: var(--bg);
-        color: #fff;
-        padding: 1.25rem 1rem 3rem;
+        font-family: var(--font-ar);
+        background: var(--bg-page);
+        color: var(--text-primary);
+        padding: 2rem 1rem 4rem;
+        line-height: 1.6;
       }
-      .wrap {
-        max-width: 820px;
+      .container {
+        max-width: 900px;
         margin: 0 auto;
       }
-      .title-box {
+      .brand-hero {
         text-align: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2.5rem;
       }
-      .title-box h1 {
-        font-size: 1.25rem;
-        margin: 0 0 0.35rem;
-      }
-      .title-box p {
-        margin: 0;
+      .hero-badge {
+        display: inline-block;
+        background: #EFE8DE;
+        color: var(--coffee-brown);
         font-size: 0.85rem;
-        color: #94a3b8;
+        font-weight: 800;
+        padding: 6px 16px;
+        border-radius: 999px;
+        margin-bottom: 1rem;
       }
-      .grid {
+      .brand-hero h1 {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+      .brand-hero p {
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+      }
+
+      .showcase-grid {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
       }
-      .font-card {
-        background: var(--card);
-        border: 1.5px solid var(--border);
-        border-radius: 18px;
-        padding: 1.25rem;
+      .showcase-card {
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-card);
+        padding: 1.75rem;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        align-items: center;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(35, 31, 28, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
-      .font-label {
+      .showcase-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(35, 31, 28, 0.08);
+      }
+      .showcase-card.dark-preview {
+        background: #141211;
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #F8F5EE;
+      }
+      .card-tag {
         font-size: 0.78rem;
-        color: #c084fc;
         font-weight: 800;
-        display: flex;
-        justify-content: space-between;
+        text-transform: uppercase;
+        color: var(--coffee-brown);
+        margin-bottom: 1.25rem;
       }
-      .bar-preview {
-        background: #07070b;
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 14px;
-        padding: 1.35rem 1rem;
+      .dark-preview .card-tag {
+        color: #E2A063;
+      }
+      .logo-img-wrap {
+        width: 100%;
+        max-width: 260px;
+        aspect-ratio: 1 / 1;
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-bottom: 1.25rem;
+      }
+      .logo-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .showcase-title {
+        font-weight: 800;
+        font-size: 1.15rem;
+        margin-bottom: 0.35rem;
+      }
+      .showcase-desc {
+        font-size: 0.88rem;
+        color: var(--text-secondary);
+      }
+      .dark-preview .showcase-desc {
+        color: #A8A29E;
+      }
+
+      /* Live Header Mockups */
+      .section-heading {
+        font-size: 1.35rem;
+        font-weight: 900;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .preview-box {
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-card);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      .mock-bar {
+        background: #F8F5EE;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         direction: ltr;
+        margin-bottom: 1rem;
       }
-      .w-logo {
-        font-size: 2rem;
-        line-height: 1;
-        color: #ffffff;
-        white-space: nowrap;
+      .mock-bar.dark-bar {
+        background: #1C1917;
+        border-color: rgba(255, 255, 255, 0.1);
       }
-      .w-logo span {
-        background: linear-gradient(135deg, #f3e8ff 0%, #c084fc 50%, #8b5cf6 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        filter: drop-shadow(0 0 14px rgba(192, 132, 252, 0.45));
+      .brand-lockup {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-family: var(--font-en);
+        font-weight: 900;
+        font-size: 1.45rem;
+        letter-spacing: 0.12em;
+        text-decoration: none;
       }
-      .f1 { font-family: "Montserrat", sans-serif; font-weight: 900; letter-spacing: 0.16em; }
-      .f2 { font-family: "Cinzel", serif; font-weight: 900; letter-spacing: 0.18em; }
-      .f3 { font-family: "Syne", sans-serif; font-weight: 800; letter-spacing: 0.12em; }
-      .f4 { font-family: "Orbitron", sans-serif; font-weight: 900; letter-spacing: 0.15em; }
-      .f5 { font-family: "Outfit", sans-serif; font-weight: 900; letter-spacing: 0.22em; }
+      .brand-lockup img {
+        height: 38px;
+        width: auto;
+      }
+      .brand-lockup .w-ev {
+        color: #231F1C;
+      }
+      .brand-lockup .w-cafe {
+        color: #965B32;
+        font-weight: 800;
+      }
+      .dark-bar .brand-lockup .w-ev {
+        color: #FFFFFF;
+      }
+      .dark-bar .brand-lockup .w-cafe {
+        color: #E2A063;
+      }
+
+      /* Palette */
+      .palette-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+      }
+      .color-pill {
+        border-radius: 14px;
+        padding: 1rem;
+        text-align: center;
+        border: 1px solid rgba(0,0,0,0.06);
+      }
+      .color-pill span {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 800;
+        margin-top: 6px;
+      }
+
+      /* Quick Links */
+      .nav-links-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+      }
+      .nav-link-btn {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        padding: 10px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 0.9rem;
+        transition: background 0.15s ease;
+      }
+      .nav-link-btn:hover {
+        background: #EFE8DE;
+      }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <div class="title-box">
-        <h1>BOX COFE — شعار خط فقط (Typography Only)</h1>
-        <p>بدون أي رسم أو أيقونة — تم اعتماد الخط رقم (1) حالياً في المنيو والمطبخ</p>
+    <div class="container">
+      <header class="brand-hero">
+        <span class="hero-badge">الهوية البصرية الرسمية المعتمدة</span>
+        <h1>EV CAFE</h1>
+        <p>شعار القهوة المختصة الاحترافي المعتمد لكافة شاشات ومطبوعات الموقع</p>
+      </header>
+
+      <div class="showcase-grid">
+        <!-- 1. Original Luxury Cream Badge -->
+        <div class="showcase-card">
+          <span class="card-tag">الشعار الكامل (الخلفية الدافئة)</span>
+          <div class="logo-img-wrap">
+            <img src="/assets/ev-cafe-logo.png" alt="EV CAFE Logo" />
+          </div>
+          <h2 class="showcase-title">EV CAFE — الكلاسيكي</h2>
+          <p class="showcase-desc">الشعار الأساسي المختار بدقة، يجمع دمج الحرفين EV في هيئة فنجان قهوة مع بخار متصاعد وخط فخم.</p>
+        </div>
+
+        <!-- 2. Transparent Dark Mode -->
+        <div class="showcase-card dark-preview">
+          <span class="card-tag">النمط الليلي / الشاشات الداكنة</span>
+          <div class="logo-img-wrap">
+            <img src="/assets/ev-cafe-logo-dark.png" alt="EV CAFE Dark Logo" />
+          </div>
+          <h2 class="showcase-title" style="color: #fff;">EV CAFE — الوضع الداكن</h2>
+          <p class="showcase-desc">مخصص للوحة تحكم الإدارة ERP وشاشات العرض الليلية مع تباين ذهبي كراميلي وأبيض نقي.</p>
+        </div>
+
+        <!-- 3. Icon / Favicon Mark -->
+        <div class="showcase-card">
+          <span class="card-tag">رمز الفنجان / أيقونة التطبيق</span>
+          <div class="logo-img-wrap">
+            <img src="/assets/ev-cafe-icon-trans.png" alt="EV CAFE Icon" />
+          </div>
+          <h2 class="showcase-title">أيقونة الرمز (Emblem)</h2>
+          <p class="showcase-desc">تُستخدم كـ Favicon في المتصفح، وعلى الأكواب، وأشرطة العناوين المدمجة في الهواتف.</p>
+        </div>
       </div>
 
-      <div class="grid">
-        <div class="font-card">
-          <div class="font-label"><span>خط رقم (1) — المعتمد حالياً في الموقع ⭐</span><span>Montserrat Geometric Black</span></div>
-          <div class="bar-preview"><div class="w-logo f1">BOX <span>COFE</span></div></div>
+      <!-- Live Mockups -->
+      <h3 class="section-heading">معاينة الشعار في شريط التنقل (Header Bars)</h3>
+      <div class="preview-box">
+        <div class="mock-bar">
+          <a href="/" class="brand-lockup">
+            <img src="/assets/ev-cafe-icon-trans.png" alt="EV CAFE" />
+            <span><span class="w-ev">EV</span> <span class="w-cafe">CAFE</span></span>
+          </a>
+          <span style="font-size:0.85rem; color:#8C857E; font-weight:700;">منيو الزبائن ونقطة البيع (نهاري)</span>
         </div>
 
-        <div class="font-card">
-          <div class="font-label"><span>خط رقم (2) — كلاسيكي ملكي فاخر</span><span>Cinzel Luxury Serif</span></div>
-          <div class="bar-preview"><div class="w-logo f2">BOX <span>COFE</span></div></div>
+        <div class="mock-bar dark-bar">
+          <a href="/admin" class="brand-lockup">
+            <img src="/assets/ev-cafe-icon-dark.png" alt="EV CAFE" />
+            <span><span class="w-ev">EV</span> <span class="w-cafe">CAFE</span></span>
+          </a>
+          <span style="font-size:0.85rem; color:#A8A29E; font-weight:700;">لوحة تحكم الإدارة والمطبخ (ليلي)</span>
         </div>
+      </div>
 
-        <div class="font-card">
-          <div class="font-label"><span>خط رقم (3) — معماري عريض حديث</span><span>Syne Architectural Display</span></div>
-          <div class="bar-preview"><div class="w-logo f3">BOX <span>COFE</span></div></div>
+      <!-- Palette -->
+      <h3 class="section-heading">ألوان الهوية الرسمية</h3>
+      <div class="palette-row">
+        <div class="color-pill" style="background: #231F1C; color: #fff;">
+          <strong>#231F1C</strong>
+          <span>إسبريسو داكن</span>
         </div>
+        <div class="color-pill" style="background: #965B32; color: #fff;">
+          <strong>#965B32</strong>
+          <span>كراميل محمص</span>
+        </div>
+        <div class="color-pill" style="background: #E2A063; color: #231F1C;">
+          <strong>#E2A063</strong>
+          <span>ذهبي ليلي</span>
+        </div>
+        <div class="color-pill" style="background: #F8F5EE; color: #231F1C;">
+          <strong>#F8F5EE</strong>
+          <span>حليبي دافئ</span>
+        </div>
+      </div>
 
-        <div class="font-card">
-          <div class="font-label"><span>خط رقم (4) — هندسي مستقبلي حاد</span><span>Orbitron Modern Box</span></div>
-          <div class="bar-preview"><div class="w-logo f4">BOX <span>COFE</span></div></div>
-        </div>
-
-        <div class="font-card">
-          <div class="font-label"><span>خط رقم (5) — مينيمال متباعد الأسطر</span><span>Outfit Ultra-Wide</span></div>
-          <div class="bar-preview"><div class="w-logo f5">BOX <span>COFE</span></div></div>
-        </div>
+      <!-- Navigation to all updated screens -->
+      <h3 class="section-heading">شاشات الموقع المحدثة بشعار EV CAFE</h3>
+      <div class="nav-links-grid">
+        <a href="/" class="nav-link-btn">منيو الزبائن ↗</a>
+        <a href="/menu" class="nav-link-btn">قائمة الطعام ↗</a>
+        <a href="/waiter" class="nav-link-btn">نقطة بيع الويتر ↗</a>
+        <a href="/roadside" class="nav-link-btn">خدمة السيارات ↗</a>
+        <a href="/kitchen" class="nav-link-btn">شاشة المطبخ ↗</a>
+        <a href="/admin" class="nav-link-btn">لوحة الإدارة ↗</a>
+        <a href="/login" class="nav-link-btn">تسجيل الدخول ↗</a>
       </div>
     </div>
   </body>

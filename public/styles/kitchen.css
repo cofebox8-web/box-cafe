@@ -1,5 +1,5 @@
 /* ==========================================================================
-   BOX COFE — Kitchen Display System (KDS)
+   EV CAFE — Kitchen Display System (KDS)
    Official Brand Identity: Warm Milk & Roasted Coffee Luxury Experience
    Executive High-Speed Barista Interface (RTL)
    Fonts: Cairo (400, 500, 600, 700, 800, 900) + Montserrat (800, 900)
@@ -220,11 +220,11 @@ input {
 .kds-brand-lockup {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   text-decoration: none;
   flex-shrink: 0;
   font-family: var(--font-brand);
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 900;
   letter-spacing: 0.12em;
   line-height: 1;
@@ -236,6 +236,37 @@ input {
   opacity: 0.9;
 }
 
+.kds-brand-lockup .brand-logo-emblem,
+.kds-login-brand .brand-logo-emblem {
+  height: 32px;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  display: block;
+}
+
+.kds-brand-lockup .brand-text-group,
+.kds-login-brand .brand-text-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kds-brand-lockup .logo-word-ev,
+.kds-login-brand .logo-word-ev {
+  color: var(--brand-primary);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.kds-brand-lockup .logo-word-cafe,
+.kds-login-brand .logo-word-cafe {
+  color: #965B32;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Fallback legacy support */
 .logo-word-box {
   background: var(--brand-primary);
   color: #FFFFFF !important;

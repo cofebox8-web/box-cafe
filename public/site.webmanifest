@@ -1,7 +1,7 @@
 {
-  "name": "BOX COFE",
-  "short_name": "BOX COFE",
-  "description": "نظام بوكس كافي لخدمة السيارات والمنيو السريع",
+  "name": "EV CAFE",
+  "short_name": "EV CAFE",
+  "description": "نظام EV CAFE للقهوة المختصة والمنيو السريع",
   "start_url": "/menu",
   "display": "standalone",
   "background_color": "#F6F3ED",

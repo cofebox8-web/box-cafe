@@ -1,6 +1,6 @@
 /* ==========================================================================
-   BOX COFE — Official Customer Menu Stylesheet
-   Drive-Thru Luxury Experience · Pure Read-Only Menu
+   EV CAFE — Official Customer Menu Stylesheet
+   Specialty Coffee Luxury Experience · Pure Read-Only Menu
    Fonts: Cairo (400, 500, 600, 700, 800, 900) + Montserrat (800, 900)
    Color Palette: Warm Milk (#F8F5EE) & Roasted Coffee (#4A3525, #231F1C)
    ========================================================================== */
@@ -146,15 +146,48 @@ body.customer-menu-body {
 .brand-signature-lockup {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   text-decoration: none;
   font-family: var(--font-brand);
   font-weight: 900;
   font-size: 1.45rem;
   letter-spacing: 0.12em;
   color: var(--text-primary);
+  line-height: 1;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
+.brand-signature-lockup:hover {
+  opacity: 0.92;
+}
+
+.brand-logo-emblem {
+  height: 38px;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-text-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.logo-word-ev {
+  color: var(--text-primary);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.logo-word-cafe {
+  color: #965B32;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Fallback legacy support */
 .logo-word-box {
   background: var(--coffee-primary);
   color: #FFFFFF;
@@ -166,6 +199,16 @@ body.customer-menu-body {
 .logo-word-cofe {
   color: var(--coffee-primary);
   line-height: 1.1;
+}
+
+@media (max-width: 480px) {
+  .brand-signature-lockup {
+    font-size: 1.25rem;
+    gap: 6px;
+  }
+  .brand-logo-emblem {
+    height: 32px;
+  }
 }
 
 .header-meta-row {

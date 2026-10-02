@@ -1,4 +1,4 @@
-// BOX COFE — Customer Read-Only Menu Controller
+// EV CAFE — Customer Read-Only Menu Controller
 // Vanilla JS ES Module — No Bundler, No Node.js runtime, Pure Read-Only
 
 import { supabase, isSupabaseConfigured } from "./supabase-client.js";
@@ -341,7 +341,7 @@ function renderProductCardHtml(p, currency = "IQD") {
           ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="product-card-img" loading="lazy" />`
           : `<div class="product-image-fallback">
               <svg class="placeholder-coffee-svg icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
-              <span class="placeholder-brand-text">BOX COFE</span>
+              <span class="placeholder-brand-text">EV CAFE</span>
             </div>`
         }
       </div>

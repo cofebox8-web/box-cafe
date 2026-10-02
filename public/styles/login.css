@@ -1,5 +1,5 @@
 /* ==========================================================================
-   BOX COFE — Pure Luxury Minimalist Login Card
+   EV CAFE — Pure Luxury Minimalist Login Card
    Official Brand Identity: Warm Milk & Roasted Coffee Luxury Experience
    Ultra-clean, Centered, Zero Distractions
    ========================================================================== */
@@ -119,7 +119,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 10px;
   font-family: var(--font-en);
   font-size: 26px;
   font-weight: 900;
@@ -128,6 +128,31 @@ input {
   user-select: none;
 }
 
+.card-brand .brand-logo-emblem {
+  height: 44px;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  display: block;
+}
+
+.card-brand .brand-text-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-brand .logo-word-ev {
+  color: var(--text-primary);
+  font-weight: 900;
+}
+
+.card-brand .logo-word-cafe {
+  color: #965B32;
+  font-weight: 800;
+}
+
+/* Fallback legacy support */
 .logo-box {
   background: var(--coffee-primary);
   color: #FFFFFF;
