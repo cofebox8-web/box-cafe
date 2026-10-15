@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#F8F5EE" />
+    <meta name="theme-color" content="#11100f" />
     <title>EV CAFE — قائمة المنيو</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://rtzzoyaxivujzvghudgz.supabase.co" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles/menu.css?v=20261002_ev1" />
+    <link rel="stylesheet" href="/styles/menu.css?v=20261015_ev2" />
   </head>
   <body class="customer-menu-body">
     <!-- Official EV CAFE Top Bar -->
@@ -31,26 +31,8 @@
     </header>
 
     <main class="customer-main-view">
-      <!-- Search & Category Filters -->
-      <section class="search-filter-section" id="search-filter-section" aria-label="البحث وفئات المنيو">
-        <div class="search-box-wrapper">
-          <label for="search-input" class="sr-only">البحث في قائمة الطعام</label>
-          <span class="search-icon-pos" aria-hidden="true">
-            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </span>
-          <input
-            type="search"
-            id="search-input"
-            class="search-input"
-            placeholder="ابحث عن مشروب، صنف، أو نكهة..."
-            aria-label="البحث في قائمة الطعام"
-            autocomplete="off"
-          />
-          <button type="button" id="search-clear-btn" class="search-clear-btn" style="display: none;" aria-label="مسح البحث">
-            <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-
+      <!-- Category Filters -->
+      <section class="search-filter-section" id="search-filter-section" aria-label="فئات المنيو">
         <nav class="categories-nav" id="categories-nav-section" aria-label="فئات الأصناف">
           <ul class="categories-list" id="categories-list">
             <!-- Dynamically populated categories pills -->
@@ -131,6 +113,6 @@
 
     <!-- Scripts -->
     <script src="/vendor/supabase.umd.js"></script>
-    <script type="module" src="/js/menu-app.js?v=20260930_v6"></script>
+    <script type="module" src="/js/menu-app.js?v=20261015_ev2"></script>
   </body>
 </html>
