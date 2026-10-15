@@ -1874,8 +1874,8 @@ dialog.customization-modal::backdrop {
 .header-container {
   width: min(100%, var(--container-max));
   min-height: 48px;
-  padding-bottom: 11px;
-  border-bottom: 1px solid rgba(255, 245, 231, 0.12);
+  padding-bottom: 8px;
+  border-bottom: 0;
 }
 
 .brand-top-lockup {
@@ -1893,9 +1893,23 @@ dialog.customization-modal::backdrop {
 }
 
 .search-filter-section {
+  position: relative;
   width: min(100%, var(--container-max));
   margin: 0 auto;
-  padding: 11px 0 0;
+  padding: 11px 0 14px;
+}
+
+.search-filter-section::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  right: 6px;
+  bottom: 0;
+  left: 6px;
+  height: 1px;
+  border-radius: 999px;
+  background: rgba(255, 245, 231, 0.16);
+  box-shadow: 0 1px 8px rgba(211, 154, 103, 0.08);
 }
 
 .categories-nav,
@@ -1947,7 +1961,7 @@ dialog.customization-modal::backdrop {
 
   .header-container {
     min-height: 43px;
-    padding-bottom: 9px;
+    padding-bottom: 6px;
   }
 
   .brand-top-card {
@@ -1963,6 +1977,7 @@ dialog.customization-modal::backdrop {
 
   .search-filter-section {
     padding-top: 9px;
+    padding-bottom: 11px;
   }
 
   .categories-nav,
@@ -1974,6 +1989,11 @@ dialog.customization-modal::backdrop {
     margin-inline: -14px;
     padding-inline: 14px;
     padding-bottom: 4px;
+  }
+
+  .search-filter-section::after {
+    right: 14px;
+    left: 14px;
   }
 
   .categories-list {
