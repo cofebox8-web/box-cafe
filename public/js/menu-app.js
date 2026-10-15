@@ -332,7 +332,6 @@ function initCategoryNavScroll() {
 // Helper to render a single read-only product card
 function renderProductCardHtml(p, currency = "IQD") {
   const isAvailable = p.is_available !== false;
-  const hasOptions = Array.isArray(p.option_groups) && p.option_groups.length > 0;
   const priceFormatted = formatAmountOnly(p.price);
   const imageUrl = resolveProductImage(p);
 
@@ -345,7 +344,6 @@ function renderProductCardHtml(p, currency = "IQD") {
       <div class="product-card-body">
         <div class="product-card-top-info">
           <h3 class="product-name">${escapeHtml(p.name)}</h3>
-          ${hasOptions ? `<span class="product-custom-hint">متاح تخصيصه</span>` : ""}
           ${p.description ? `<p class="product-desc">${escapeHtml(p.description)}</p>` : ""}
         </div>
         <div class="product-card-footer">
@@ -353,18 +351,7 @@ function renderProductCardHtml(p, currency = "IQD") {
             <span class="price-amount">${priceFormatted}</span>
             <span class="price-currency">د.ع</span>
           </div>
-          ${isAvailable ? `
-            <button type="button" class="view-details-btn" data-action="view-details" data-product-id="${p.id}" aria-label="اطّلع على ${escapeHtml(p.name)}">
-              <span class="btn-text">اطّلع</span>
-              <span class="btn-action-badge" aria-hidden="true">
-                <svg class="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 18-6-6 6-6"/></svg>
-              </span>
-            </button>
-          ` : `
-            <button type="button" class="view-details-btn is-unavailable" disabled aria-label="غير متوفر">
-              <span class="btn-text">غير متوفر حالياً</span>
-            </button>
-          `}
+          ${isAvailable ? `<span class="product-detail-label">عرض التفاصيل <span aria-hidden="true">←</span></span>` : `<span class="product-detail-label is-unavailable">غير متوفر حالياً</span>`}
         </div>
       </div>
     </article>

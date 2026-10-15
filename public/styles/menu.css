@@ -1488,3 +1488,358 @@ dialog.customization-modal::backdrop {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   11. Customer Menu Reference Direction
+   Dark espresso catalog inspired by the supplied reference image.
+   The customer menu remains read-only; only presentation is changed.
+   ========================================================================== */
+:root {
+  color-scheme: dark;
+  --bg-page: #11100f;
+  --bg-card: #1d1b19;
+  --bg-surface: #28231f;
+  --bg-subtle: #332b24;
+  --bg-input: #1d1b19;
+  --text-primary: #fff8ef;
+  --text-secondary: #c9b9a8;
+  --text-muted: #998c7f;
+  --coffee-primary: #d39a67;
+  --coffee-hover: #e2ac78;
+  --coffee-accent: #d39a67;
+  --coffee-light: #3b2c21;
+  --border-color: rgba(255, 245, 231, 0.12);
+  --border-subtle: rgba(255, 245, 231, 0.08);
+  --border-hover: rgba(211, 154, 103, 0.48);
+  --border-focus: #d39a67;
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.16);
+  --shadow-card: 0 10px 26px rgba(0, 0, 0, 0.2);
+  --shadow-hover: 0 16px 34px rgba(0, 0, 0, 0.34);
+  --shadow-modal: 0 28px 80px rgba(0, 0, 0, 0.52);
+}
+
+html,
+body.customer-menu-body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+body.customer-menu-body {
+  background:
+    radial-gradient(circle at 50% -15%, rgba(177, 117, 72, 0.16), transparent 34rem),
+    var(--bg-page);
+}
+
+.menu-header {
+  background: rgba(17, 16, 15, 0.88);
+  border-bottom-color: rgba(255, 245, 231, 0.09);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+}
+
+.brand-top-card {
+  background: #2a231e;
+  border-color: rgba(211, 154, 103, 0.38);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
+.brand-top-title .brand-word-ev,
+.pos-brand-title .brand-word-ev {
+  color: #fff8ef;
+}
+
+.brand-top-title .brand-word-cafe,
+.pos-brand-title .brand-word-cafe {
+  color: var(--coffee-primary);
+}
+
+.customer-main-view {
+  max-width: 1240px;
+  padding: 22px 18px 64px;
+}
+
+.search-filter-section {
+  margin-bottom: 30px;
+}
+
+.categories-nav {
+  margin-top: 0;
+  padding-top: 2px;
+  padding-bottom: 8px;
+}
+
+.categories-list {
+  gap: 10px;
+}
+
+.category-pill-btn {
+  min-height: 42px;
+  padding: 8px 19px;
+  background: #211f1c;
+  border-color: rgba(255, 245, 231, 0.12);
+  color: var(--text-secondary);
+  box-shadow: none;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.category-pill-btn.active {
+  background: var(--coffee-primary);
+  border-color: var(--coffee-primary);
+  color: #1a120c;
+  box-shadow: 0 7px 18px rgba(211, 154, 103, 0.2);
+}
+
+.category-block {
+  margin-bottom: 44px;
+}
+
+.category-header {
+  margin-bottom: 16px;
+  padding: 0 2px 11px;
+  border-bottom: 1px solid rgba(255, 245, 231, 0.1);
+}
+
+.category-title-wrap {
+  gap: 12px;
+}
+
+.category-accent-bar {
+  width: 28px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--coffee-primary), rgba(211, 154, 103, 0.15));
+}
+
+.category-title {
+  color: var(--text-primary);
+  font-size: clamp(1.1rem, 2vw, 1.38rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.products-grid {
+  gap: 14px;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .products-grid {
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
+    gap: 18px;
+  }
+}
+
+.product-card {
+  background: linear-gradient(180deg, #211f1d 0%, #1a1917 100%);
+  border-color: rgba(255, 245, 231, 0.11);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.product-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+
+.product-card-media {
+  aspect-ratio: 1 / 0.9;
+  background: #f4f0e9;
+  padding: 0;
+}
+
+.product-card-img {
+  padding: 0;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  filter: contrast(1.04) saturate(0.98);
+  transform: scale(1.04);
+}
+
+.product-card:hover .product-card-img {
+  transform: scale(1.09);
+}
+
+.product-card-body {
+  padding: 13px 14px 14px;
+  gap: 10px;
+}
+
+.product-name {
+  color: var(--text-primary);
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.product-desc {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  -webkit-line-clamp: 1;
+}
+
+.product-card-footer {
+  padding-top: 10px;
+  border-top-color: rgba(255, 245, 231, 0.1);
+  gap: 6px;
+}
+
+.product-price-row {
+  gap: 5px;
+}
+
+.price-amount {
+  color: var(--text-primary);
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.price-currency {
+  color: var(--coffee-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.product-detail-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--coffee-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.product-detail-label span {
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 0.18s ease;
+}
+
+.product-card:hover .product-detail-label span {
+  transform: translateX(-3px);
+}
+
+.product-detail-label.is-unavailable {
+  color: var(--text-muted);
+}
+
+.product-soldout-badge {
+  top: 10px;
+  left: 10px;
+  background: rgba(102, 32, 27, 0.92);
+  color: #ffe8de;
+  border: 1px solid rgba(255, 208, 191, 0.2);
+}
+
+.menu-empty-view,
+.error-screen-view {
+  background: #1c1a18;
+  border-color: rgba(255, 245, 231, 0.12);
+  box-shadow: var(--shadow-card);
+}
+
+.empty-icon-circle,
+.error-icon-circle {
+  background: #30271f;
+  color: var(--coffee-primary);
+}
+
+.skeleton-box {
+  background: linear-gradient(90deg, #1f1d1a 25%, #2a2521 50%, #1f1d1a 75%);
+  background-size: 200% 100%;
+}
+
+.customer-menu-footer {
+  background: #171513;
+  border-top-color: rgba(255, 245, 231, 0.09);
+}
+
+.footer-brand {
+  color: var(--text-primary);
+}
+
+.footer-tagline {
+  color: var(--text-muted);
+}
+
+dialog.customization-modal {
+  background: #1c1a18;
+  border-color: rgba(255, 245, 231, 0.12);
+}
+
+dialog.customization-modal::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.modal-hero-header,
+.modal-footer.read-only-footer {
+  background: #211f1d;
+  border-color: rgba(255, 245, 231, 0.1);
+}
+
+.modal-thumb-box {
+  background: #f4f0e9;
+}
+
+.modal-title-group,
+.modal-scrollable-body {
+  color: var(--text-primary);
+}
+
+.modal-product-name,
+.group-name-title,
+.read-option-main {
+  color: var(--text-primary);
+}
+
+.modal-product-desc,
+.menu-empty-view p,
+.error-screen-view p {
+  color: var(--text-secondary);
+}
+
+.modal-price-pill,
+.modal-read-group,
+.read-option-card,
+.modal-info-note {
+  background: #171513;
+  border-color: rgba(255, 245, 231, 0.1);
+}
+
+.read-option-card {
+  color: var(--text-primary);
+}
+
+.modal-dismiss-btn,
+.retry-action-btn {
+  background: var(--coffee-primary);
+  color: #1b120c;
+}
+
+@media (max-width: 640px) {
+  .customer-main-view {
+    padding: 17px 12px 48px;
+  }
+
+  .category-block {
+    margin-bottom: 34px;
+  }
+
+  .product-card-body {
+    padding: 11px 11px 12px;
+  }
+
+  .product-name {
+    font-size: 0.88rem;
+  }
+
+  .price-amount {
+    font-size: 0.98rem;
+  }
+}
