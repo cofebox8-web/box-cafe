@@ -1856,7 +1856,7 @@ dialog.customization-modal::backdrop {
   border: 0;
   border-radius: 0 0 28px 28px;
   background: rgba(17, 16, 15, 0.94);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.34), 0 6px 16px rgba(0, 0, 0, 0.16);
   isolation: isolate;
 }
 
