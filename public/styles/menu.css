@@ -1929,6 +1929,139 @@ dialog.customization-modal::backdrop {
   scroll-margin-top: 154px;
 }
 
+/* ==========================================================================
+   13. Tablet responsive layout
+   Portrait tablets keep a comfortable three-column catalog; landscape tablets
+   use the wider four-column layout while tightening the fixed app bar.
+   ========================================================================== */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .menu-header {
+    padding: 12px 24px 10px;
+    border-radius: 0 0 26px 26px;
+  }
+
+  .header-container {
+    min-height: 50px;
+    padding-bottom: 8px;
+  }
+
+  .brand-top-card {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .brand-top-title {
+    font-size: 1.45rem;
+  }
+
+  .search-filter-section {
+    padding: 12px 0 15px;
+  }
+
+  .categories-nav,
+  .categories-nav.fade-left-only,
+  .categories-nav.fade-right-only,
+  .categories-nav.fade-both,
+  .categories-nav.fade-none {
+    width: calc(100% + 48px);
+    margin-inline: -24px;
+    padding-inline: 24px;
+    padding-bottom: 5px;
+  }
+
+  .category-pill-btn {
+    min-height: 42px;
+    padding: 8px 18px;
+    font-size: 0.88rem;
+  }
+
+  .customer-main-view {
+    padding: 30px 24px 72px;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .product-card {
+    border-radius: 20px;
+  }
+
+  .product-card-media {
+    aspect-ratio: 1 / 0.92;
+  }
+
+  .product-card-body {
+    padding: 14px;
+  }
+
+  .category-block {
+    scroll-margin-top: 166px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) and (orientation: landscape) {
+  .menu-header {
+    padding: 10px 28px 8px;
+    border-radius: 0 0 24px 24px;
+  }
+
+  .header-container {
+    min-height: 44px;
+    padding-bottom: 6px;
+  }
+
+  .brand-top-card {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .brand-top-title {
+    font-size: 1.35rem;
+  }
+
+  .search-filter-section {
+    padding: 8px 0 10px;
+  }
+
+  .categories-nav,
+  .categories-nav.fade-left-only,
+  .categories-nav.fade-right-only,
+  .categories-nav.fade-both,
+  .categories-nav.fade-none {
+    width: calc(100% + 56px);
+    margin-inline: -28px;
+    padding-inline: 28px;
+    padding-bottom: 4px;
+  }
+
+  .category-pill-btn {
+    min-height: 38px;
+    padding: 6px 15px;
+    font-size: 0.8rem;
+  }
+
+  .customer-main-view {
+    padding: 24px 28px 64px;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .product-card-media {
+    aspect-ratio: 1 / 0.86;
+  }
+
+  .category-block {
+    scroll-margin-top: 136px;
+  }
+}
+
 @media (max-width: 640px) {
   .menu-header {
     padding: 10px 14px 8px;
