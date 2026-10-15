@@ -1860,17 +1860,6 @@ dialog.customization-modal::backdrop {
   isolation: isolate;
 }
 
-.menu-header::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset-inline: 0;
-  bottom: -22px;
-  height: 24px;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(17, 16, 15, 0.22), transparent);
-}
-
 .header-container {
   width: min(100%, var(--container-max));
   min-height: 48px;
