@@ -1899,19 +1899,6 @@ dialog.customization-modal::backdrop {
   padding: 11px 0 14px;
 }
 
-.search-filter-section::after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  right: 6px;
-  bottom: 0;
-  left: 6px;
-  height: 1px;
-  border-radius: 999px;
-  background: rgba(255, 245, 231, 0.16);
-  box-shadow: 0 1px 8px rgba(211, 154, 103, 0.08);
-}
-
 .categories-nav,
 .categories-nav.fade-left-only,
 .categories-nav.fade-right-only,
@@ -1989,11 +1976,6 @@ dialog.customization-modal::backdrop {
     margin-inline: -14px;
     padding-inline: 14px;
     padding-bottom: 4px;
-  }
-
-  .search-filter-section::after {
-    right: 14px;
-    left: 14px;
   }
 
   .categories-list {
