@@ -277,7 +277,6 @@ function renderCategories() {
       const catId = btn.dataset.categoryId;
       state.activeCategoryId = catId;
       renderCategories();
-      renderProducts();
 
       // Auto-scroll the clicked pill smoothly into the center of the scroll container
       const activeBtn = list.querySelector(`.category-pill-btn[data-category-id="${catId}"]`);
@@ -285,16 +284,68 @@ function renderCategories() {
         activeBtn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
       }
 
-      if (catId !== "all") {
-        const targetSection = document.getElementById(`cat-section-${catId}`);
-        if (targetSection) {
-          targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }
+      scrollToCategorySection(catId);
     });
   });
 
   initCategoryNavScroll();
+}
+
+let categoryScrollRaf = 0;
+let categoryScrollBound = false;
+
+function getMenuHeaderHeight() {
+  return document.querySelector(".menu-header")?.getBoundingClientRect().height || 0;
+}
+
+function scrollToCategorySection(categoryId) {
+  if (categoryId === "all") {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  const targetSection = document.getElementById(`cat-section-${categoryId}`);
+  if (!targetSection) return;
+
+  const offset = getMenuHeaderHeight() + 18;
+  const targetTop = targetSection.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+}
+
+function updateActiveCategoryFromScroll() {
+  const sections = Array.from(document.querySelectorAll("#products-container .category-block[id^='cat-section-']"));
+  if (!sections.length) return;
+
+  const marker = getMenuHeaderHeight() + 24;
+  let activeId = "all";
+
+  for (const section of sections) {
+    if (section.getBoundingClientRect().top <= marker) {
+      activeId = section.id.replace("cat-section-", "");
+    } else {
+      break;
+    }
+  }
+
+  if (state.activeCategoryId !== activeId) {
+    state.activeCategoryId = activeId;
+    renderCategories();
+  }
+}
+
+function initCategorySectionSync() {
+  if (!categoryScrollBound) {
+    window.addEventListener("scroll", () => {
+      if (categoryScrollRaf) return;
+      categoryScrollRaf = requestAnimationFrame(() => {
+        categoryScrollRaf = 0;
+        updateActiveCategoryFromScroll();
+      });
+    }, { passive: true });
+    categoryScrollBound = true;
+  }
+
+  updateActiveCategoryFromScroll();
 }
 
 function initCategoryNavScroll() {
@@ -369,7 +420,8 @@ function renderProducts() {
 
   const query = state.searchQuery.trim().toLowerCase();
   const filteredProducts = products.filter(p => {
-    const matchCategory = state.activeCategoryId === "all" || p.category_id === state.activeCategoryId;
+    // Category tabs navigate through the full catalog; scrolling keeps every section available.
+    const matchCategory = true;
     const matchSearch = !query ||
       p.name.toLowerCase().includes(query) ||
       (p.description && p.description.toLowerCase().includes(query));
@@ -462,6 +514,8 @@ function renderProducts() {
       }
     });
   });
+
+  initCategorySectionSync();
 }
 
 let savedMenuScrollY = 0;

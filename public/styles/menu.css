@@ -1843,3 +1843,162 @@ dialog.customization-modal::backdrop {
     font-size: 0.98rem;
   }
 }
+
+/* ==========================================================================
+   12. Fixed Catalog App Bar
+   A single branded navigation surface keeps the logo and section tabs together
+   while the catalog scrolls underneath it.
+   ========================================================================== */
+.menu-header {
+  position: sticky;
+  top: 0;
+  padding: 13px 18px 10px;
+  border: 0;
+  border-radius: 0 0 28px 28px;
+  background: rgba(17, 16, 15, 0.94);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+  isolation: isolate;
+}
+
+.menu-header::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-inline: 0;
+  bottom: -22px;
+  height: 24px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(17, 16, 15, 0.22), transparent);
+}
+
+.header-container {
+  width: min(100%, var(--container-max));
+  min-height: 48px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid rgba(255, 245, 231, 0.12);
+}
+
+.brand-top-lockup {
+  gap: 11px;
+}
+
+.brand-top-card {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+}
+
+.brand-top-title {
+  font-size: clamp(1.25rem, 3vw, 1.58rem);
+}
+
+.search-filter-section {
+  width: min(100%, var(--container-max));
+  margin: 0 auto;
+  padding: 11px 0 0;
+}
+
+.categories-nav,
+.categories-nav.fade-left-only,
+.categories-nav.fade-right-only,
+.categories-nav.fade-both,
+.categories-nav.fade-none {
+  width: 100%;
+  margin: 0;
+  padding: 0 0 5px;
+  border-radius: 0 0 18px 18px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 74%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 74%, transparent 100%);
+}
+
+.categories-list {
+  gap: 8px;
+  padding-inline: 2px 12px;
+}
+
+.category-pill-btn {
+  min-height: 39px;
+  padding: 7px 16px;
+  background: rgba(255, 245, 231, 0.055);
+  border-color: rgba(255, 245, 231, 0.11);
+  box-shadow: none;
+  font-size: 0.82rem;
+}
+
+.category-pill-btn.active {
+  background: var(--coffee-primary);
+  border-color: var(--coffee-primary);
+  box-shadow: 0 8px 18px rgba(211, 154, 103, 0.23);
+}
+
+.customer-main-view {
+  padding-top: 30px;
+}
+
+.category-block {
+  scroll-margin-top: 154px;
+}
+
+@media (max-width: 640px) {
+  .menu-header {
+    padding: 10px 14px 8px;
+    border-radius: 0 0 22px 22px;
+  }
+
+  .header-container {
+    min-height: 43px;
+    padding-bottom: 9px;
+  }
+
+  .brand-top-card {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+  }
+
+  .brand-top-title {
+    font-size: 1.2rem;
+    letter-spacing: 0.12em;
+  }
+
+  .search-filter-section {
+    padding-top: 9px;
+  }
+
+  .categories-nav,
+  .categories-nav.fade-left-only,
+  .categories-nav.fade-right-only,
+  .categories-nav.fade-both,
+  .categories-nav.fade-none {
+    width: calc(100% + 28px);
+    margin-inline: -14px;
+    padding-inline: 14px;
+    padding-bottom: 4px;
+  }
+
+  .categories-list {
+    gap: 7px;
+    padding-inline: 0 14px;
+  }
+
+  .category-pill-btn {
+    min-height: 36px;
+    padding: 6px 13px;
+    font-size: 0.75rem;
+  }
+
+  .customer-main-view {
+    padding-top: 25px;
+  }
+
+  .category-block {
+    scroll-margin-top: 132px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-pill-btn,
+  .brand-top-lockup {
+    transition: none;
+  }
+}
