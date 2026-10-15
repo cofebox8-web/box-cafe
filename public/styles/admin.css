@@ -1984,6 +1984,43 @@ textarea.structured-input:focus,
   padding: 16px;
   font-size: 0.8rem;
   line-height: 1.6;
+  direction: ltr;
+  text-align: left;
+  font-family: Arial, sans-serif;
+}
+
+/* XP-80TS thermal roll: print only the receipt at the printer's full width. */
+@media print {
+  @page { size: 80mm auto; margin: 0; }
+  body:has(#modal-receipt-preview:not([hidden])) * { visibility: hidden !important; }
+  body:has(#modal-receipt-preview:not([hidden])) #modal-receipt-preview,
+  body:has(#modal-receipt-preview:not([hidden])) #modal-receipt-preview * { visibility: visible !important; }
+  body:has(#modal-receipt-preview:not([hidden])) #modal-receipt-preview {
+    position: fixed;
+    inset: 0;
+    display: block !important;
+    padding: 0;
+    background: #fff;
+  }
+  body:has(#modal-receipt-preview:not([hidden])) #modal-receipt-preview .receipt-modal-box {
+    width: 80mm;
+    max-width: 80mm;
+    max-height: none;
+    overflow: visible;
+    box-sizing: border-box;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+  }
+  body:has(#modal-receipt-preview:not([hidden])) #modal-receipt-preview .thermal-receipt-box {
+    width: 80mm;
+    box-sizing: border-box;
+    padding: 4mm;
+    border-radius: 0;
+  }
+  body:has(#modal-receipt-preview:not([hidden])) #modal-receipt-preview .modal-box-actions { display: none !important; }
 }
 
 .erp-toast {

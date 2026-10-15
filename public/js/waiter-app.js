@@ -1,7 +1,7 @@
 // EV CAFE — Official Waiter POS Controller
 // Vanilla JS ES Module — Pure Static, High-Performance, Luxury POS Terminal
 
-import { supabase, isSupabaseConfigured } from "./supabase-client.js";
+import { supabase, isSupabaseConfigured, generateUuid } from "./supabase-client.js";
 import { getStaffSession, signInStaff, signOutStaff } from "./staff-auth.js";
 import { resolveProductImage } from "./product-images.js";
 
@@ -1271,7 +1271,7 @@ async function handleCheckoutSubmit() {
       p_order_mode: state.orderMode,
       p_vehicle_note: vehicleNote,
       p_order_note: orderNote,
-      p_idempotency_key: crypto.randomUUID()
+      p_idempotency_key: generateUuid()
     });
 
     if (res.error || !res.data || res.data.success !== true) {

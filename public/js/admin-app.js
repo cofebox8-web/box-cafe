@@ -4,7 +4,7 @@ import {
   signInStaff,
   signOutStaff
 } from './staff-auth.js';
-import { supabase, isSupabaseConfigured } from './supabase-client.js';
+import { supabase, isSupabaseConfigured, generateUuid } from './supabase-client.js';
 import { resolveProductImage } from './product-images.js';
 
 const syncChannel = typeof BroadcastChannel !== 'undefined'
@@ -533,7 +533,7 @@ async function uploadMenuProductImage(file) {
   if (!/^image\/(jpeg|png|webp|avif)$/.test(file.type)) throw new Error('اختر صورة بصيغة JPG أو PNG أو WebP أو AVIF.');
   if (file.size > 5 * 1024 * 1024) throw new Error('حجم الصورة أكبر من 5 ميغابايت.');
   const extension = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif' })[file.type];
-  const path = `${adminProfile.restaurant_id}/${crypto.randomUUID()}.${extension}`;
+  const path = `${adminProfile.restaurant_id}/${generateUuid()}.${extension}`;
   const { error } = await supabase.storage.from('menu-product-images').upload(path, file, {
     cacheControl: '31536000',
     contentType: file.type,
@@ -1006,31 +1006,36 @@ function showThermalReceiptModal(orderObj, receivedAmount = 0, changeAmount = 0)
   const netTotal = Number(orderObj.total || orderObj.total_iqd) || 0;
   const pm = (orderObj.payment_method || 'cash').toUpperCase();
 
+  const receiptTime = new Date(orderObj.created_at || Date.now()).toLocaleTimeString('en-GB', {
+    hour: '2-digit', minute: '2-digit'
+  });
+  const vehicleNote = String(orderObj.vehicle_note || '').trim();
   receiptArea.innerHTML = `
-    <div style="text-align:center;border-bottom:1px dashed #64748B;padding-bottom:8px;margin-bottom:8px;">
+    <div style="text-align:center;border-bottom:1px dashed #64748B;padding-bottom:8px;margin-bottom:8px;direction:ltr;">
       <strong style="font-size:1.15rem;letter-spacing:0.15em;">EV CAFE</strong>
-      <div>فاتورة كاشير رسمية • رقم ${orderObj.order_code}</div>
-      <small>${new Date(orderObj.created_at || Date.now()).toLocaleTimeString('ar-IQ')} | ${orderObj.vehicle_note || 'فرع المطار'}</small>
+      <div>SALES RECEIPT • ORDER ${escapeHtml(orderObj.order_code || '')}</div>
+      <small>${receiptTime}${vehicleNote ? ` | ${escapeHtml(vehicleNote)}` : ''}</small>
     </div>
     <div style="display:flex;flex-direction:column;gap:4px;border-bottom:1px dashed #64748B;padding-bottom:8px;margin-bottom:8px;">
       ${(orderObj.items || []).map((item) => {
         const qty = Number(item.quantity || item.qty) || 1;
         const prc = Number(item.unit_price || item.price_iqd) || 0;
+        const itemName = escapeHtml(item.name_en || item.name || item.name_ar || 'ITEM');
         return `
           <div style="display:flex;justify-content:space-between;">
-            <span>${item.name || item.name_ar} × ${qty}</span>
+            <span>${itemName} × ${qty}</span>
             <strong>${formatIQD(prc * qty)}</strong>
           </div>
         `;
       }).join('')}
     </div>
     <div style="display:flex;justify-content:space-between;font-weight:800;">
-      <span>المجموع الصافي:</span>
+      <span>SUBTOTAL:</span>
       <span>${formatIQD(netTotal)}</span>
     </div>
     <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#475569;">
-      <span>الواصل (${pm}): ${formatIQD(receivedAmount || netTotal)}</span>
-      <span>الباقي: ${formatIQD(changeAmount)}</span>
+      <span>PAID (${pm}): ${formatIQD(receivedAmount || netTotal)}</span>
+      <span>CHANGE: ${formatIQD(changeAmount)}</span>
     </div>
   `;
   receiptModal.hidden = false;

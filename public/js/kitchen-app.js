@@ -75,6 +75,11 @@ function formatElapsedTime(isoStr) {
   return `منذ ${mins} دقيقة`;
 }
 
+function formatReceiptMoney(amount) {
+  const num = Number(amount) || 0;
+  return `${num.toLocaleString("en-US")} IQD`;
+}
+
 function escapeHtml(str) {
   if (!str) return "";
   return String(str)
@@ -83,6 +88,54 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function printKitchenReceipt(order) {
+  const receipt = document.getElementById("kds-receipt-print");
+  if (!receipt || !order) return;
+
+  const receiptTime = new Date(order.created_at || Date.now()).toLocaleString("en-GB", {
+    dateStyle: "short",
+    timeStyle: "short"
+  });
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemsHtml = items.map((item) => {
+    const quantity = Number(item.quantity || item.qty) || 1;
+    const unitPrice = Number(item.unit_price || item.price_iqd) || 0;
+    const name = escapeHtml(item.name_en || item.name || item.name_ar || "ITEM");
+    const options = (item.options || []).map((option) =>
+      typeof option === "string" ? option : option.name_en || option.name || option.name_ar || ""
+    ).filter(Boolean).map(escapeHtml).join(", ");
+    return `<div class="kds-receipt-line"><span>${name}${options ? ` (${options})` : ""} x${quantity}</span><strong>${formatReceiptMoney(unitPrice * quantity)}</strong></div>`;
+  }).join("");
+
+  receipt.innerHTML = `
+    <div class="kds-receipt-brand">EV CAFE</div>
+    <div class="kds-receipt-title">KITCHEN ORDER</div>
+    <div class="kds-receipt-rule"></div>
+    <div class="kds-receipt-meta"><span>ORDER</span><strong>${escapeHtml(order.order_code || "")}</strong></div>
+    <div class="kds-receipt-meta"><span>TIME</span><span>${escapeHtml(receiptTime)}</span></div>
+    ${order.vehicle_note ? `<div class="kds-receipt-meta"><span>VEHICLE</span><span>${escapeHtml(order.vehicle_note)}</span></div>` : ""}
+    ${order.service_point_label ? `<div class="kds-receipt-meta"><span>SERVICE</span><span>${escapeHtml(order.service_point_label)}</span></div>` : ""}
+    <div class="kds-receipt-rule"></div>
+    <div class="kds-receipt-items">${itemsHtml}</div>
+    ${order.order_note ? `<div class="kds-receipt-note">NOTE: ${escapeHtml(order.order_note)}</div>` : ""}
+    <div class="kds-receipt-rule"></div>
+    <div class="kds-receipt-total"><span>TOTAL</span><strong>${formatReceiptMoney(order.total)}</strong></div>
+    <div class="kds-receipt-footer">THANK YOU</div>
+  `;
+  receipt.hidden = false;
+  receipt.setAttribute("aria-hidden", "false");
+  document.body.classList.add("kds-printing");
+
+  const finishPrint = () => {
+    document.body.classList.remove("kds-printing");
+    receipt.hidden = true;
+    receipt.setAttribute("aria-hidden", "true");
+  };
+  window.addEventListener("afterprint", finishPrint, { once: true });
+  window.setTimeout(finishPrint, 5000);
+  window.print();
 }
 
 async function loadKitchenOrders() {
@@ -416,13 +469,16 @@ function renderKDS() {
               <span class="price-caption">الإجمالي</span>
               <span class="ticket-total-price">${formatMoney(order.total)}</span>
             </div>
-            ${
-              meta.nextStatus
-                ? `<button type="button" class="ticket-action-btn ${meta.btnClass}" data-action="advance-status" data-order-code="${escapeHtml(order.order_code)}" data-next-status="${meta.nextStatus}">
-                    <span>${meta.btnText}</span>
-                  </button>`
-                : ""
-            }
+            <div class="ticket-action-group">
+              <button type="button" class="ticket-print-btn" data-action="print-order" data-order-code="${escapeHtml(order.order_code)}">Print</button>
+              ${
+                meta.nextStatus
+                  ? `<button type="button" class="ticket-action-btn ${meta.btnClass}" data-action="advance-status" data-order-code="${escapeHtml(order.order_code)}" data-next-status="${meta.nextStatus}">
+                      <span>${meta.btnText}</span>
+                    </button>`
+                  : ""
+              }
+            </div>
           </div>
         </article>
       `;
@@ -435,6 +491,13 @@ function renderKDS() {
       const code = btn.dataset.orderCode;
       const next = btn.dataset.nextStatus;
       handleStatusTransition(code, next);
+    });
+  });
+
+  gridEl.querySelectorAll('[data-action="print-order"]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const order = kdsState.orders.find((candidate) => candidate.order_code === btn.dataset.orderCode);
+      if (order) printKitchenReceipt(order);
     });
   });
 

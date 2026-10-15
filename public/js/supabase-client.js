@@ -45,3 +45,24 @@ export function requireSupabase() {
 
   return supabase;
 }
+
+// HTTP LAN previews may expose Web Crypto without the newer randomUUID API.
+// Keep request keys and storage paths UUID-shaped in every browser context.
+export function generateUuid() {
+  const webCrypto = typeof window !== "undefined" ? window.crypto : undefined;
+  if (webCrypto && typeof webCrypto.randomUUID === "function") {
+    return webCrypto.randomUUID();
+  }
+
+  if (webCrypto && typeof webCrypto.getRandomValues === "function") {
+    const bytes = new Uint8Array(16);
+    webCrypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+
+  const randomHex = () => Math.floor(Math.random() * 0x100000000).toString(16).padStart(8, "0");
+  return `${randomHex()}-${randomHex().slice(0, 4)}-4${randomHex().slice(1, 4)}-8${randomHex().slice(1, 4)}-${randomHex()}${randomHex()}`;
+}

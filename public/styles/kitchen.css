@@ -956,6 +956,36 @@ input {
   transition: all 0.16s ease;
 }
 
+.ticket-action-group {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex: 1;
+}
+
+.ticket-print-btn {
+  min-width: 78px;
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid var(--brand-primary);
+  border-radius: 11px;
+  background: #FFFFFF;
+  color: var(--brand-primary);
+  font-size: 0.88rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.ticket-print-btn:hover {
+  background: var(--brand-light);
+}
+
+.ticket-action-group .ticket-action-btn {
+  min-width: 150px;
+}
+
 .btn-start-prep {
   background: #D97706;
   box-shadow: 0 4px 14px rgba(217, 119, 6, 0.28);
@@ -1063,6 +1093,96 @@ input {
 .kds-live-toast.visible {
   transform: translateY(0);
   opacity: 1;
+}
+
+.kds-receipt-print {
+  display: none;
+}
+
+.kds-receipt-brand,
+.kds-receipt-title,
+.kds-receipt-footer {
+  text-align: center;
+}
+
+.kds-receipt-brand {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.kds-receipt-title {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.kds-receipt-rule {
+  border-top: 1px dashed #475569;
+  margin: 8px 0;
+}
+
+.kds-receipt-meta,
+.kds-receipt-line,
+.kds-receipt-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kds-receipt-meta,
+.kds-receipt-line {
+  margin: 4px 0;
+  font-size: 10px;
+}
+
+.kds-receipt-items {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.kds-receipt-note {
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.kds-receipt-total {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.kds-receipt-footer {
+  margin-top: 12px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+@page {
+  size: 80mm auto;
+  margin: 0;
+}
+
+@media print {
+  body.kds-printing > *:not(#kds-receipt-print) {
+    display: none !important;
+  }
+
+  body.kds-printing #kds-receipt-print {
+    display: block !important;
+    width: 80mm;
+    box-sizing: border-box;
+    padding: 4mm;
+    margin: 0;
+    background: #fff;
+    color: #000;
+    direction: ltr;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+  }
 }
 
 .toast-pulse {
